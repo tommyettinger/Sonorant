@@ -31,7 +31,6 @@ gwt {
 
 dependencies {
   implementation "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
-  implementation "com.github.tommyettinger:colorful:$colorfulVersion:sources"
   implementation "com.github.tommyettinger:anim8-gdx:$anim8Version:sources"
   implementation "com.github.tommyettinger:digital:$digitalVersion:sources"
   implementation "com.github.tommyettinger:formic:$formicVersion:sources"

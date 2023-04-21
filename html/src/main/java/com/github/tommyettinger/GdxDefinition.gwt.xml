@@ -4,7 +4,6 @@
   <source path="" />
   <inherits name="com.badlogic.gdx.backends.gdx_backends_gwt" />
   <inherits name="com.github.tommyettinger.sonorant" />
-  <inherits name="com.github.tommyettinger.colorful.colorful" />
   <inherits name="com.github.tommyettinger.anim8" />
   <inherits name="com.github.tommyettinger.digital" />
   <inherits name="com.github.tommyettinger.funderby" />
