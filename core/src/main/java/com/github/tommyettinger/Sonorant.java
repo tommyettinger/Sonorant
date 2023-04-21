@@ -16,11 +16,14 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.FastGif;
 import com.github.tommyettinger.anim8.PaletteReducer;
-import com.github.tommyettinger.digital.ArrayTools;
+import com.github.tommyettinger.digital.BitConversion;
 import com.github.tommyettinger.ds.IntList;
 import com.github.yellowstonegames.core.ColorGradients;
 import com.github.yellowstonegames.core.DescriptiveColor;
-import com.github.yellowstonegames.grid.*;
+import com.github.yellowstonegames.grid.FlawedPointHash;
+import com.github.yellowstonegames.grid.IPointHash;
+import com.github.yellowstonegames.grid.IntPointHash;
+import com.github.yellowstonegames.grid.Noise;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
@@ -46,6 +49,8 @@ public class Sonorant extends ApplicationAdapter {
 //    private static final int width = 400, height = 400;
 //    private static final int width = 512, height = 512;
     public static final int width = 256, height = 256;
+    IntList colorList = new IntList(256);
+    float[] colorFloats = new float[256];
 
     private final float[][] basePigment = new float[width][height];
     private InputAdapter input;
@@ -213,35 +218,45 @@ public class Sonorant extends ApplicationAdapter {
         renderer.begin(view.getCamera().combined, GL_POINTS);
         float bright, nf = noise.getFrequency(), c = (paused ? startTime
                 : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf;
+
+        float hue = (TimeUtils.millis() & 4095) * 0x1p-12f;
+        colorList.clear();
+        ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolation.smooth::apply,
+                DescriptiveColor.oklabByHSL(0.05f + hue, 0.85f, 0.2f, 1f),
+                DescriptiveColor.oklabByHSL(0.02f + hue, 0.95f, 0.4f, 1f),
+                DescriptiveColor.oklabByHSL(0.10f + hue, 1f, 0.55f, 1f),
+                DescriptiveColor.oklabByHSL(0.08f + hue, 0.7f, 0.8f, 1f)
+        ));
+        for (int i = 0; i < 256; i++) {
+            colorFloats[i] = BitConversion.reversedIntBitsToFloat(colorList.get(i) & -2);
+        }
+
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                bright = basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, c) * 0x1p-6f, 0f), 0.25f);
-                renderer.color(bright, bright, bright, 1f);
+                bright =
+                        (basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, c) * 0x1p-6f, 0f), 0.25f))
+                * 255.999f
+                ;
+                renderer.color(colorFloats[(int)bright]);
+
                 renderer.vertex(x, y, 0);
             }
         }
         if (Gdx.input.isKeyJustPressed(W)) {
-            ArrayTools.fill(basePigment, 0.5f);
             for (int ct = 0; ct < 256; ct++) {
                 int w = 256, h = 256;
+                float cf = ct * 0x1p-4f / nf;
                 Pixmap p = new Pixmap(w, h, Pixmap.Format.RGBA8888);
                 for (int x = 0; x < width; x++) {
                     for (int y = 0; y < height; y++) {
-                        float color = basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, c) * 0x1p-6f, 0f), 0.25f);
+                        float color = (basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, cf) * 0x1p-6f, 0f), 0.25f)) * 4f;
                         p.setColor(color, color, color, 1f);
                         p.drawPixel(x, y);
                     }
                 }
                 frames.add(p);
             }
-            float hue = (TimeUtils.millis() & 1023) * 0x1p-10f;
-            IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolation.smooth::apply,
-                    DescriptiveColor.oklabByHSL(0.05f + hue, 0.85f, 0.2f, 1f),
-                    DescriptiveColor.oklabByHSL(0.02f + hue, 0.95f, 0.4f, 1f),
-                    DescriptiveColor.oklabByHSL(0.10f + hue, 1f, 0.55f, 1f),
-                    DescriptiveColor.oklabByHSL(0.08f + hue, 0.7f, 0.8f, 1f)
-            ));
-            g.toArray(gif.palette.paletteArray);
+            colorList.toArray(gif.palette.paletteArray);
 
 
             Gdx.files.local("out/").mkdirs();
