@@ -54,7 +54,8 @@ public class Sonorant extends ApplicationAdapter {
     public static final int width = 256, height = 256;
     private IntList colorList = new IntList(256);
     private float[] colorFloats = new float[256];
-    private final float[][] kernel = new float[32][32];
+    private int kernelSize = 32;
+    private final float[][] kernel = new float[kernelSize][kernelSize];
 
     private float[][] pigment = new float[width][height];
     private float[][] previousPigment = new float[width][height];
@@ -77,20 +78,24 @@ public class Sonorant extends ApplicationAdapter {
 
     public void buildKernel() {
         int oldFractalType = noise.getFractalType();
+//        float oldFrequency = noise.getFrequency();
         noise.setFractalType(Noise.RIDGED_MULTI);
-        for (int x = 0; x < 32; x++) {
-            float distX = x - 15.5f;
-            for (int y = 0; y < 32; y++) {
-                float distY = y - 15.5f;
+//        noise.setFrequency(256f * oldFrequency / kernelSize);
+        float angleAdj = Hasher.randomize3Float(~noise.getSeed());
+        float hs = (kernelSize-1)*0.5f;
+        for (int x = 0; x < kernelSize; x++) {
+            float distX = x - hs;
+            for (int y = 0; y < kernelSize; y++) {
+                float distY = y - hs;
                 float len = (float) Math.sqrt(distX * distX + distY * distY);
-                float window = cosTurns(len * (0.25f / 15.5f));
+                float window = cosTurns(len * (0.25f / hs));
                 if(window <= 0.0f) {
                     kernel[x][y] = 0f;
                     continue;
                 }
                 window *= window; // makes a Hann window
 
-                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions);
+                float theta = (TrigTools.atan2Turns(distY, distX)+angleAdj) * (3 + divisions);
                 float shrunk = len / (3f + divisions);
                 len *= 0x1p-8f;
                 int flip = -((int)theta & 1 & divisions) | 1;
@@ -102,6 +107,7 @@ public class Sonorant extends ApplicationAdapter {
             }
         }
         noise.setFractalType(oldFractalType);
+//        noise.setFrequency(oldFrequency);
     }
 
     public float kernelSum(final float[][] from, int x, int y) {
@@ -110,8 +116,9 @@ public class Sonorant extends ApplicationAdapter {
 //                startX = Math.max(0, x - 32), startY = Math.max(0, y - 32),
 //                startI = startX - (x-32),
 //                startJ = startY - (y-32);
-        for (int i = 0, xx = x - 16; i < 32; i++, xx++) {
-            for (int j = 0, yy = y - 16; j < 32; j++, yy++) {
+        int hs = kernelSize>>>1;
+        for (int i = 0, xx = x - hs; i < kernelSize; i++, xx++) {
+            for (int j = 0, yy = y - hs; j < kernelSize; j++, yy++) {
                 sum += kernel[i][j] * from[xx&255][yy&255];
             }
         }
