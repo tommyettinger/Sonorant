@@ -27,6 +27,8 @@ import com.github.yellowstonegames.grid.Noise;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
+import static com.github.tommyettinger.digital.TrigTools.cosTurns;
+import static com.github.tommyettinger.digital.TrigTools.sinTurns;
 
 /**
  */
@@ -50,7 +52,7 @@ public class Sonorant extends ApplicationAdapter {
     public static final int width = 256, height = 256;
     private IntList colorList = new IntList(256);
     private float[] colorFloats = new float[256];
-    private final float[][] kernel = new float[64][64];
+    private final float[][] kernel = new float[32][32];
 
     private float[][] pigment = new float[width][height];
     private float[][] previousPigment = new float[width][height];
@@ -74,12 +76,12 @@ public class Sonorant extends ApplicationAdapter {
     public void buildKernel() {
         int oldFractalType = noise.getFractalType();
         noise.setFractalType(Noise.RIDGED_MULTI);
-        for (int x = 0; x < 64; x++) {
-            float distX = x - 31.5f;
-            for (int y = 0; y < 64; y++) {
-                float distY = y - 31.5f;
+        for (int x = 0; x < 32; x++) {
+            float distX = x - 15.5f;
+            for (int y = 0; y < 32; y++) {
+                float distY = y - 15.5f;
                 float len = (float) Math.sqrt(distX * distX + distY * distY);
-                float window = TrigTools.cosTurns(len * (0.25f / 31.5f));
+                float window = cosTurns(len * (0.25f / 15.5f));
                 if(window <= 0.0f) {
                     kernel[x][y] = 0f;
                     continue;
@@ -92,9 +94,9 @@ public class Sonorant extends ApplicationAdapter {
                 int flip = -((int)theta & 1 & divisions) | 1;
                 theta *= flip;
                 kernel[x][y] = window * noise.getConfiguredNoise(
-                        TrigTools.cosTurns(theta) * shrunk,
-                        TrigTools.sinTurns(theta) * shrunk,
-                        TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f);
+                        cosTurns(theta) * shrunk,
+                        sinTurns(theta) * shrunk,
+                        cosTurns(len) * 32f, sinTurns(len) * 32f);
             }
         }
         noise.setFractalType(oldFractalType);
@@ -102,13 +104,13 @@ public class Sonorant extends ApplicationAdapter {
 
     public float kernelSum(final float[][] from, int x, int y) {
         float sum = 0f;
-        final int w = from.length, h = from[0].length,
-                startX = Math.max(0, x - 32), startY = Math.max(0, y - 32),
-                startI = startX - (x-32),
-                startJ = startY - (y-32);
-        for (int i = startI, xx = startX; i < 64 && xx < w; i++, xx++) {
-            for (int j = startJ, yy = startY; j < 64 && yy < h; j++, yy++) {
-                sum += kernel[i][j] * from[xx][yy];
+        final int w = from.length, h = from[0].length;
+//                startX = Math.max(0, x - 32), startY = Math.max(0, y - 32),
+//                startI = startX - (x-32),
+//                startJ = startY - (y-32);
+        for (int i = 0, xx = x - 16; i < 32; i++, xx++) {
+            for (int j = 0, yy = y - 16; j < 32; j++, yy++) {
+                sum += kernel[i][j] * from[xx&255][yy&255];
             }
         }
         return sum;
@@ -261,6 +263,7 @@ public class Sonorant extends ApplicationAdapter {
                         break;
                     case Z:
                         baseContribution = MathTools.isZero(baseContribution) ? 0.125f : 0f;
+                        break;
                     case P:
                         System.out.println("Noise in use: " + noise);
                         break;
@@ -284,20 +287,22 @@ public class Sonorant extends ApplicationAdapter {
         if (Gdx.input.isKeyPressed(M))
             noise.setMutation(noise.getMutation() + (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         renderer.begin(view.getCamera().combined, GL_POINTS);
-        float bright, nf = noise.getFrequency(), c = (paused ? steps
-                : ++steps) * 0.25f / nf;
+        float bright, nf = noise.getFrequency(), c = (paused ? steps : ++steps) * 0.25f / nf;
 
         if(!MathTools.isZero(baseContribution)) {
             for (int x = 0; x < width; x++) {
+                float xx = x / (float) width;
                 for (int y = 0; y < height; y++) {
-                    previousPigment[x][y] += noise.getConfiguredNoise(x, y, c) * baseContribution;
+                    float yy = y / (float) height;
+                    previousPigment[x][y] += noise.getConfiguredNoise(
+                            cosTurns(xx) * 32f, sinTurns(xx) * 32f, cosTurns(yy) * 32f, sinTurns(yy) * 32f, c) * baseContribution;
                 }
             }
         }
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 pigment[x][y] = Math.min(Math.max(previousPigment[x][y] +
-                        TrigTools.sin(kernelSum(previousPigment, x, y) * 0x1p-4f) * 0x1p-3f, 0f), 1f);
+                        TrigTools.sin(kernelSum(previousPigment, x, y) * 0x1p-4f) * 0.25f, 0f), 1f);
                 bright = pigment[x][y] * 255;
                 renderer.color(colorFloats[(int)bright]);
 
