@@ -35,9 +35,9 @@ import static com.github.tommyettinger.digital.TrigTools.sinTurns;
  */
 public class Sonorant extends ApplicationAdapter {
 
-    private final Noise noise = new Noise(1, 0.0625f);
+    private final Noise noise = new Noise(24, 0.0625f);
     private final IntPointHash iph = new IntPointHash();
-    private final FlawedPointHash.CubeHash cube = new FlawedPointHash.CubeHash(1, 64);
+    private final FlawedPointHash.CubeHash cube = new FlawedPointHash.CubeHash(24, 64);
     private final IPointHash[] pointHashes = new IPointHash[] {iph, cube};
     private int hashIndex = 0;
     private int octaves = 3;
@@ -46,6 +46,7 @@ public class Sonorant extends ApplicationAdapter {
     private float baseContribution = 0.125f;
     private boolean inverse;
     private boolean paused;
+    private boolean alternate = false;
     private ImmediateModeRenderer20 renderer;
 
 //    private static final int width = 400, height = 400;
@@ -268,6 +269,9 @@ public class Sonorant extends ApplicationAdapter {
                     case P:
                         System.out.println("Noise in use: " + noise);
                         break;
+                    case A:
+                        alternate = !alternate;
+                        break;
                     case Q:
                     case ESCAPE: {
                         Gdx.app.exit();
@@ -304,7 +308,7 @@ public class Sonorant extends ApplicationAdapter {
             for (int y = 0; y < height; y++) {
                 pigment[x][y] = Math.min(Math.max(previousPigment[x][y] +
                         LineWobble.wobble(noise.getSeed(), kernelSum(previousPigment, x, y) * 0x1p-4f) * 0.25f, 0f), 1f);
-                bright = pigment[x][y] * 255;
+                bright = (alternate && (steps & 1) == 1 ? Math.min(Math.max(previousPigment[x][y], 0), 1) : pigment[x][y]) * 255;
                 renderer.color(colorFloats[(int)bright]);
 
                 renderer.vertex(x, y, 0);
