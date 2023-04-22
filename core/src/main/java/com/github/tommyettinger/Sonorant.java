@@ -287,13 +287,15 @@ public class Sonorant extends ApplicationAdapter {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 previousPigment[x][y] +=
-                        (basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, c) * 0x1p-6f, -0.125f), 0.125f));
+                        basePigment[x][y] = noise.getConfiguredNoise(x, y, c) * 0.125f
+//                        basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, c) * 0x1p-6f, -0.125f), 0.125f)
+                ;
             }
         }
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 pigment[x][y] = Math.min(Math.max(previousPigment[x][y] +
-                        TrigTools.sin(kernelSum(previousPigment, x, y)) * 0x1p-4f, 0f), 1f);
+                        TrigTools.sin(kernelSum(previousPigment, x, y) + c) * 0x1p-4f, 0f), 1f);
                 bright = pigment[x][y] * 255;
                 renderer.color(colorFloats[(int)bright]);
 
