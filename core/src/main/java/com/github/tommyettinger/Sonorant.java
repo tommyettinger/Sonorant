@@ -15,10 +15,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.FastGif;
 import com.github.tommyettinger.anim8.PaletteReducer;
-import com.github.tommyettinger.digital.ArrayTools;
-import com.github.tommyettinger.digital.BitConversion;
-import com.github.tommyettinger.digital.Hasher;
-import com.github.tommyettinger.digital.TrigTools;
+import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.IntList;
 import com.github.yellowstonegames.core.ColorGradients;
 import com.github.yellowstonegames.core.DescriptiveColor;
@@ -43,6 +40,7 @@ public class Sonorant extends ApplicationAdapter {
     private int octaves = 3;
     private int divisions = 2;
     private float freq = 0.125f;
+    private float baseContribution = 0.125f;
     private boolean inverse;
     private boolean paused;
     private ImmediateModeRenderer20 renderer;
@@ -54,12 +52,12 @@ public class Sonorant extends ApplicationAdapter {
     private float[] colorFloats = new float[256];
     private final float[][] kernel = new float[64][64];
 
-    private final float[][] basePigment = new float[width][height];
     private float[][] pigment = new float[width][height];
     private float[][] previousPigment = new float[width][height];
 
     private Viewport view;
     private long startTime;
+    private int steps;
 
     private FastGif gif;
     private final Array<Pixmap> frames = new Array<>(256);
@@ -193,6 +191,7 @@ public class Sonorant extends ApplicationAdapter {
                 switch (keycode) {
                     case SPACE:
                         paused = !paused;
+                        startTime = TimeUtils.millis();
                         break;
                     case C:
                         randomizeColor(TimeUtils.millis());
@@ -254,11 +253,16 @@ public class Sonorant extends ApplicationAdapter {
                         change = true;
                         break;
                     case K: // sKip
-                        startTime -= 1000000L;
+                        steps += 1000;
                         break;
                     case W: // whirl, like a spiral
                         noise.setFractalSpiral(!noise.isFractalSpiral());
                         change = true;
+                        break;
+                    case Z:
+                        baseContribution = MathTools.isZero(baseContribution) ? 0.125f : 0f;
+                    case P:
+                        System.out.println("Noise in use: " + noise);
                         break;
                     case Q:
                     case ESCAPE: {
@@ -268,7 +272,6 @@ public class Sonorant extends ApplicationAdapter {
                 }
                 if(change){
                     buildKernel();
-                    ArrayTools.fill(basePigment, 0f);
                     ArrayTools.fill(previousPigment, 0f);
                 }
                 return true;
@@ -281,21 +284,20 @@ public class Sonorant extends ApplicationAdapter {
         if (Gdx.input.isKeyPressed(M))
             noise.setMutation(noise.getMutation() + (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         renderer.begin(view.getCamera().combined, GL_POINTS);
-        float bright, nf = noise.getFrequency(), c = (paused ? startTime
-                : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf;
+        float bright, nf = noise.getFrequency(), c = (paused ? steps
+                : ++steps) * 0.25f / nf;
 
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                previousPigment[x][y] +=
-                        basePigment[x][y] = noise.getConfiguredNoise(x, y, c) * 0.125f
-//                        basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, c) * 0x1p-6f, -0.125f), 0.125f)
-                ;
+        if(!MathTools.isZero(baseContribution)) {
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    previousPigment[x][y] += noise.getConfiguredNoise(x, y, c) * baseContribution;
+                }
             }
         }
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 pigment[x][y] = Math.min(Math.max(previousPigment[x][y] +
-                        TrigTools.sin(kernelSum(previousPigment, x, y) + c) * 0x1p-4f, 0f), 1f);
+                        TrigTools.sin(kernelSum(previousPigment, x, y) * 0x1p-4f) * 0x1p-3f, 0f), 1f);
                 bright = pigment[x][y] * 255;
                 renderer.color(colorFloats[(int)bright]);
 
@@ -312,7 +314,7 @@ public class Sonorant extends ApplicationAdapter {
                 Pixmap p = new Pixmap(w, h, Pixmap.Format.RGBA8888);
                 for (int x = 0; x < width; x++) {
                     for (int y = 0; y < height; y++) {
-                        float color = (basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, cf) * 0x1p-6f, 0f), 0.25f)) * 4f;
+                        float color = (previousPigment[x][y] = Math.min(Math.max(previousPigment[x][y] + noise.getConfiguredNoise(x, y, cf) * 0x1p-6f, 0f), 0.25f)) * 4f;
                         p.setColor(color, color, color, 1f);
                         p.drawPixel(x, y);
                     }
@@ -323,7 +325,7 @@ public class Sonorant extends ApplicationAdapter {
 
 
             Gdx.files.local("out/").mkdirs();
-            String ser = noise.serializeToString() + "_" + System.currentTimeMillis();
+            String ser = noise.serializeToString() + "_" + TimeUtils.millis();
             System.out.println(ser);
             gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
             for (int i = 0; i < frames.size; i++) {
