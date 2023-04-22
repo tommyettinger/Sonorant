@@ -15,7 +15,9 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.FastGif;
 import com.github.tommyettinger.anim8.PaletteReducer;
+import com.github.tommyettinger.digital.ArrayTools;
 import com.github.tommyettinger.digital.BitConversion;
+import com.github.tommyettinger.digital.Hasher;
 import com.github.tommyettinger.digital.TrigTools;
 import com.github.tommyettinger.ds.IntList;
 import com.github.yellowstonegames.core.ColorGradients;
@@ -114,6 +116,21 @@ public class Sonorant extends ApplicationAdapter {
         return sum;
     }
 
+    public void randomizeColor(long seed) {
+        float hue = Hasher.randomize3Float(seed);
+        colorList.clear();
+        ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolations.smooth,
+                DescriptiveColor.oklabByHSL(0.05f + hue, 0.85f, 0.2f, 1f),
+                DescriptiveColor.oklabByHSL(0.02f + hue, 0.95f, 0.4f, 1f),
+                DescriptiveColor.oklabByHSL(0.10f + hue, 1f, 0.55f, 1f),
+                DescriptiveColor.oklabByHSL(0.08f + hue, 0.7f, 0.8f, 1f)
+        ));
+        for (int i = 0; i < 256; i++) {
+            colorFloats[i] = BitConversion.reversedIntBitsToFloat(colorList.get(i) & -2);
+        }
+
+    }
+
     @Override
     public void create() {
         noise.setNoiseType(Noise.FOAM_FRACTAL);
@@ -160,19 +177,9 @@ public class Sonorant extends ApplicationAdapter {
                         0xF0F0F0FF, 0xF1F1F1FF, 0xF2F2F2FF, 0xF3F3F3FF, 0xF4F4F4FF, 0xF5F5F5FF, 0xF6F6F6FF, 0xF7F7F7FF,
                         0xF8F8F8FF, 0xF9F9F9FF, 0xFAFAFAFF, 0xFBFBFBFF, 0xFCFCFCFF, 0xFDFDFDFF, 0xFEFEFEFF, 0xFFFFFFFF,
                 });
-        IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolations.smooth,
-                // cool blue
-                DescriptiveColor.oklabByHSL(0.68f, 0.85f, 0.2f, 1f),
-                DescriptiveColor.oklabByHSL(0.70f, 0.95f, 0.4f, 1f),
-                DescriptiveColor.oklabByHSL(0.62f, 1f, 0.55f, 1f),
-                DescriptiveColor.oklabByHSL(0.65f, 0.7f, 0.8f, 1f)
-                // rosy
-//                DescriptiveColor.oklabByHSL(0.98f, 0.85f, 0.2f, 1f),
-//                DescriptiveColor.oklabByHSL(0.00f, 0.95f, 0.4f, 1f),
-//                DescriptiveColor.oklabByHSL(0.02f, 1f, 0.55f, 1f),
-//                DescriptiveColor.oklabByHSL(0.01f, 0.7f, 0.8f, 1f)
-        ));
-        g.toArray(gif.palette.paletteArray);
+
+        randomizeColor(TimeUtils.millis());
+        colorList.toArray(gif.palette.paletteArray);
 
         startTime = TimeUtils.millis();
         renderer = new ImmediateModeRenderer20(width * height * 2, false, true, 0);
@@ -182,48 +189,59 @@ public class Sonorant extends ApplicationAdapter {
             @Override
             public boolean keyUp(int keycode) {
                 int s;
+                boolean change = false;
                 switch (keycode) {
                     case SPACE:
                         paused = !paused;
                         break;
                     case C:
-                        startTime--;
+                        randomizeColor(TimeUtils.millis());
                         break;
                     case E: //earlier seed
                         s = (int) (noise.getSeed() - 1);
                         noise.setSeed(s);
                         cube.setState(s);
                         System.out.println("Using seed " + s);
+                        change = true;
                         break;
                     case S: //seed after
                         s = (int) (noise.getSeed() + 1);
                         noise.setSeed(s);
                         cube.setState(s);
                         System.out.println("Using seed " + s);
+                        change = true;
                         break;
                     case N: // noise type
                         noise.setNoiseType((noise.getNoiseType() + (UIUtils.shift() ? 17 : 1)) % 18);
+                        change = true;
                         break;
                     case B: // blur
                         noise.setSharpness(noise.getSharpness() + (UIUtils.shift() ? 0.05f : -0.05f));
+                        change = true;
                         break;
                     case D: // divisions
                         divisions = (divisions + (UIUtils.shift() ? 9 : 1)) % 10;
+                        change = true;
                         break;
                     case F: // frequency
                         noise.setFrequency(freq *= (UIUtils.shift() ? 1.25f : 0.8f));
+                        change = true;
                         break;
                     case R: // fRactal type
                         noise.setFractalType((noise.getFractalType() + (UIUtils.shift() ? 3 : 1)) & 3);
+                        change = true;
                         break;
                     case G: // Glitch!
                         noise.setPointHash(pointHashes[hashIndex ^= 1]);
+                        change = true;
                         break;
                     case H: // higher octaves
                         noise.setFractalOctaves((octaves = octaves + 1 & 7) + 1);
+                        change = true;
                         break;
                     case L: // lower octaves
                         noise.setFractalOctaves((octaves = octaves + 7 & 7) + 1);
+                        change = true;
                         break;
                     case I: // inverse mode
                         if (inverse = !inverse) {
@@ -233,18 +251,25 @@ public class Sonorant extends ApplicationAdapter {
                             noise.setFractalLacunarity(2f);
                             noise.setFractalGain(0.5f);
                         }
+                        change = true;
                         break;
                     case K: // sKip
                         startTime -= 1000000L;
                         break;
                     case W: // whirl, like a spiral
                         noise.setFractalSpiral(!noise.isFractalSpiral());
+                        change = true;
                         break;
                     case Q:
                     case ESCAPE: {
                         Gdx.app.exit();
                     }
                     break;
+                }
+                if(change){
+                    buildKernel();
+                    ArrayTools.fill(basePigment, 0f);
+                    ArrayTools.fill(previousPigment, 0f);
                 }
                 return true;
             }
@@ -258,18 +283,6 @@ public class Sonorant extends ApplicationAdapter {
         renderer.begin(view.getCamera().combined, GL_POINTS);
         float bright, nf = noise.getFrequency(), c = (paused ? startTime
                 : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf;
-
-        float hue = (TimeUtils.millis() & 4095) * 0x1p-12f;
-        colorList.clear();
-        ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolations.smooth,
-                DescriptiveColor.oklabByHSL(0.05f + hue, 0.85f, 0.2f, 1f),
-                DescriptiveColor.oklabByHSL(0.02f + hue, 0.95f, 0.4f, 1f),
-                DescriptiveColor.oklabByHSL(0.10f + hue, 1f, 0.55f, 1f),
-                DescriptiveColor.oklabByHSL(0.08f + hue, 0.7f, 0.8f, 1f)
-        ));
-        for (int i = 0; i < 256; i++) {
-            colorFloats[i] = BitConversion.reversedIntBitsToFloat(colorList.get(i) & -2);
-        }
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
