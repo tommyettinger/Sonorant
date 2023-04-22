@@ -6,7 +6,6 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
-import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -17,9 +16,11 @@ import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.FastGif;
 import com.github.tommyettinger.anim8.PaletteReducer;
 import com.github.tommyettinger.digital.BitConversion;
+import com.github.tommyettinger.digital.TrigTools;
 import com.github.tommyettinger.ds.IntList;
 import com.github.yellowstonegames.core.ColorGradients;
 import com.github.yellowstonegames.core.DescriptiveColor;
+import com.github.yellowstonegames.core.Interpolations;
 import com.github.yellowstonegames.grid.FlawedPointHash;
 import com.github.yellowstonegames.grid.IPointHash;
 import com.github.yellowstonegames.grid.IntPointHash;
@@ -32,15 +33,13 @@ import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
  */
 public class Sonorant extends ApplicationAdapter {
 
-    private final Noise noise = new Noise(322420472, 0.0625f);
+    private final Noise noise = new Noise(1, 0.0625f);
     private final IntPointHash iph = new IntPointHash();
     private final FlawedPointHash.CubeHash cube = new FlawedPointHash.CubeHash(1, 64);
     private final IPointHash[] pointHashes = new IPointHash[] {iph, cube};
     private int hashIndex = 0;
-    private static final int MODE_LIMIT = 22;
-    private int mode = 21;
-    private int divisions = 0;
     private int octaves = 3;
+    private int divisions = 2;
     private float freq = 0.125f;
     private boolean inverse;
     private boolean paused;
@@ -49,17 +48,19 @@ public class Sonorant extends ApplicationAdapter {
 //    private static final int width = 400, height = 400;
 //    private static final int width = 512, height = 512;
     public static final int width = 256, height = 256;
-    IntList colorList = new IntList(256);
-    float[] colorFloats = new float[256];
+    private IntList colorList = new IntList(256);
+    private float[] colorFloats = new float[256];
+    private final float[][] kernel = new float[64][64];
 
     private final float[][] basePigment = new float[width][height];
-    private InputAdapter input;
+    private final float[][] pigment = new float[width][height];
+    private final float[][] previousPigment = new float[width][height];
 
     private Viewport view;
     private long startTime;
 
     private FastGif gif;
-    private Array<Pixmap> frames = new Array<>(256);
+    private final Array<Pixmap> frames = new Array<>(256);
 
     public static float basicPrepare(float n)
     {
@@ -70,13 +71,43 @@ public class Sonorant extends ApplicationAdapter {
         return Math.min(Math.max(n * 0.5f + 0.5f, 0f), 1f);
     }
 
+    public void buildKernel() {
+        int oldFractalType = noise.getFractalType();
+        noise.setFractalType(Noise.RIDGED_MULTI);
+        for (int x = 0; x < 64; x++) {
+            float distX = x - 31.5f;
+            for (int y = 0; y < 64; y++) {
+                float distY = y - 31.5f;
+                float len = (float) Math.sqrt(distX * distX + distY * distY);
+                float window = TrigTools.cosTurns(len * (0.25f / 31.5f));
+                if(window <= 0.0f) {
+                    kernel[x][y] = 0f;
+                    continue;
+                }
+
+                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions);
+                float shrunk = len / (3f + divisions);
+                len *= 0x1p-8f;
+                int flip = -((int)theta & 1 & divisions) | 1;
+                theta *= flip;
+                kernel[x][y] = window * noise.getConfiguredNoise(
+                        TrigTools.cosTurns(theta) * shrunk,
+                        TrigTools.sinTurns(theta) * shrunk,
+                        TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f);
+            }
+        }
+        noise.setFractalType(oldFractalType);
+    }
+
     @Override
     public void create() {
         noise.setNoiseType(Noise.FOAM_FRACTAL);
         noise.setPointHash(pointHashes[hashIndex]);
 
+        buildKernel();
+
         gif = new FastGif();
-        gif.setDitherAlgorithm(Dithered.DitherAlgorithm.ROBERTS);
+        gif.setDitherAlgorithm(Dithered.DitherAlgorithm.BLUE_NOISE);
         gif.setDitherStrength(0.2f);
         // Ugh, this is ugly.
         gif.palette = new PaletteReducer(
@@ -114,7 +145,7 @@ public class Sonorant extends ApplicationAdapter {
                         0xF0F0F0FF, 0xF1F1F1FF, 0xF2F2F2FF, 0xF3F3F3FF, 0xF4F4F4FF, 0xF5F5F5FF, 0xF6F6F6FF, 0xF7F7F7FF,
                         0xF8F8F8FF, 0xF9F9F9FF, 0xFAFAFAFF, 0xFBFBFBFF, 0xFCFCFCFF, 0xFDFDFDFF, 0xFEFEFEFF, 0xFFFFFFFF,
                 });
-        IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolation.smooth::apply,
+        IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolations.smooth,
                 // cool blue
                 DescriptiveColor.oklabByHSL(0.68f, 0.85f, 0.2f, 1f),
                 DescriptiveColor.oklabByHSL(0.70f, 0.95f, 0.4f, 1f),
@@ -131,19 +162,12 @@ public class Sonorant extends ApplicationAdapter {
         startTime = TimeUtils.millis();
         renderer = new ImmediateModeRenderer20(width * height * 2, false, true, 0);
         view = new ScreenViewport();
-        input = new InputAdapter(){
+
+        InputAdapter input = new InputAdapter() {
             @Override
             public boolean keyUp(int keycode) {
                 int s;
-                long ls;
                 switch (keycode) {
-                    case MINUS:
-                        mode = (mode + MODE_LIMIT - 1) % MODE_LIMIT;
-                        break;
-                    case EQUALS:
-                        mode++;
-                        mode %= MODE_LIMIT;
-                        break;
                     case SPACE:
                         paused = !paused;
                         break;
@@ -151,24 +175,25 @@ public class Sonorant extends ApplicationAdapter {
                         startTime--;
                         break;
                     case E: //earlier seed
-                        s = (int)(ls = noise.getSeed() - 1);
+                        s = (int) (noise.getSeed() - 1);
                         noise.setSeed(s);
                         cube.setState(s);
                         System.out.println("Using seed " + s);
                         break;
                     case S: //seed after
-                        s = (int)(ls = noise.getSeed() + 1);
+                        s = (int) (noise.getSeed() + 1);
                         noise.setSeed(s);
                         cube.setState(s);
                         System.out.println("Using seed " + s);
                         break;
                     case N: // noise type
-                        if(mode == 0 || mode >= 12)
-                            noise.setNoiseType((noise.getNoiseType() + (UIUtils.shift() ? 17 : 1)) % 18);
+                        noise.setNoiseType((noise.getNoiseType() + (UIUtils.shift() ? 17 : 1)) % 18);
                         break;
-                    case ENTER:
-                    case B: //Blur
+                    case B: // blur
                         noise.setSharpness(noise.getSharpness() + (UIUtils.shift() ? 0.05f : -0.05f));
+                        break;
+                    case D: // divisions
+                        divisions = (divisions + (UIUtils.shift() ? 9 : 1)) % 10;
                         break;
                     case F: // frequency
                         noise.setFrequency(freq *= (UIUtils.shift() ? 1.25f : 0.8f));
@@ -221,7 +246,7 @@ public class Sonorant extends ApplicationAdapter {
 
         float hue = (TimeUtils.millis() & 4095) * 0x1p-12f;
         colorList.clear();
-        ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolation.smooth::apply,
+        ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolations.smooth,
                 DescriptiveColor.oklabByHSL(0.05f + hue, 0.85f, 0.2f, 1f),
                 DescriptiveColor.oklabByHSL(0.02f + hue, 0.95f, 0.4f, 1f),
                 DescriptiveColor.oklabByHSL(0.10f + hue, 1f, 0.55f, 1f),
@@ -233,10 +258,9 @@ public class Sonorant extends ApplicationAdapter {
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                bright =
-                        (basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, c) * 0x1p-6f, 0f), 0.25f))
-                * 255.999f
-                ;
+                basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, c) * 0x1p-6f, 0f), 0.25f);
+
+                bright = basePigment[x][y] * 255.999f;
                 renderer.color(colorFloats[(int)bright]);
 
                 renderer.vertex(x, y, 0);
@@ -260,7 +284,7 @@ public class Sonorant extends ApplicationAdapter {
 
 
             Gdx.files.local("out/").mkdirs();
-            String ser = noise.serializeToString() + "_" + divisions + "_" + System.currentTimeMillis();
+            String ser = noise.serializeToString() + "_" + System.currentTimeMillis();
             System.out.println(ser);
             gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
             for (int i = 0; i < frames.size; i++) {

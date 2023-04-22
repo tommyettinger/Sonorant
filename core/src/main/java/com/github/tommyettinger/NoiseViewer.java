@@ -239,9 +239,9 @@ public class NoiseViewer extends ApplicationAdapter {
         float bright, nf = noise.getFrequency(), c = (paused ? startTime
                 : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf;
         for (int x = 0; x < width; x++) {
-            float distX = x - (width >>> 1);
+            float distX = x - (width - 1) * 0.5f;
             for (int y = 0; y < height; y++) {
-                float distY = y - (height >>> 1);
+                float distY = y - (height - 1) * 0.5f;
                 float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x3p-8f);
                 float len = (float) Math.sqrt(distX * distX + distY * distY);
                 float shrunk = len / (3f + divisions);
@@ -259,9 +259,9 @@ public class NoiseViewer extends ApplicationAdapter {
                 int w = 256, h = 256;
                 Pixmap p = new Pixmap(w, h, Pixmap.Format.RGBA8888);
                 for (int x = 0; x < width; x++) {
-                    float distX = x - (width >>> 1);
+                    float distX = x - (width - 1) * 0.5f;
                     for (int y = 0; y < height; y++) {
-                        float distY = y - (height >>> 1);
+                        float distY = y - (height - 1) * 0.5f;
                         float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x3p-8f);
                         float len = (float) Math.sqrt(distX * distX + distY * distY);
                         float shrunk = len / (3f + divisions);
