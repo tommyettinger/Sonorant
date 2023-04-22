@@ -53,8 +53,8 @@ public class Sonorant extends ApplicationAdapter {
     private final float[][] kernel = new float[64][64];
 
     private final float[][] basePigment = new float[width][height];
-    private final float[][] pigment = new float[width][height];
-    private final float[][] previousPigment = new float[width][height];
+    private float[][] pigment = new float[width][height];
+    private float[][] previousPigment = new float[width][height];
 
     private Viewport view;
     private long startTime;
@@ -84,6 +84,7 @@ public class Sonorant extends ApplicationAdapter {
                     kernel[x][y] = 0f;
                     continue;
                 }
+                window *= window; // makes a Hann window
 
                 float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions);
                 float shrunk = len / (3f + divisions);
@@ -97,6 +98,17 @@ public class Sonorant extends ApplicationAdapter {
             }
         }
         noise.setFractalType(oldFractalType);
+    }
+
+    public float kernelSum(final float[][] from, int x, int y) {
+        float sum = 0f;
+        final int w = from.length, h = from[0].length;
+        for (int i = 0, xx = Math.max(0, x); i < 64 && xx < w; i++, xx++) {
+            for (int j = 0, yy = Math.max(0, y); j < 64 && yy < h; j++, yy++) {
+                sum += kernel[i][j] * from[xx][yy];
+            }
+        }
+        return sum;
     }
 
     @Override
@@ -258,14 +270,23 @@ public class Sonorant extends ApplicationAdapter {
 
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
-                basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, c) * 0x1p-6f, 0f), 0.25f);
-
-                bright = basePigment[x][y] * 255.999f;
+                previousPigment[x][y] +=
+                        (basePigment[x][y] = Math.min(Math.max(basePigment[x][y] + noise.getConfiguredNoise(x, y, c) * 0x1p-6f, -0.125f), 0.125f));
+            }
+        }
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                pigment[x][y] = Math.min(Math.max(previousPigment[x][y] +
+                        TrigTools.sin(kernelSum(previousPigment, x, y)) * 0x1p-4f, 0f), 1f);
+                bright = pigment[x][y] * 255;
                 renderer.color(colorFloats[(int)bright]);
 
                 renderer.vertex(x, y, 0);
             }
         }
+        float[][] old = previousPigment;
+        previousPigment = pigment;
+        pigment = old;
         if (Gdx.input.isKeyJustPressed(W)) {
             for (int ct = 0; ct < 256; ct++) {
                 int w = 256, h = 256;
