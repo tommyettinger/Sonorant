@@ -102,9 +102,12 @@ public class Sonorant extends ApplicationAdapter {
 
     public float kernelSum(final float[][] from, int x, int y) {
         float sum = 0f;
-        final int w = from.length, h = from[0].length;
-        for (int i = 0, xx = Math.max(0, x); i < 64 && xx < w; i++, xx++) {
-            for (int j = 0, yy = Math.max(0, y); j < 64 && yy < h; j++, yy++) {
+        final int w = from.length, h = from[0].length,
+                startX = Math.max(0, x - 32), startY = Math.max(0, y - 32),
+                startI = startX - (x-32),
+                startJ = startY - (y-32);
+        for (int i = startI, xx = startX; i < 64 && xx < w; i++, xx++) {
+            for (int j = startJ, yy = startY; j < 64 && yy < h; j++, yy++) {
                 sum += kernel[i][j] * from[xx][yy];
             }
         }
