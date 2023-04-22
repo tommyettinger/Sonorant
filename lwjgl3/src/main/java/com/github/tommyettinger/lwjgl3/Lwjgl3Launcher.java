@@ -2,7 +2,6 @@ package com.github.tommyettinger.lwjgl3;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.github.tommyettinger.NoiseViewer;
 import com.github.tommyettinger.Sonorant;
 
 /** Launches the desktop (LWJGL3) application. */

@@ -17,6 +17,7 @@ import com.github.tommyettinger.anim8.FastGif;
 import com.github.tommyettinger.anim8.PaletteReducer;
 import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.IntList;
+import com.github.tommyettinger.random.LineWobble;
 import com.github.yellowstonegames.core.ColorGradients;
 import com.github.yellowstonegames.core.DescriptiveColor;
 import com.github.yellowstonegames.core.Interpolations;
@@ -302,7 +303,7 @@ public class Sonorant extends ApplicationAdapter {
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 pigment[x][y] = Math.min(Math.max(previousPigment[x][y] +
-                        TrigTools.sin(kernelSum(previousPigment, x, y) * 0x1p-4f) * 0.25f, 0f), 1f);
+                        LineWobble.wobble(noise.getSeed(), kernelSum(previousPigment, x, y) * 0x1p-4f) * 0.25f, 0f), 1f);
                 bright = pigment[x][y] * 255;
                 renderer.color(colorFloats[(int)bright]);
 
