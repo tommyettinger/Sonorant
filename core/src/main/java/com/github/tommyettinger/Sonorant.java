@@ -14,6 +14,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.FastGif;
+import com.github.tommyettinger.anim8.FastPNG;
 import com.github.tommyettinger.anim8.PaletteReducer;
 import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.IntList;
@@ -65,6 +66,7 @@ public class Sonorant extends ApplicationAdapter {
     private int steps;
 
     private FastGif gif;
+    private FastPNG png;
     private final Array<Pixmap> frames = new Array<>(256);
 
     public static float basicPrepare(float n)
@@ -148,6 +150,7 @@ public class Sonorant extends ApplicationAdapter {
         buildKernel();
 
         gif = new FastGif();
+        png = new FastPNG();
         gif.setDitherAlgorithm(Dithered.DitherAlgorithm.BLUE_NOISE);
         gif.setDitherStrength(0.2f);
         // Ugh, this is ugly.
@@ -237,6 +240,10 @@ public class Sonorant extends ApplicationAdapter {
                         noise.setFrequency(freq *= (UIUtils.shift() ? 1.25f : 0.8f));
                         change = true;
                         break;
+                    case M: // mutation
+                        noise.setMutation(noise.getMutation() + (UIUtils.shift() ? -0.125f : 0.125f));
+                        change = true;
+                        break;
                     case R: // fRactal type
                         noise.setFractalType((noise.getFractalType() + (UIUtils.shift() ? 3 : 1)) & 3);
                         change = true;
@@ -262,9 +269,6 @@ public class Sonorant extends ApplicationAdapter {
                             noise.setFractalGain(0.5f);
                         }
                         change = true;
-                        break;
-                    case K: // sKip
-                        steps += 1000;
                         break;
                     case W: // whirl, like a spiral
                         noise.setFractalSpiral(!noise.isFractalSpiral());
@@ -296,59 +300,78 @@ public class Sonorant extends ApplicationAdapter {
     }
 
     public void putMap() {
-        if (Gdx.input.isKeyPressed(M))
-            noise.setMutation(noise.getMutation() + (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         renderer.begin(view.getCamera().combined, GL_POINTS);
-        float bright, nf = noise.getFrequency(), c = (paused ? steps : ++steps) * 0.25f / nf;
-
-        if(!MathTools.isZero(baseContribution)) {
-            for (int x = 0; x < width; x++) {
-                float xx = x / (float) width;
-                for (int y = 0; y < height; y++) {
-                    float yy = y / (float) height;
-                    previousPigment[x][y] += noise.getConfiguredNoise(
-                            cosTurns(xx) * 32f, sinTurns(xx) * 32f, cosTurns(yy) * 32f, sinTurns(yy) * 32f, c) * baseContribution;
+        if(Gdx.input.isKeyPressed(K)){
+            for (int x = 0, xa = width - kernelSize >> 1; x < kernelSize; x++, xa++) {
+                for (int y = 0, ya = height - kernelSize >> 1; y < kernelSize; y++, ya++) {
+                    float color = colorFloats[(int)(kernel[x][y] * 127.5f + 127.5f)];
+                    renderer.color(color);
+                    renderer.vertex(xa, ya, 0);
                 }
             }
         }
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                pigment[x][y] = Math.min(Math.max(previousPigment[x][y] +
-                        LineWobble.wobble(noise.getSeed(), kernelSum(previousPigment, x, y) * 0x1p-4f) * 0.25f, 0f), 1f);
-                bright = (alternate && (steps & 1) == 1 ? Math.min(Math.max(previousPigment[x][y], 0), 1) : pigment[x][y]) * 255;
-                renderer.color(colorFloats[(int)bright]);
+        else {
+            float bright, nf = noise.getFrequency(), c = (paused ? steps : ++steps) * 0.25f / nf;
 
-                renderer.vertex(x, y, 0);
-            }
-        }
-        float[][] old = previousPigment;
-        previousPigment = pigment;
-        pigment = old;
-        if (Gdx.input.isKeyJustPressed(W)) {
-            for (int ct = 0; ct < 256; ct++) {
-                int w = 256, h = 256;
-                float cf = ct * 0x1p-4f / nf;
-                Pixmap p = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+            if (!MathTools.isZero(baseContribution)) {
                 for (int x = 0; x < width; x++) {
+                    float xx = x / (float) width;
                     for (int y = 0; y < height; y++) {
-                        float color = (previousPigment[x][y] = Math.min(Math.max(previousPigment[x][y] + noise.getConfiguredNoise(x, y, cf) * 0x1p-6f, 0f), 0.25f)) * 4f;
-                        p.setColor(color, color, color, 1f);
-                        p.drawPixel(x, y);
+                        float yy = y / (float) height;
+                        previousPigment[x][y] += noise.getConfiguredNoise(
+                                cosTurns(xx) * 32f, sinTurns(xx) * 32f, cosTurns(yy) * 32f, sinTurns(yy) * 32f, c) * baseContribution;
                     }
                 }
-                frames.add(p);
             }
-            colorList.toArray(gif.palette.paletteArray);
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    pigment[x][y] = Math.min(Math.max(previousPigment[x][y] +
+                            LineWobble.wobble(noise.getSeed(), kernelSum(previousPigment, x, y) * 0.07654f) * 0.25f, 0f), 1f);
+                    bright = (alternate && (steps & 1) == 1 ? Math.min(Math.max(previousPigment[x][y], 0), 1) : pigment[x][y]) * 255;
+                    renderer.color(colorFloats[(int) bright]);
 
-
-            Gdx.files.local("out/").mkdirs();
-            String ser = noise.serializeToString() + "_" + TimeUtils.millis();
-            System.out.println(ser);
-            gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
-            for (int i = 0; i < frames.size; i++) {
-                frames.get(i).dispose();
+                    renderer.vertex(x, y, 0);
+                }
             }
-            frames.clear();
+            float[][] old = previousPigment;
+            previousPigment = pigment;
+            pigment = old;
+            if (Gdx.input.isKeyJustPressed(W)) {
+                for (int ct = 0; ct < 256; ct++) {
+                    int w = 256, h = 256;
+                    float cf = ct * 0x1p-4f / nf;
+                    Pixmap p = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+                    for (int x = 0; x < w; x++) {
+                        for (int y = 0; y < h; y++) {
+                            float color = (previousPigment[x][y] = Math.min(Math.max(previousPigment[x][y] + noise.getConfiguredNoise(x, y, cf) * 0x1p-6f, 0f), 0.25f)) * 4f;
+                            p.setColor(color, color, color, 1f);
+                            p.drawPixel(x, y);
+                        }
+                    }
+                    frames.add(p);
+                }
+                colorList.toArray(gif.palette.paletteArray);
+
+                Gdx.files.local("out/").mkdirs();
+                String ser = noise.serializeToString() + "_" + TimeUtils.millis();
+                System.out.println(ser);
+                gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
+                for (int i = 0; i < frames.size; i++) {
+                    frames.get(i).dispose();
+                }
+                frames.clear();
+
+                Pixmap kernelP = new Pixmap(kernelSize, kernelSize, Pixmap.Format.RGBA8888);
+                for (int x = 0; x < kernelSize; x++) {
+                    for (int y = 0; y < kernelSize; y++) {
+                        float color = kernel[x][y] * 0.5f + 0.5f;
+                        kernelP.setColor(color, color, color, 1f);
+                        kernelP.drawPixel(x, y);
+                    }
+                }
+                png.write(Gdx.files.local("out/" + ser + "_kernel.gif"), kernelP);
+                kernelP.dispose();
+            }
         }
         renderer.end();
     }

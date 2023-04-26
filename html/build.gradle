@@ -30,18 +30,19 @@ gwt {
 }
 
 dependencies {
+  implementation "com.github.tommyettinger:gdx-backend-gwt:1.1100.1"
+  implementation "com.github.tommyettinger:gdx-backend-gwt:1.1100.1:sources"
+  implementation "com.google.jsinterop:jsinterop-annotations:2.0.0:sources"
+
   implementation "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
   implementation "com.github.tommyettinger:anim8-gdx:$anim8Version:sources"
   implementation "com.github.tommyettinger:digital:$digitalVersion:sources"
   implementation "com.github.tommyettinger:formic:$formicVersion:sources"
   implementation "com.github.tommyettinger:funderby:$funderbyVersion:sources"
-  implementation "com.github.tommyettinger:gdx-backend-gwt:1.1100.1"
-  implementation "com.github.tommyettinger:gdx-backend-gwt:1.1100.1:sources"
   implementation "com.github.tommyettinger:jdkgdxds:$jdkgdxdsVersion:sources"
   implementation "com.github.tommyettinger:jdkgdxds_interop:$jdkgdxdsInteropVersion:sources"
   implementation "com.github.tommyettinger:juniper:$juniperVersion:sources"
   implementation "com.github.tommyettinger:regexodus:$regExodusVersion:sources"
-  implementation "com.google.jsinterop:jsinterop-annotations:2.0.0:sources"
   implementation "com.github.yellowstonegames.SquidSquad:SquidCore:$squidSquadVersion:sources"
   implementation "com.github.yellowstonegames.SquidSquad:SquidGrid:$squidSquadVersion:sources"
   implementation "com.github.yellowstonegames.SquidSquad:SquidStoreCore:$squidSquadVersion:sources"
