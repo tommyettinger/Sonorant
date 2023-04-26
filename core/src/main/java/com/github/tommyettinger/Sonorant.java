@@ -337,17 +337,37 @@ public class Sonorant extends ApplicationAdapter {
             previousPigment = pigment;
             pigment = old;
             if (Gdx.input.isKeyJustPressed(W)) {
+                ArrayTools.fill(previousPigment, 0f);
+
+                int w = 256, h = 256;
                 for (int ct = 0; ct < 256; ct++) {
-                    int w = 256, h = 256;
-                    float cf = ct * 0x1p-4f / nf;
+                    float cf = ct * 0.25f / nf;
                     Pixmap p = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-                    for (int x = 0; x < w; x++) {
-                        for (int y = 0; y < h; y++) {
-                            float color = (previousPigment[x][y] = Math.min(Math.max(previousPigment[x][y] + noise.getConfiguredNoise(x, y, cf) * 0x1p-6f, 0f), 0.25f)) * 4f;
-                            p.setColor(color, color, color, 1f);
+
+                    if(ct < 32) {
+                        for (int x = 0; x < width; x++) {
+                            float xx = x / (float) width;
+                            for (int y = 0; y < height; y++) {
+                                float yy = y / (float) height;
+                                previousPigment[x][y] += noise.getConfiguredNoise(
+                                        cosTurns(xx) * 32f, sinTurns(xx) * 32f, cosTurns(yy) * 32f, sinTurns(yy) * 32f, cf) * baseContribution;
+                            }
+                        }
+                    }
+                    else baseContribution = 0f;
+
+                    for (int x = 0; x < width; x++) {
+                        for (int y = 0; y < height; y++) {
+                            pigment[x][y] = Math.min(Math.max(previousPigment[x][y] +
+                                    LineWobble.wobble(noise.getSeed(), kernelSum(previousPigment, x, y) * 0.07654f) * 0.25f, 0f), 1f);
+                            bright = (alternate && (ct & 1) == 1 ? Math.min(Math.max(previousPigment[x][y], 0), 1) : pigment[x][y]) * 255;
+                            p.setColor(colorList.get((int) bright));
                             p.drawPixel(x, y);
                         }
                     }
+                    old = previousPigment;
+                    previousPigment = pigment;
+                    pigment = old;
                     frames.add(p);
                 }
                 colorList.toArray(gif.palette.paletteArray);
@@ -371,6 +391,7 @@ public class Sonorant extends ApplicationAdapter {
                 }
                 png.write(Gdx.files.local("out/" + ser + "_kernel.gif"), kernelP);
                 kernelP.dispose();
+                baseContribution = 0.125f;
             }
         }
         renderer.end();
