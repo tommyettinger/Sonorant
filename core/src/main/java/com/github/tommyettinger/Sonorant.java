@@ -44,6 +44,7 @@ public class Sonorant extends ApplicationAdapter {
     private int octaves = 3;
     private int divisions = 2;
     private float freq = 0.125f;
+    private float kernelFrequency = 0.25f;
     private float baseContribution = 0.125f;
     private boolean inverse;
     private boolean paused;
@@ -80,9 +81,9 @@ public class Sonorant extends ApplicationAdapter {
 
     public void buildKernel() {
         int oldFractalType = noise.getFractalType();
-//        float oldFrequency = noise.getFrequency();
+        float oldFrequency = noise.getFrequency();
         noise.setFractalType(Noise.RIDGED_MULTI);
-//        noise.setFrequency(256f * oldFrequency / kernelSize);
+        noise.setFrequency(kernelFrequency);
         float angleAdj = Hasher.randomize3Float(~noise.getSeed());
         float hs = (kernelSize-1)*0.5f;
         for (int x = 0; x < kernelSize; x++) {
@@ -109,7 +110,7 @@ public class Sonorant extends ApplicationAdapter {
             }
         }
         noise.setFractalType(oldFractalType);
-//        noise.setFrequency(oldFrequency);
+        noise.setFrequency(oldFrequency);
     }
 
     public float kernelSum(final float[][] from, int x, int y) {
@@ -237,7 +238,8 @@ public class Sonorant extends ApplicationAdapter {
                         change = true;
                         break;
                     case F: // frequency
-                        noise.setFrequency(freq *= (UIUtils.shift() ? 1.25f : 0.8f));
+                        if(UIUtils.ctrl()) kernelFrequency *= (UIUtils.shift() ? 1.25f : 0.8f);
+                        else noise.setFrequency(freq *= (UIUtils.shift() ? 1.25f : 0.8f));
                         change = true;
                         break;
                     case M: // mutation
