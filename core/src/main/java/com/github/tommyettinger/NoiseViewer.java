@@ -41,6 +41,7 @@ public class NoiseViewer extends ApplicationAdapter {
     private Interpolations.Interpolator interpolator = interpolators[interpolatorIndex];
     private final CyclicNoise cyclic = new CyclicNoise(noise.getSeed(), 1);
     private float hue = 0;
+    private float variance = 1f;
     private int divisions = 0;
     private int octaves = 3;
     private float freq = 0.125f;
@@ -113,7 +114,7 @@ public class NoiseViewer extends ApplicationAdapter {
                         0xF8F8F8FF, 0xF9F9F9FF, 0xFAFAFAFF, 0xFBFBFBFF, 0xFCFCFCFF, 0xFDFDFDFF, 0xFEFEFEFF, 0xFFFFFFFF,
                 });
 
-        randomizeColor(TimeUtils.millis());
+        randomizeColor(Hasher.randomize3Float(TimeUtils.millis()));
         colorList.toArray(gif.palette.paletteArray);
 //
 //        IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolation.smooth::apply,
@@ -143,7 +144,11 @@ public class NoiseViewer extends ApplicationAdapter {
                         paused = !paused;
                         break;
                     case C:
-                        randomizeColor(TimeUtils.millis());
+                        randomizeColor(Hasher.randomize3Float(TimeUtils.millis()));
+                        break;
+                    case V: // color hue variance
+                        variance += (UIUtils.shift() ? -0.25f : 0.25f);
+                        randomizeColor(hue);
                         break;
                     case E: //earlier seed
                         s = (int)(ls = noise.getSeed() - 1);
@@ -279,7 +284,7 @@ public class NoiseViewer extends ApplicationAdapter {
 
 
             Gdx.files.local("out/").mkdirs();
-            String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + System.currentTimeMillis();
+            String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis();
             System.out.println(ser);
             gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
             for (int i = 0; i < frames.size; i++) {
@@ -305,14 +310,14 @@ public class NoiseViewer extends ApplicationAdapter {
         view.apply(true);
     }
 
-    public void randomizeColor(long seed) {
-        hue = Hasher.randomize3Float(seed);
+    public void randomizeColor(float h) {
+        hue = h;
         colorList.clear();
         ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolations.smooth,
-                DescriptiveColor.oklabByHSL(0.05f + hue, 0.85f, 0.2f, 1f),
-                DescriptiveColor.oklabByHSL(0.02f + hue, 0.95f, 0.4f, 1f),
-                DescriptiveColor.oklabByHSL(0.10f + hue, 1f, 0.55f, 1f),
-                DescriptiveColor.oklabByHSL(0.08f + hue, 0.7f, 0.8f, 1f)
+                DescriptiveColor.oklabByHSL(variance * 0.05f + hue, 0.85f, 0.2f, 1f),
+                DescriptiveColor.oklabByHSL(variance * 0.02f + hue, 0.95f, 0.4f, 1f),
+                DescriptiveColor.oklabByHSL(variance * 0.10f + hue, 1f, 0.55f, 1f),
+                DescriptiveColor.oklabByHSL(variance * 0.08f + hue, 0.7f, 0.8f, 1f)
         ));
         for (int i = 0; i < 256; i++) {
             colorFloats[i] = BitConversion.reversedIntBitsToFloat(colorList.get(i) & -2);
