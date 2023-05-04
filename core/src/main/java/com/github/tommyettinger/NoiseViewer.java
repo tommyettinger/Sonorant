@@ -35,8 +35,11 @@ public class NoiseViewer extends ApplicationAdapter {
     private final IntPointHash iph = new IntPointHash();
     private final FlawedPointHash.CubeHash cube = new FlawedPointHash.CubeHash(1, 64);
     private final IPointHash[] pointHashes = new IPointHash[] {iph, cube};
-    private final CyclicNoise cyclic = new CyclicNoise(noise.getSeed(), 1);
     private int hashIndex = 0;
+    private final Interpolations.Interpolator[] interpolators = Interpolations.getInterpolatorArray();
+    private int interpolatorIndex = 0;
+    private Interpolations.Interpolator interpolator = interpolators[interpolatorIndex];
+    private final CyclicNoise cyclic = new CyclicNoise(noise.getSeed(), 1);
     private float hue = 0;
     private int divisions = 0;
     private int octaves = 3;
@@ -183,14 +186,16 @@ public class NoiseViewer extends ApplicationAdapter {
                         noise.setFractalOctaves((octaves = octaves + 7 & 7) + 1);
                         cyclic.setOctaves(octaves + 1);
                         break;
-                    case I: // inverse mode
-                        if (inverse = !inverse) {
-                            noise.setFractalLacunarity(0.5f);
-                            noise.setFractalGain(2f);
-                        } else {
-                            noise.setFractalLacunarity(2f);
-                            noise.setFractalGain(0.5f);
-                        }
+                    case I: // interpolator
+                        interpolatorIndex = (interpolatorIndex + (UIUtils.shift() ? interpolators.length - 1 : 1)) % interpolators.length;
+                        interpolator = interpolators[interpolatorIndex];
+//                        if (inverse = !inverse) {
+//                            noise.setFractalLacunarity(0.5f);
+//                            noise.setFractalGain(2f);
+//                        } else {
+//                            noise.setFractalLacunarity(2f);
+//                            noise.setFractalGain(0.5f);
+//                        }
                         break;
                     case K: // sKip
                         startTime -= 1000000L;
@@ -228,9 +233,10 @@ public class NoiseViewer extends ApplicationAdapter {
                 theta *= flip;
                 bright =
 //                                Interpolations.pow2In
-                        Interpolations.biasGainMostlyLow
-                                .apply(basicPrepare(noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
-                        TrigTools.sinTurns(theta) * shrunk, TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f)));
+                        Math.min(Math.max(interpolator.apply(basicPrepare(
+                                noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
+                                        TrigTools.sinTurns(theta) * shrunk, TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f)
+                        )), 0), 1);
                 renderer.color(colorFloats[(int) (bright * 255.99f)]);
                 renderer.vertex(x, y, 0);
             }
@@ -251,9 +257,10 @@ public class NoiseViewer extends ApplicationAdapter {
                         theta *= flip;
                         bright =
 //                                Interpolations.pow2In
-                                Interpolations.biasGainMostlyLow
-                                        .apply(noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
-                                TrigTools.sinTurns(theta) * shrunk, TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f) * 0.5f + 0.5f);
+                                Math.min(Math.max(interpolator.apply(basicPrepare(
+                                        noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
+                                                TrigTools.sinTurns(theta) * shrunk, TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f)
+                                )), 0), 1);
                         p.setColor(colorList.get((int) (bright * 255.99f)));
                         p.drawPixel(x, y);
                     }
@@ -272,7 +279,7 @@ public class NoiseViewer extends ApplicationAdapter {
 
 
             Gdx.files.local("out/").mkdirs();
-            String ser = noise.serializeToString() + "_" + divisions + "_" + hue + "_" + System.currentTimeMillis();
+            String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + System.currentTimeMillis();
             System.out.println(ser);
             gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
             for (int i = 0; i < frames.size; i++) {
