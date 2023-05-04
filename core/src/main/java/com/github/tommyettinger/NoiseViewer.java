@@ -280,8 +280,8 @@ public class NoiseViewer extends ApplicationAdapter {
 //                    DescriptiveColor.oklabByHSL(0.08f + hue, 0.7f, 0.8f, 1f)
 //            ));
 //            g.toArray(gif.palette.paletteArray);
-            colorList.toArray(gif.palette.paletteArray);
-
+//            colorList.toArray(gif.palette.paletteArray);
+            gif.palette.exact(colorList.items, colorList.size());
 
             Gdx.files.local("out/").mkdirs();
             String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis();
