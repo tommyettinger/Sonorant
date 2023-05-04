@@ -230,7 +230,7 @@ public class NoiseViewer extends ApplicationAdapter {
             float distX = x - (width - 1) * 0.5f;
             for (int y = 0; y < height; y++) {
                 float distY = y - (height - 1) * 0.5f;
-                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x3p-8f);
+                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f);
                 float len = (float) Math.sqrt(distX * distX + distY * distY);
                 float shrunk = len / (3f + divisions);
                 len = (len - c) * 0x1p-8f;
@@ -254,7 +254,7 @@ public class NoiseViewer extends ApplicationAdapter {
                     float distX = x - (width - 1) * 0.5f;
                     for (int y = 0; y < height; y++) {
                         float distY = y - (height - 1) * 0.5f;
-                        float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x3p-8f);
+                        float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x4p-8f);
                         float len = (float) Math.sqrt(distX * distX + distY * distY);
                         float shrunk = len / (3f + divisions);
                         len = (len - ct) * 0x1p-8f;
