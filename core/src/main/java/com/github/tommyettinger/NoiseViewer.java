@@ -6,7 +6,6 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
-import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
@@ -36,15 +35,9 @@ public class NoiseViewer extends ApplicationAdapter {
     private final IntPointHash iph = new IntPointHash();
     private final FlawedPointHash.CubeHash cube = new FlawedPointHash.CubeHash(1, 64);
     private final IPointHash[] pointHashes = new IPointHash[] {iph, cube};
-    private final PhantomNoise[] phantoms = new PhantomNoise[7];
-    private final TaffyNoise[] taffies = new TaffyNoise[7];
-    private final FlanNoise[] flans = new FlanNoise[7];
-    private final HighDimensionalValueNoise[] vals = new HighDimensionalValueNoise[7];
     private final CyclicNoise cyclic = new CyclicNoise(noise.getSeed(), 1);
     private int hashIndex = 0;
-    private static final int MODE_LIMIT = 22;
-    private int mode = 21;
-    float hue = 0;
+    private float hue = 0;
     private int divisions = 0;
     private int octaves = 3;
     private float freq = 0.125f;
@@ -78,7 +71,7 @@ public class NoiseViewer extends ApplicationAdapter {
         noise.setPointHash(pointHashes[hashIndex]);
 
         gif = new FastGif();
-        gif.setDitherAlgorithm(Dithered.DitherAlgorithm.ROBERTS);
+        gif.setDitherAlgorithm(Dithered.DitherAlgorithm.DODGY);
         gif.setDitherStrength(0.2f);
         // Ugh, this is ugly.
         gif.palette = new PaletteReducer(
@@ -143,13 +136,6 @@ public class NoiseViewer extends ApplicationAdapter {
                 int s;
                 long ls;
                 switch (keycode) {
-                    case MINUS:
-                        mode = (mode + MODE_LIMIT - 1) % MODE_LIMIT;
-                        break;
-                    case EQUALS:
-                        mode++;
-                        mode %= MODE_LIMIT;
-                        break;
                     case SPACE:
                         paused = !paused;
                         break;
@@ -161,11 +147,6 @@ public class NoiseViewer extends ApplicationAdapter {
                         noise.setSeed(s);
                         cube.setState(s);
                         cyclic.setSeed(ls);
-                        for (int i = 0; i < taffies.length; i++) {
-                            taffies[i].setSeed(ls);
-                            flans[i].setSeed(ls);
-                            vals[i].setSeed(ls);
-                        }
                         System.out.println("Using seed " + s);
                         break;
                     case S: //seed after
@@ -173,16 +154,10 @@ public class NoiseViewer extends ApplicationAdapter {
                         noise.setSeed(s);
                         cube.setState(s);
                         cyclic.setSeed(ls);
-                        for (int i = 0; i < taffies.length; i++) {
-                            taffies[i].setSeed(ls);
-                            flans[i].setSeed(ls);
-                            vals[i].setSeed(ls);
-                        }
                         System.out.println("Using seed " + s);
                         break;
                     case N: // noise type
-                        if(mode == 0 || mode >= 12)
-                            noise.setNoiseType((noise.getNoiseType() + (UIUtils.shift() ? 17 : 1)) % 18);
+                         noise.setNoiseType((noise.getNoiseType() + (UIUtils.shift() ? 17 : 1)) % 18);
                         break;
                     case ENTER:
                     case D: //dimension
