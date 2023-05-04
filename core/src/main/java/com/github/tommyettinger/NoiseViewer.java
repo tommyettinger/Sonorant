@@ -16,6 +16,8 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.FastGif;
 import com.github.tommyettinger.anim8.PaletteReducer;
+import com.github.tommyettinger.digital.BitConversion;
+import com.github.tommyettinger.digital.Hasher;
 import com.github.tommyettinger.digital.TrigTools;
 import com.github.tommyettinger.ds.IntList;
 import com.github.yellowstonegames.core.ColorGradients;
@@ -42,6 +44,7 @@ public class NoiseViewer extends ApplicationAdapter {
     private int hashIndex = 0;
     private static final int MODE_LIMIT = 22;
     private int mode = 21;
+    float hue = 0;
     private int divisions = 0;
     private int octaves = 3;
     private float freq = 0.125f;
@@ -53,7 +56,9 @@ public class NoiseViewer extends ApplicationAdapter {
 //    private static final int width = 512, height = 512;
     public static final int width = 256, height = 256;
 
-    private final float[][] colors = new float[width][height];
+    private IntList colorList = new IntList(256);
+    private float[] colorFloats = new float[256];
+
     private InputAdapter input;
 
     private Viewport view;
@@ -69,12 +74,6 @@ public class NoiseViewer extends ApplicationAdapter {
 
     @Override
     public void create() {
-        for (int i = 0; i < 7; i++) {
-            phantoms[i] = new PhantomNoise(noise.getSeed() + ~i * 55555555L, 2 + i);
-            taffies[i] = new TaffyNoise(noise.getSeed()+ ~i * 55555555L, 2 + i);
-            flans[i] = new FlanNoise(noise.getSeed()+ ~i * 55555555L, 2 + i);
-            vals[i] = new HighDimensionalValueNoise(noise.getSeed()+ ~i * 55555555L, 2 + i);
-        }
         noise.setNoiseType(Noise.TAFFY_FRACTAL);
         noise.setPointHash(pointHashes[hashIndex]);
 
@@ -117,19 +116,23 @@ public class NoiseViewer extends ApplicationAdapter {
                         0xF0F0F0FF, 0xF1F1F1FF, 0xF2F2F2FF, 0xF3F3F3FF, 0xF4F4F4FF, 0xF5F5F5FF, 0xF6F6F6FF, 0xF7F7F7FF,
                         0xF8F8F8FF, 0xF9F9F9FF, 0xFAFAFAFF, 0xFBFBFBFF, 0xFCFCFCFF, 0xFDFDFDFF, 0xFEFEFEFF, 0xFFFFFFFF,
                 });
-        IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolation.smooth::apply,
-                // cool blue
-                DescriptiveColor.oklabByHSL(0.68f, 0.85f, 0.2f, 1f),
-                DescriptiveColor.oklabByHSL(0.70f, 0.95f, 0.4f, 1f),
-                DescriptiveColor.oklabByHSL(0.62f, 1f, 0.55f, 1f),
-                DescriptiveColor.oklabByHSL(0.65f, 0.7f, 0.8f, 1f)
-                // rosy
-//                DescriptiveColor.oklabByHSL(0.98f, 0.85f, 0.2f, 1f),
-//                DescriptiveColor.oklabByHSL(0.00f, 0.95f, 0.4f, 1f),
-//                DescriptiveColor.oklabByHSL(0.02f, 1f, 0.55f, 1f),
-//                DescriptiveColor.oklabByHSL(0.01f, 0.7f, 0.8f, 1f)
-        ));
-        g.toArray(gif.palette.paletteArray);
+
+        randomizeColor(TimeUtils.millis());
+        colorList.toArray(gif.palette.paletteArray);
+//
+//        IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolation.smooth::apply,
+//                // cool blue
+//                DescriptiveColor.oklabByHSL(0.68f, 0.85f, 0.2f, 1f),
+//                DescriptiveColor.oklabByHSL(0.70f, 0.95f, 0.4f, 1f),
+//                DescriptiveColor.oklabByHSL(0.62f, 1f, 0.55f, 1f),
+//                DescriptiveColor.oklabByHSL(0.65f, 0.7f, 0.8f, 1f)
+//                // rosy
+////                DescriptiveColor.oklabByHSL(0.98f, 0.85f, 0.2f, 1f),
+////                DescriptiveColor.oklabByHSL(0.00f, 0.95f, 0.4f, 1f),
+////                DescriptiveColor.oklabByHSL(0.02f, 1f, 0.55f, 1f),
+////                DescriptiveColor.oklabByHSL(0.01f, 0.7f, 0.8f, 1f)
+//        ));
+//        g.toArray(gif.palette.paletteArray);
 
         startTime = TimeUtils.millis();
         renderer = new ImmediateModeRenderer20(width * height * 2, false, true, 0);
@@ -151,7 +154,7 @@ public class NoiseViewer extends ApplicationAdapter {
                         paused = !paused;
                         break;
                     case C:
-                        startTime--;
+                        randomizeColor(TimeUtils.millis());
                         break;
                     case E: //earlier seed
                         s = (int)(ls = noise.getSeed() - 1);
@@ -248,9 +251,12 @@ public class NoiseViewer extends ApplicationAdapter {
                 len = (len - c) * 0x1p-8f;
                 int flip = -((int)theta & 1 & divisions) | 1;
                 theta *= flip;
-                bright = Interpolations.pow2In.apply(basicPrepare(noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
+                bright =
+//                                Interpolations.pow2In
+                        Interpolations.biasGainMostlyLow
+                                .apply(basicPrepare(noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
                         TrigTools.sinTurns(theta) * shrunk, TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f)));
-                renderer.color(bright, bright, bright, 1f);
+                renderer.color(colorFloats[(int) (bright * 255.99f)]);
                 renderer.vertex(x, y, 0);
             }
         }
@@ -268,26 +274,30 @@ public class NoiseViewer extends ApplicationAdapter {
                         len = (len - ct) * 0x1p-8f;
                         int flip = -((int)theta & 1 & divisions) | 1;
                         theta *= flip;
-                        float color = Interpolations.pow2In.apply(noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
+                        bright =
+//                                Interpolations.pow2In
+                                Interpolations.biasGainMostlyLow
+                                        .apply(noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
                                 TrigTools.sinTurns(theta) * shrunk, TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f) * 0.5f + 0.5f);
-                        p.setColor(color, color, color, 1f);
+                        p.setColor(colorList.get((int) (bright * 255.99f)));
                         p.drawPixel(x, y);
                     }
                 }
                 frames.add(p);
             }
-            float hue = (TimeUtils.millis() & 1023) * 0x1p-10f;
-            IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolation.smooth::apply,
-                    DescriptiveColor.oklabByHSL(0.05f + hue, 0.85f, 0.2f, 1f),
-                    DescriptiveColor.oklabByHSL(0.02f + hue, 0.95f, 0.4f, 1f),
-                    DescriptiveColor.oklabByHSL(0.10f + hue, 1f, 0.55f, 1f),
-                    DescriptiveColor.oklabByHSL(0.08f + hue, 0.7f, 0.8f, 1f)
-            ));
-            g.toArray(gif.palette.paletteArray);
+//            float hue = (TimeUtils.millis() & 1023) * 0x1p-10f;
+//            IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolation.smooth::apply,
+//                    DescriptiveColor.oklabByHSL(0.05f + hue, 0.85f, 0.2f, 1f),
+//                    DescriptiveColor.oklabByHSL(0.02f + hue, 0.95f, 0.4f, 1f),
+//                    DescriptiveColor.oklabByHSL(0.10f + hue, 1f, 0.55f, 1f),
+//                    DescriptiveColor.oklabByHSL(0.08f + hue, 0.7f, 0.8f, 1f)
+//            ));
+//            g.toArray(gif.palette.paletteArray);
+            colorList.toArray(gif.palette.paletteArray);
 
 
             Gdx.files.local("out/").mkdirs();
-            String ser = noise.serializeToString() + "_" + divisions + "_" + System.currentTimeMillis();
+            String ser = noise.serializeToString() + "_" + divisions + "_" + hue + "_" + System.currentTimeMillis();
             System.out.println(ser);
             gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
             for (int i = 0; i < frames.size; i++) {
@@ -311,5 +321,19 @@ public class NoiseViewer extends ApplicationAdapter {
         super.resize(width, height);
         view.update(width, height, true);
         view.apply(true);
+    }
+
+    public void randomizeColor(long seed) {
+        hue = Hasher.randomize3Float(seed);
+        colorList.clear();
+        ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolations.smooth,
+                DescriptiveColor.oklabByHSL(0.05f + hue, 0.85f, 0.2f, 1f),
+                DescriptiveColor.oklabByHSL(0.02f + hue, 0.95f, 0.4f, 1f),
+                DescriptiveColor.oklabByHSL(0.10f + hue, 1f, 0.55f, 1f),
+                DescriptiveColor.oklabByHSL(0.08f + hue, 0.7f, 0.8f, 1f)
+        ));
+        for (int i = 0; i < 256; i++) {
+            colorFloats[i] = BitConversion.reversedIntBitsToFloat(colorList.get(i) & -2);
+        }
     }
 }
