@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
@@ -15,6 +16,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.FastGif;
 import com.github.tommyettinger.anim8.PaletteReducer;
+import com.github.tommyettinger.digital.Base;
 import com.github.tommyettinger.digital.BitConversion;
 import com.github.tommyettinger.digital.Hasher;
 import com.github.tommyettinger.digital.TrigTools;
@@ -49,6 +51,7 @@ public class NoiseViewer extends ApplicationAdapter {
     private boolean paused;
     private ImmediateModeRenderer20 renderer;
 
+    private Clipboard clipboard;
 //    private static final int width = 400, height = 400;
 //    private static final int width = 512, height = 512;
     public static final int width = 256, height = 256;
@@ -69,8 +72,14 @@ public class NoiseViewer extends ApplicationAdapter {
         return n * 0.5f + 0.5f;
     }
 
+    public NoiseViewer(Clipboard clippy) {
+        clipboard = clippy;
+    }
+
     @Override
     public void create() {
+        if(clipboard == null) clipboard = Gdx.app.getClipboard();
+
         noise.setNoiseType(Noise.TAFFY_FRACTAL);
         noise.setPointHash(pointHashes[hashIndex]);
 
@@ -114,7 +123,7 @@ public class NoiseViewer extends ApplicationAdapter {
                         0xF8F8F8FF, 0xF9F9F9FF, 0xFAFAFAFF, 0xFBFBFBFF, 0xFCFCFCFF, 0xFDFDFDFF, 0xFEFEFEFF, 0xFFFFFFFF,
                 });
 
-        randomizeColor(Hasher.randomize3Float(TimeUtils.millis()));
+        updateColor(Hasher.randomize3Float(TimeUtils.millis()));
         colorList.toArray(gif.palette.paletteArray);
 //
 //        IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolation.smooth::apply,
@@ -144,11 +153,11 @@ public class NoiseViewer extends ApplicationAdapter {
                         paused = !paused;
                         break;
                     case C:
-                        randomizeColor(Hasher.randomize3Float(TimeUtils.millis()));
+                        updateColor(Hasher.randomize3Float(TimeUtils.millis()));
                         break;
                     case V: // color hue variance
                         variance += (UIUtils.shift() ? -0.25f : 0.25f);
-                        randomizeColor(hue);
+                        updateColor(hue);
                         break;
                     case E: //earlier seed
                         s = (int)(ls = noise.getSeed() - 1);
@@ -205,8 +214,25 @@ public class NoiseViewer extends ApplicationAdapter {
                     case K: // sKip
                         startTime -= 1000000L;
                         break;
-                    case W: // whirl, like a spiral
+                    case BACKSLASH: // fractal spiral mode, I don't know if there is a mnemonic
                         noise.setFractalSpiral(!noise.isFractalSpiral());
+                        break;
+                    case P:
+                    {
+                        String paste = clipboard.getContents();
+                        int last = paste.lastIndexOf('`');
+                        if(last >= 1) {
+                            noise.deserializeFromString(paste);
+                            Base base = Base.BASE10;
+                            divisions = base.readInt(paste, last+2, last = paste.indexOf('_', last+2));
+                            interpolatorIndex = Interpolations.getInterpolatorList().indexOf(interpolator =
+                                    Interpolations.get(paste.substring(last + 1, last = paste.indexOf('_', last + 1))));
+                            hue = base.readFloat(paste, last+1, last = paste.indexOf('_', last + 1));
+                            variance = base.readFloat(paste, last+1, last = paste.indexOf('_', last + 1));
+                            updateColor(hue);
+                            prettyPrint();
+                        }
+                    }
                         break;
                     case Q:
                     case ESCAPE: {
@@ -218,6 +244,13 @@ public class NoiseViewer extends ApplicationAdapter {
             }
         };
         Gdx.input.setInputProcessor(input);
+    }
+    public void prettyPrint() {
+        noise.prettyPrint();
+        System.out.println("Divisions: " + divisions);
+        System.out.println("Gradient Interpolator: " + interpolator.tag);
+        System.out.println("Hue: " + hue);
+        System.out.println("Gradient Variance: " + variance);
     }
 
     public void putMap() {
@@ -285,7 +318,7 @@ public class NoiseViewer extends ApplicationAdapter {
 
             Gdx.files.local("out/").mkdirs();
             String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis();
-            System.out.println(ser);
+            prettyPrint();
             gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
             for (int i = 0; i < frames.size; i++) {
                 frames.get(i).dispose();
@@ -310,7 +343,7 @@ public class NoiseViewer extends ApplicationAdapter {
         view.apply(true);
     }
 
-    public void randomizeColor(float h) {
+    public void updateColor(float h) {
         hue = h;
         colorList.clear();
         ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolations.smooth,
