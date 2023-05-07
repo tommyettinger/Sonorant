@@ -8,11 +8,8 @@ dependencies {
   api "com.github.tommyettinger:formic:$formicVersion"
   api "com.github.tommyettinger:funderby:$funderbyVersion"
   api "com.github.tommyettinger:jdkgdxds:$jdkgdxdsVersion"
-  api "com.github.tommyettinger:jdkgdxds_interop:$jdkgdxdsInteropVersion"
   api "com.github.tommyettinger:juniper:$juniperVersion"
   api "com.github.tommyettinger:regexodus:$regExodusVersion"
   api "com.github.yellowstonegames.SquidSquad:SquidCore:$squidSquadVersion"
   api "com.github.yellowstonegames.SquidSquad:SquidGrid:$squidSquadVersion"
-  api "com.github.yellowstonegames.SquidSquad:SquidStoreCore:$squidSquadVersion"
-  api "com.github.yellowstonegames.SquidSquad:SquidStoreGrid:$squidSquadVersion"
 }

@@ -40,13 +40,10 @@ dependencies {
   implementation "com.github.tommyettinger:formic:$formicVersion:sources"
   implementation "com.github.tommyettinger:funderby:$funderbyVersion:sources"
   implementation "com.github.tommyettinger:jdkgdxds:$jdkgdxdsVersion:sources"
-  implementation "com.github.tommyettinger:jdkgdxds_interop:$jdkgdxdsInteropVersion:sources"
   implementation "com.github.tommyettinger:juniper:$juniperVersion:sources"
   implementation "com.github.tommyettinger:regexodus:$regExodusVersion:sources"
   implementation "com.github.yellowstonegames.SquidSquad:SquidCore:$squidSquadVersion:sources"
   implementation "com.github.yellowstonegames.SquidSquad:SquidGrid:$squidSquadVersion:sources"
-  implementation "com.github.yellowstonegames.SquidSquad:SquidStoreCore:$squidSquadVersion:sources"
-  implementation "com.github.yellowstonegames.SquidSquad:SquidStoreGrid:$squidSquadVersion:sources"
   implementation project(':core')
 
 }

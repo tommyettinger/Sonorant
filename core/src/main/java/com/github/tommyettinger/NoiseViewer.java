@@ -13,8 +13,8 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
+import com.github.tommyettinger.anim8.AnimatedGif;
 import com.github.tommyettinger.anim8.Dithered;
-import com.github.tommyettinger.anim8.FastGif;
 import com.github.tommyettinger.anim8.PaletteReducer;
 import com.github.tommyettinger.digital.Base;
 import com.github.tommyettinger.digital.BitConversion;
@@ -64,7 +64,7 @@ public class NoiseViewer extends ApplicationAdapter {
     private Viewport view;
     private long startTime;
 
-    private FastGif gif;
+    private AnimatedGif gif;
     private Array<Pixmap> frames = new Array<>(256);
 
     public static float basicPrepare(float n)
@@ -83,7 +83,7 @@ public class NoiseViewer extends ApplicationAdapter {
         noise.setNoiseType(Noise.TAFFY_FRACTAL);
         noise.setPointHash(pointHashes[hashIndex]);
 
-        gif = new FastGif();
+        gif = new AnimatedGif();
         gif.setDitherAlgorithm(Dithered.DitherAlgorithm.DODGY);
         gif.setDitherStrength(0.2f);
         // Ugh, this is ugly.
@@ -280,31 +280,32 @@ public class NoiseViewer extends ApplicationAdapter {
             }
         }
         if (Gdx.input.isKeyJustPressed(W)) {
-            for (int ct = 0; ct < 256; ct++) {
-                int w = 256, h = 256;
-                Pixmap p = new Pixmap(w, h, Pixmap.Format.RGBA8888);
-                for (int x = 0; x < width; x++) {
-                    float distX = x - (width - 1) * 0.5f;
-                    for (int y = 0; y < height; y++) {
-                        float distY = y - (height - 1) * 0.5f;
-                        float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x4p-8f);
-                        float len = (float) Math.sqrt(distX * distX + distY * distY);
-                        float shrunk = len / (3f + divisions);
-                        len = (len - ct) * 0x1p-8f;
-                        int flip = -((int)theta & 1 & divisions) | 1;
-                        theta *= flip;
-                        bright =
+            if (Gdx.files.isLocalStorageAvailable()) {
+                for (int ct = 0; ct < 256; ct++) {
+                    int w = 256, h = 256;
+                    Pixmap p = new Pixmap(w, h, Pixmap.Format.RGBA8888);
+                    for (int x = 0; x < width; x++) {
+                        float distX = x - (width - 1) * 0.5f;
+                        for (int y = 0; y < height; y++) {
+                            float distY = y - (height - 1) * 0.5f;
+                            float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x4p-8f);
+                            float len = (float) Math.sqrt(distX * distX + distY * distY);
+                            float shrunk = len / (3f + divisions);
+                            len = (len - ct) * 0x1p-8f;
+                            int flip = -((int) theta & 1 & divisions) | 1;
+                            theta *= flip;
+                            bright =
 //                                Interpolations.pow2In
-                                Math.min(Math.max(interpolator.apply(basicPrepare(
-                                        noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
-                                                TrigTools.sinTurns(theta) * shrunk, TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f)
-                                )), 0), 1);
-                        p.setColor(colorList.get((int) (bright * 255.99f)));
-                        p.drawPixel(x, y);
+                                    Math.min(Math.max(interpolator.apply(basicPrepare(
+                                            noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
+                                                    TrigTools.sinTurns(theta) * shrunk, TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f)
+                                    )), 0), 1);
+                            p.setColor(colorList.get((int) (bright * 255.99f)));
+                            p.drawPixel(x, y);
+                        }
                     }
+                    frames.add(p);
                 }
-                frames.add(p);
-            }
 //            float hue = (TimeUtils.millis() & 1023) * 0x1p-10f;
 //            IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolation.smooth::apply,
 //                    DescriptiveColor.oklabByHSL(0.05f + hue, 0.85f, 0.2f, 1f),
@@ -314,16 +315,20 @@ public class NoiseViewer extends ApplicationAdapter {
 //            ));
 //            g.toArray(gif.palette.paletteArray);
 //            colorList.toArray(gif.palette.paletteArray);
-            gif.palette.exact(colorList.items, colorList.size());
+                gif.palette.exact(colorList.items, colorList.size());
 
-            Gdx.files.local("out/").mkdirs();
-            String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis();
-            prettyPrint();
-            gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
-            for (int i = 0; i < frames.size; i++) {
-                frames.get(i).dispose();
+                Gdx.files.local("out/").mkdirs();
+                String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis();
+                prettyPrint();
+                gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
+                for (int i = 0; i < frames.size; i++) {
+                    frames.get(i).dispose();
+                }
+                frames.clear();
             }
-            frames.clear();
+        } else {
+            String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis();
+            clipboard.setContents(ser);
         }
         renderer.end();
     }

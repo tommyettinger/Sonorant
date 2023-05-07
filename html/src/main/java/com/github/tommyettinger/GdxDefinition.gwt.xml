@@ -8,12 +8,9 @@
   <inherits name="com.github.tommyettinger.digital" />
   <inherits name="com.github.tommyettinger.funderby" />
   <inherits name="com.github.tommyettinger.jdkgdxds" />
-  <inherits name="com.github.tommyettinger.jdkgdxds_interop" />
   <inherits name="com.github.tommyettinger.juniper" />
   <inherits name="com.github.yellowstonegames.squidcore" />
   <inherits name="com.github.yellowstonegames.squidgrid" />
-  <inherits name="com.github.yellowstonegames.squidstorecore" />
-  <inherits name="com.github.yellowstonegames.squidstoregrid" />
   <inherits name="formic" />
   <inherits name="regexodus.regexodus" />
   <entry-point class="com.github.tommyettinger.gwt.GwtLauncher" />

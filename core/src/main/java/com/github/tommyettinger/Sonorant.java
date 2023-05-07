@@ -12,10 +12,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.github.tommyettinger.anim8.Dithered;
-import com.github.tommyettinger.anim8.FastGif;
-import com.github.tommyettinger.anim8.FastPNG;
-import com.github.tommyettinger.anim8.PaletteReducer;
+import com.github.tommyettinger.anim8.*;
 import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.IntList;
 import com.github.tommyettinger.random.LineWobble;
@@ -66,8 +63,8 @@ public class Sonorant extends ApplicationAdapter {
     private long startTime;
     private int steps;
 
-    private FastGif gif;
-    private FastPNG png;
+    private AnimatedGif gif;
+    private AnimatedGif png;
     private final Array<Pixmap> frames = new Array<>(256);
 
     public static float basicPrepare(float n)
@@ -150,12 +147,14 @@ public class Sonorant extends ApplicationAdapter {
 
         buildKernel();
 
-        gif = new FastGif();
-        png = new FastPNG();
+        gif = new AnimatedGif();
+        png = new AnimatedGif();
         gif.setDitherAlgorithm(Dithered.DitherAlgorithm.BLUE_NOISE);
         gif.setDitherStrength(0.2f);
+        png.setDitherAlgorithm(Dithered.DitherAlgorithm.NONE);
+        png.setDitherStrength(0f);
         // Ugh, this is ugly.
-        gif.palette = new PaletteReducer(
+        png.palette = gif.palette = new PaletteReducer(
                 new int[] {
                         0x000000FF, 0x010101FF, 0x020202FF, 0x030303FF, 0x040404FF, 0x050505FF, 0x060606FF, 0x070707FF,
                         0x080808FF, 0x090909FF, 0x0A0A0AFF, 0x0B0B0BFF, 0x0C0C0CFF, 0x0D0D0DFF, 0x0E0E0EFF, 0x0F0F0FFF,
@@ -391,7 +390,7 @@ public class Sonorant extends ApplicationAdapter {
                         kernelP.drawPixel(x, y);
                     }
                 }
-                png.write(Gdx.files.local("out/" + ser + "_kernel.gif"), kernelP);
+                png.write(Gdx.files.local("out/" + ser + "_kernel.gif"), Array.with(kernelP));
                 kernelP.dispose();
                 baseContribution = 0.125f;
             }

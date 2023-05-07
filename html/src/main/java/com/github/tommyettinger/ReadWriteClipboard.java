@@ -19,20 +19,22 @@ package com.github.tommyettinger;
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtPermissions;
 import com.badlogic.gdx.utils.Clipboard;
+import com.google.gwt.core.client.JavaScriptObject;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.NativeEvent;
 
 /** Basic implementation of clipboard in GWT. Can copy and paste if given permission. */
 public class ReadWriteClipboard implements Clipboard {
-
-	private boolean requestedReadPermissions = false;
-	private boolean hasReadPermissions = true;
-
 	private boolean requestedWritePermissions = false;
 	private boolean hasWritePermissions = true;
 
-	private final ClipboardReadHandler readHandler = new ClipboardReadHandler();
 	private final ClipboardWriteHandler writeHandler = new ClipboardWriteHandler();
 
 	private String content = "";
+
+	public ReadWriteClipboard() {
+		addPasteEventListener(Document.get(), "paste", this, true);
+	}
 
 	@Override
 	public boolean hasContents () {
@@ -42,12 +44,6 @@ public class ReadWriteClipboard implements Clipboard {
 
 	@Override
 	public String getContents () {
-		if (requestedReadPermissions || GwtApplication.agentInfo().isFirefox()) {
-			if (hasReadPermissions) content = getContentJSNI();
-		} else {
-			GwtPermissions.queryPermission("clipboard-read", readHandler);
-			requestedReadPermissions = true;
-		}
 		return content;
 	}
 
@@ -62,37 +58,26 @@ public class ReadWriteClipboard implements Clipboard {
 		}
 	}
 
-	private native String getContentJSNI () /*-{
-		if ("clipboard" in $wnd.navigator) {
-			return $wnd.navigator.clipboard.readText();
-		}
-		return "";
+	// kindly borrowed from our dear playn friends...
+	static native void addPasteEventListener (JavaScriptObject target, String name, ReadWriteClipboard handler, boolean capture) /*-{0
+		target
+				.addEventListener(
+						name,
+						function(e) {
+						    e.preventDefault();
+							handler.@com.github.tommyettinger.ReadWriteClipboard::usePaste(*)((e.clipboardData || $wnd.clipboardData).getData("text"));
+						}, capture);
 	}-*/;
+
+	private void usePaste (String con) {
+		content = con;
+	}
 
 	private native void setContentJSNI (String content) /*-{
 		if ("clipboard" in $wnd.navigator) {
 			$wnd.navigator.clipboard.writeText(content);
 		}
 	}-*/;
-
-	private class ClipboardReadHandler implements GwtPermissions.GwtPermissionResult {
-		@Override
-		public void granted () {
-			hasReadPermissions = true;
-			content = getContentJSNI();
-		}
-
-		@Override
-		public void denied () {
-			hasReadPermissions = false;
-		}
-
-		@Override
-		public void prompt () {
-			hasReadPermissions = true;
-			content = getContentJSNI();
-		}
-	}
 
 	private class ClipboardWriteHandler implements GwtPermissions.GwtPermissionResult {
 		@Override
