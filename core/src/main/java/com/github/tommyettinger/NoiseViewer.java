@@ -325,10 +325,10 @@ public class NoiseViewer extends ApplicationAdapter {
                     frames.get(i).dispose();
                 }
                 frames.clear();
+            } else {
+                String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis();
+                clipboard.setContents(ser);
             }
-        } else {
-            String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis();
-            clipboard.setContents(ser);
         }
         renderer.end();
     }
