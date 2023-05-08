@@ -45,7 +45,7 @@ public class NoiseViewer extends ApplicationAdapter {
     private float hue = 0;
     private float variance = 1f;
     private int divisions = 0;
-    private int octaves = 3;
+    private int octaves = 0;
     private float freq = 0.125f;
     private boolean inverse;
     private boolean paused;
@@ -174,7 +174,7 @@ public class NoiseViewer extends ApplicationAdapter {
                         System.out.println("Using seed " + s);
                         break;
                     case N: // noise type
-                         noise.setNoiseType((noise.getNoiseType() + (UIUtils.shift() ? 17 : 1)) % 18);
+                         noise.setNoiseType((noise.getNoiseType() + (UIUtils.shift() ? 16 : 2)) % 18);
                         break;
                     case ENTER:
                     case D: //dimension
@@ -210,9 +210,6 @@ public class NoiseViewer extends ApplicationAdapter {
 //                            noise.setFractalLacunarity(2f);
 //                            noise.setFractalGain(0.5f);
 //                        }
-                        break;
-                    case K: // sKip
-                        startTime -= 1000000L;
                         break;
                     case BACKSLASH: // fractal spiral mode, I don't know if there is a mnemonic
                         noise.setFractalSpiral(!noise.isFractalSpiral());

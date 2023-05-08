@@ -10,6 +10,33 @@
 <body>
 
 <div align="center" id="embed-html"></div>
+<h1>
+  Twirly Swirly Noise Viewer
+</h1>
+<h2>
+  Controls:
+</h2>
+<ul>
+  <li>'f' decreases frequency, which mostly affects the size of details (you can use Shift here, also).</li>
+  <li>'d' changes the number of divisions in the rotational symmetry; odd numbers spiral, even numbers mirror half of their divisions.</li>
+  <li>'n' changes noise type, which affects the shapes and sizes that appear.</li>
+  <li>'r' changes the fractal type between 4 different modes (two often look similar).</li>
+  <li>'i' changes the interpolator used to choose how much dark vs. light to use (there are many of these).</li>
+  <li>'c' randomizes the main hue.</li>
+  <li>'v' increases the variation between hues used for dark and light colors (with Shift, it decreases variation).</li>
+  <li>'s' moves the seed up one.</li>
+  <li>'e' moves the seed down one, to an earlier seed.</li>
+  <li>'/' randomizes the seed.</li>
+  <li>'h' adds higher detail by increasing the octave count.</li>
+  <li>'l' makes detail lower by decreasing the octave count.</li>
+  <li>'w' copies a summary to your clipboard that can be used to load the same noise on the desktop version.</li>
+  <li>On desktop, 'p' will paste in a summary from the clipboard and try to load noise based on it. This does not work on the web...</li>
+</ul>
+<p>
+  For almost all of these that change a variable to the next in a sequence, you can hold Shift
+  while pressing the key to go to the previous item in the sequence instead. The same is true for
+  variables that get larger when you press a key; holding shift will make the variable smaller.
+</p>
 <script type="text/javascript" src="html/html.nocache.js"></script>
 </body>
 
