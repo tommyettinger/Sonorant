@@ -3,10 +3,12 @@ package com.github.tommyettinger;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
+import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Clipboard;
@@ -19,11 +21,12 @@ import com.github.tommyettinger.anim8.AnimatedPNG;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.PaletteReducer;
 import com.github.tommyettinger.digital.*;
-import com.github.tommyettinger.ds.IntList;
 import com.github.tommyettinger.ds.ObjectList;
-import com.github.yellowstonegames.core.ColorGradients;
 import com.github.yellowstonegames.core.DescriptiveColor;
-import com.github.yellowstonegames.grid.*;
+import com.github.yellowstonegames.grid.FlawedPointHash;
+import com.github.yellowstonegames.grid.IPointHash;
+import com.github.yellowstonegames.grid.IntPointHash;
+import com.github.yellowstonegames.grid.Noise;
 
 import java.io.IOException;
 
@@ -71,6 +74,34 @@ public class NoiseViewer extends ApplicationAdapter {
     public static float basicPrepare(float n)
     {
         return n * 0.5f + 0.5f;
+    }
+
+    public static int rgba8888 (float r, float g, float b, float a) {
+        return ((int)(r * 255.999f) << 24) | ((int)(g * 255.999f) << 16) | ((int)(b * 255.999f) << 8) | (int)(a * 127.999f) << 1;
+    }
+    /**
+     * Converts the four HSLA components, each in the 0.0 to 1.0 range, to an int in RGBA8888 format.
+     * I brought this over from colorful-gdx's FloatColors class. I can't recall where I got the original HSL(A) code
+     * from, but there's a strong chance it was written by cypherdare/cyphercove for their color space comparison.
+     *
+     * @param h hue, usually from 0.0 to 1.0, but only the fractional part is used
+     * @param s saturation, from 0.0 to 1.0
+     * @param l lightness, from 0.0 to 1.0
+     * @param a alpha, from 0.0 to 1.0
+     * @return an RGBA8888-format int
+     */
+    public static int hsl2rgb(final float h, final float s, final float l, final float a) {
+        final float hue = h - MathUtils.floor(h);
+        float x = Math.min(Math.max(Math.abs(hue * 6f - 3f) - 1f, 0f), 1f);
+        float y = hue + (2f / 3f);
+        float z = hue + (1f / 3f);
+        y -= (int) y;
+        z -= (int) z;
+        y = Math.min(Math.max(Math.abs(y * 6f - 3f) - 1f, 0f), 1f);
+        z = Math.min(Math.max(Math.abs(z * 6f - 3f) - 1f, 0f), 1f);
+        float v = (l + s * Math.min(l, 1f - l));
+        float d = 2f * (1f - l / (v + 1e-10f));
+        return rgba8888(v * MathUtils.lerp(1f, x, d), v * MathUtils.lerp(1f, y, d), v * MathUtils.lerp(1f, z, d), a);
     }
 
     public NoiseViewer(Clipboard clippy) {
@@ -233,18 +264,20 @@ public class NoiseViewer extends ApplicationAdapter {
                 float len = (float) Math.sqrt(distX * distX + distY * distY);
                 float shrunk = len / (3f + divisions);
                 len = (len - c) * 0x1p-8f;
-                int flip = -((int)theta & 1 & divisions) | 1;
+                int flip = -((int) theta & 1 & divisions) | 1;
                 theta *= flip;
                 float A, B, C, D;
                 bright = Math.min(Math.max(interpolator.apply(basicPrepare(
-                                noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
-                                        B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
-                        )), 0), 1);
-                renderer.color(DescriptiveColor.oklabIntToFloat(DescriptiveColor.oklabByHSL(
-                        varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue,
-                        TrigTools.sin(1 + bright * 1.375f),
-                        TrigTools.sin(bright * 1.5f),
-                        1f)));
+                        noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
+                                B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
+                )), 0), 1);
+                renderer.color(
+                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
+                                //DescriptiveColor.oklabIntToFloat(DescriptiveColor.oklabByHCL(
+                                varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue,
+                                TrigTools.sin(1 + bright * 1.375f),
+                                TrigTools.sin(bright * 1.5f),
+                                1f)));
 //                renderer.color(colorFloats[(int) (bright * 255.99f)]);
                 renderer.vertex(x, y, 0);
             }
@@ -269,11 +302,14 @@ public class NoiseViewer extends ApplicationAdapter {
                                             B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
                             )), 0), 1);
 
-                            p.setColor(DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHSL(
-                                    varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue,
-                                    TrigTools.sin(1 + bright * 1.375f),
-                                    TrigTools.sin(bright * 1.5f),
-                                    1f)));
+                            p.setColor(
+                                    hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
+                                            varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue,
+                                            TrigTools.sin(1 + bright * 1.375f),
+                                            TrigTools.sin(bright * 1.5f),
+                                            1f))
+//                            )
+                            ;
                             p.drawPixel(x, y);
                         }
                     }
