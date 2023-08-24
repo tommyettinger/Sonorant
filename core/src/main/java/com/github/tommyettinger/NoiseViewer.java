@@ -18,14 +18,11 @@ import com.github.tommyettinger.anim8.AnimatedGif;
 import com.github.tommyettinger.anim8.AnimatedPNG;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.PaletteReducer;
-import com.github.tommyettinger.digital.Base;
-import com.github.tommyettinger.digital.BitConversion;
-import com.github.tommyettinger.digital.Hasher;
-import com.github.tommyettinger.digital.TrigTools;
+import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.IntList;
+import com.github.tommyettinger.ds.ObjectList;
 import com.github.yellowstonegames.core.ColorGradients;
 import com.github.yellowstonegames.core.DescriptiveColor;
-import com.github.yellowstonegames.core.Interpolations;
 import com.github.yellowstonegames.grid.*;
 
 import java.io.IOException;
@@ -41,11 +38,12 @@ public class NoiseViewer extends ApplicationAdapter {
     private final Noise varianceNoise = new Noise(-1, 0.025f, Noise.FOAM);
     private final IntPointHash iph = new IntPointHash();
     private final FlawedPointHash.CubeHash cube = new FlawedPointHash.CubeHash(1, 64);
-    private final IPointHash[] pointHashes = new IPointHash[] {iph, cube};
+    private final FlawedPointHash.FlowerHash flower = new FlawedPointHash.FlowerHash(1);
+    private final IPointHash[] pointHashes = new IPointHash[] {iph, cube, flower};
     private int hashIndex = 0;
-    private final Interpolations.Interpolator[] interpolators = Interpolations.getInterpolatorArray();
-    private int interpolatorIndex = 13;
-    private Interpolations.Interpolator interpolator = interpolators[interpolatorIndex];
+    private final ObjectList<Interpolations.Interpolator> interpolators = new ObjectList<>(Interpolations.getInterpolatorArray());
+    private int interpolatorIndex = 58;
+    private Interpolations.Interpolator interpolator = interpolators.get(interpolatorIndex);
     private float hue = 0;
     private float variance = 1f;
     private int divisions = 2;
@@ -59,10 +57,8 @@ public class NoiseViewer extends ApplicationAdapter {
     public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
 
-    private IntList colorList = new IntList(256);
-    private float[] colorFloats = new float[256];
-
-    private InputAdapter input;
+//    private IntList colorList = new IntList(256);
+//    private float[] colorFloats = new float[256];
 
     private Viewport view;
     private long startTime;
@@ -70,7 +66,7 @@ public class NoiseViewer extends ApplicationAdapter {
     private AnimatedGif gif;
     private AnimatedPNG apng;
     private PixmapIO.PNG png;
-    private Array<Pixmap> frames = new Array<>(256);
+    private final Array<Pixmap> frames = new Array<>(256);
 
     public static float basicPrepare(float n)
     {
@@ -117,43 +113,45 @@ public class NoiseViewer extends ApplicationAdapter {
         startTime = TimeUtils.millis();
         renderer = new ImmediateModeRenderer20(width * height * 2, false, true, 0);
         view = new ScreenViewport();
-        input = new InputAdapter(){
+        InputAdapter input = new InputAdapter() {
             @Override
             public boolean keyUp(int keycode) {
                 int s;
                 long ls;
                 switch (keycode) {
-                    case SPACE:
+                    case SPACE: // pause
                         paused = !paused;
                         break;
-                    case C:
+                    case C: // color
                         updateColor(Hasher.randomize3Float(TimeUtils.millis()));
                         break;
                     case V: // color hue variance
-                        variance += (UIUtils.shift() ? -0.25f : 0.25f);
+                        variance *= (UIUtils.shift() ? 0.8f : 1.25f);
 //                        varianceNoise.setFrequency(varianceNoise.getFrequency() + (UIUtils.shift() ? -0.25f : 0.25f));
                         updateColor(hue);
                         break;
                     case E: //earlier seed
-                        s = (int)(ls = noise.getSeed() - 1);
+                        s = (int) (ls = noise.getSeed() - 1);
                         noise.setSeed(s);
-                        cube.setState(s);
+                        cube.setState(ls);
+                        flower.setState(ls);
                         System.out.println("Using seed " + s);
                         break;
                     case S: //seed after
-                        s = (int)(ls = noise.getSeed() + 1);
+                        s = (int) (ls = noise.getSeed() + 1);
                         noise.setSeed(s);
-                        cube.setState(s);
+                        cube.setState(ls);
+                        flower.setState(ls);
                         System.out.println("Using seed " + s);
                         break;
                     case N: // noise type
-                         noise.setNoiseType((noise.getNoiseType() + (UIUtils.shift() ? 16 : 2)) % 18);
+                        noise.setNoiseType((noise.getNoiseType() + (UIUtils.shift() ? 16 : 2)) % 18);
                         break;
                     case ENTER:
                     case D: //dimension
                         divisions = (divisions + (UIUtils.shift() ? 9 : 1)) % 10;
                         break;
-                    case B: //Blur
+                    case B: //blur
                         noise.setSharpness(noise.getSharpness() + (UIUtils.shift() ? 0.05f : -0.05f));
                         break;
                     case F: // frequency
@@ -162,8 +160,9 @@ public class NoiseViewer extends ApplicationAdapter {
                     case R: // fRactal type
                         noise.setFractalType((noise.getFractalType() + (UIUtils.shift() ? 3 : 1)) & 3);
                         break;
-                    case G: // Glitch!
-                        noise.setPointHash(pointHashes[hashIndex ^= 1]);
+                    case G: // "glitch" (only affects Cubic Noise type)
+                        noise.setPointHash(pointHashes[
+                                hashIndex = (UIUtils.shift() ? hashIndex + pointHashes.length - 1 :hashIndex + 1) % pointHashes.length]);
                         break;
                     case H: // higher octaves
                         noise.setFractalOctaves((octaves = octaves + 1 & 7) + 1);
@@ -172,43 +171,35 @@ public class NoiseViewer extends ApplicationAdapter {
                         noise.setFractalOctaves((octaves = octaves + 7 & 7) + 1);
                         break;
                     case I: // interpolator
-                        interpolatorIndex = (interpolatorIndex + (UIUtils.shift() ? interpolators.length - 1 : 1)) % interpolators.length;
-                        interpolator = interpolators[interpolatorIndex];
-//                        if (inverse = !inverse) {
-//                            noise.setFractalLacunarity(0.5f);
-//                            noise.setFractalGain(2f);
-//                        } else {
-//                            noise.setFractalLacunarity(2f);
-//                            noise.setFractalGain(0.5f);
-//                        }
+                        interpolatorIndex = (interpolatorIndex + (UIUtils.shift() ? interpolators.size() - 1 : 1)) % interpolators.size();
+                        interpolator = interpolators.get(interpolatorIndex);
                         break;
                     case BACKSLASH: // fractal spiral mode, I don't know if there is a mnemonic
                         noise.setFractalSpiral(!noise.isFractalSpiral());
                         break;
-                    case P:
-                    {
-                        if(clipboard.hasContents()) {
+                    case P: { // paste
+                        if (clipboard.hasContents()) {
                             String paste = clipboard.getContents();
                             int last = paste.lastIndexOf('`');
                             if (last >= 1) {
                                 noise.deserializeFromString(paste);
                                 Base base = Base.BASE10;
                                 divisions = base.readInt(paste, last + 2, last = paste.indexOf('_', last + 2));
-                                interpolatorIndex = Interpolations.getInterpolatorList().indexOf(interpolator =
+                                interpolatorIndex = interpolators.indexOf(interpolator =
                                         Interpolations.get(paste.substring(last + 1, last = paste.indexOf('_', last + 1))));
                                 hue = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
                                 variance = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
                                 updateColor(hue);
                                 prettyPrint();
                             }
-                        }
-                        System.out.println("Clipboard is empty!");
+                        } else
+                            System.out.println("Clipboard is empty!");
                     }
-                        break;
-                    case A:
+                    break;
+                    case A: // analyze
                         prettyPrint();
                         break;
-                    case Q:
+                    case Q: // quit
                     case ESCAPE: {
                         Gdx.app.exit();
                     }
@@ -225,6 +216,7 @@ public class NoiseViewer extends ApplicationAdapter {
         System.out.println("Gradient Interpolator: " + interpolator.tag + " (index " + interpolatorIndex + ")");
         System.out.println("Hue: " + hue);
         System.out.println("Gradient Variance: " + variance);
+        System.out.println("Data for Copy/Paste: " + noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis());
     }
 
     public void putMap() {
@@ -352,15 +344,15 @@ public class NoiseViewer extends ApplicationAdapter {
 
     public void updateColor(float h) {
         hue = h;
-        colorList.clear();
-        ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolations.smooth,
-                DescriptiveColor.oklabByHSL(variance * 0.05f + hue, 0.85f, 0.2f, 1f),
-                DescriptiveColor.oklabByHSL(variance * 0.02f + hue, 0.95f, 0.4f, 1f),
-                DescriptiveColor.oklabByHSL(variance * 0.10f + hue, 1f, 0.55f, 1f),
-                DescriptiveColor.oklabByHSL(variance * 0.08f + hue, 0.7f, 0.8f, 1f)
-        ));
-        for (int i = 0; i < 256; i++) {
-            colorFloats[i] = BitConversion.reversedIntBitsToFloat(colorList.get(i) & -2);
-        }
+//        colorList.clear();
+//        ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolations.smooth,
+//                DescriptiveColor.oklabByHSL(variance * 0.05f + hue, 0.85f, 0.2f, 1f),
+//                DescriptiveColor.oklabByHSL(variance * 0.02f + hue, 0.95f, 0.4f, 1f),
+//                DescriptiveColor.oklabByHSL(variance * 0.10f + hue, 1f, 0.55f, 1f),
+//                DescriptiveColor.oklabByHSL(variance * 0.08f + hue, 0.7f, 0.8f, 1f)
+//        ));
+//        for (int i = 0; i < 256; i++) {
+//            colorFloats[i] = BitConversion.reversedIntBitsToFloat(colorList.get(i) & -2);
+//        }
     }
 }

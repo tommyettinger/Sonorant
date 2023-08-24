@@ -18,7 +18,6 @@ import com.github.tommyettinger.ds.IntList;
 import com.github.tommyettinger.random.LineWobble;
 import com.github.yellowstonegames.core.ColorGradients;
 import com.github.yellowstonegames.core.DescriptiveColor;
-import com.github.yellowstonegames.core.Interpolations;
 import com.github.yellowstonegames.grid.FlawedPointHash;
 import com.github.yellowstonegames.grid.IPointHash;
 import com.github.yellowstonegames.grid.IntPointHash;
@@ -36,7 +35,8 @@ public class Sonorant extends ApplicationAdapter {
     private final Noise noise = new Noise(24, 0.0625f);
     private final IntPointHash iph = new IntPointHash();
     private final FlawedPointHash.CubeHash cube = new FlawedPointHash.CubeHash(24, 64);
-    private final IPointHash[] pointHashes = new IPointHash[] {iph, cube};
+    private final FlawedPointHash.FlowerHash flower = new FlawedPointHash.FlowerHash(1);
+    private final IPointHash[] pointHashes = new IPointHash[] {iph, cube, flower};
     private int hashIndex = 0;
     private int octaves = 3;
     private int divisions = 2;
@@ -250,7 +250,8 @@ public class Sonorant extends ApplicationAdapter {
                         change = true;
                         break;
                     case G: // Glitch!
-                        noise.setPointHash(pointHashes[hashIndex ^= 1]);
+                        noise.setPointHash(pointHashes[
+                                hashIndex = (UIUtils.shift() ? hashIndex + pointHashes.length - 1 :hashIndex + 1) % pointHashes.length]);
                         change = true;
                         break;
                     case H: // higher octaves

@@ -37,7 +37,6 @@ dependencies {
   implementation "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
   implementation "com.github.tommyettinger:anim8-gdx:$anim8Version:sources"
   implementation "com.github.tommyettinger:digital:$digitalVersion:sources"
-  implementation "com.github.tommyettinger:formic:$formicVersion:sources"
   implementation "com.github.tommyettinger:funderby:$funderbyVersion:sources"
   implementation "com.github.tommyettinger:jdkgdxds:$jdkgdxdsVersion:sources"
   implementation "com.github.tommyettinger:juniper:$juniperVersion:sources"
