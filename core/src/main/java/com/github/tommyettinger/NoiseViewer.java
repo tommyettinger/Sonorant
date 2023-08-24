@@ -38,6 +38,7 @@ import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
 public class NoiseViewer extends ApplicationAdapter {
 
     private final Noise noise = new Noise(322420472, 0.0625f);
+    private final Noise varianceNoise = new Noise(322420472, 0.025f, Noise.TAFFY_FRACTAL);
     private final IntPointHash iph = new IntPointHash();
     private final FlawedPointHash.CubeHash cube = new FlawedPointHash.CubeHash(1, 64);
     private final IPointHash[] pointHashes = new IPointHash[] {iph, cube};
@@ -45,7 +46,6 @@ public class NoiseViewer extends ApplicationAdapter {
     private final Interpolations.Interpolator[] interpolators = Interpolations.getInterpolatorArray();
     private int interpolatorIndex = 0;
     private Interpolations.Interpolator interpolator = interpolators[interpolatorIndex];
-    private final CyclicNoise cyclic = new CyclicNoise(noise.getSeed(), 1);
     private float hue = 0;
     private float variance = 1f;
     private int divisions = 0;
@@ -56,9 +56,9 @@ public class NoiseViewer extends ApplicationAdapter {
     private ImmediateModeRenderer20 renderer;
 
     private Clipboard clipboard;
-//    private static final int width = 400, height = 400;
-//    private static final int width = 512, height = 512;
-    public static final int width = 64, height = 64;
+//    public static final int width = 400, height = 400;
+    public static final int width = 512, height = 512;
+//    public static final int width = 64, height = 64;
 
     private IntList colorList = new IntList(256);
     private float[] colorFloats = new float[256];
@@ -167,20 +167,19 @@ public class NoiseViewer extends ApplicationAdapter {
                         break;
                     case V: // color hue variance
                         variance += (UIUtils.shift() ? -0.25f : 0.25f);
+//                        varianceNoise.setFrequency(varianceNoise.getFrequency() + (UIUtils.shift() ? -0.25f : 0.25f));
                         updateColor(hue);
                         break;
                     case E: //earlier seed
                         s = (int)(ls = noise.getSeed() - 1);
                         noise.setSeed(s);
                         cube.setState(s);
-                        cyclic.setSeed(ls);
                         System.out.println("Using seed " + s);
                         break;
                     case S: //seed after
                         s = (int)(ls = noise.getSeed() + 1);
                         noise.setSeed(s);
                         cube.setState(s);
-                        cyclic.setSeed(ls);
                         System.out.println("Using seed " + s);
                         break;
                     case N: // noise type
@@ -204,11 +203,9 @@ public class NoiseViewer extends ApplicationAdapter {
                         break;
                     case H: // higher octaves
                         noise.setFractalOctaves((octaves = octaves + 1 & 7) + 1);
-                        cyclic.setOctaves(octaves + 1);
                         break;
                     case L: // lower octaves
                         noise.setFractalOctaves((octaves = octaves + 7 & 7) + 1);
-                        cyclic.setOctaves(octaves + 1);
                         break;
                     case I: // interpolator
                         interpolatorIndex = (interpolatorIndex + (UIUtils.shift() ? interpolators.length - 1 : 1)) % interpolators.length;
@@ -243,6 +240,9 @@ public class NoiseViewer extends ApplicationAdapter {
                         }
                         System.out.println("Clipboard is empty!");
                     }
+                        break;
+                    case A:
+                        prettyPrint();
                         break;
                     case Q:
                     case ESCAPE: {
@@ -279,13 +279,16 @@ public class NoiseViewer extends ApplicationAdapter {
                 len = (len - c) * 0x1p-8f;
                 int flip = -((int)theta & 1 & divisions) | 1;
                 theta *= flip;
+                float A, B, C, D;
                 bright =
 //                                Interpolations.pow2In
                         Math.min(Math.max(interpolator.apply(basicPrepare(
-                                noise.getConfiguredNoise(TrigTools.cosTurns(theta) * shrunk,
-                                        TrigTools.sinTurns(theta) * shrunk, TrigTools.cosTurns(len) * 32f, TrigTools.sinTurns(len) * 32f)
+                                noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
+                                        B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
                         )), 0), 1);
-                renderer.color(colorFloats[(int) (bright * 255.99f)]);
+                renderer.color(DescriptiveColor.oklabIntToFloat(DescriptiveColor.oklabByHSL(
+                        varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue, TrigTools.sin(1 + bright * 1.375f), TrigTools.sin(bright * 1.5f), 1f)));
+//                renderer.color(colorFloats[(int) (bright * 255.99f)]);
                 renderer.vertex(x, y, 0);
             }
         }
