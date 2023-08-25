@@ -22,6 +22,8 @@ import com.badlogic.gdx.utils.Clipboard;
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.dom.client.Document;
 import com.google.gwt.dom.client.NativeEvent;
+import com.google.gwt.http.client.URL;
+import com.google.gwt.user.client.History;
 
 /** Basic implementation of clipboard in GWT. Can copy and paste if given permission. */
 public class ReadWriteClipboard implements Clipboard {
@@ -33,7 +35,6 @@ public class ReadWriteClipboard implements Clipboard {
 	private String content = "";
 
 	public ReadWriteClipboard() {
-		addPasteEventListener(Document.get(), "paste", this, true);
 	}
 
 	@Override
@@ -44,7 +45,7 @@ public class ReadWriteClipboard implements Clipboard {
 
 	@Override
 	public String getContents () {
-		return content;
+		return URL.decodeQueryString(History.getToken());
 	}
 
 	@Override
@@ -56,21 +57,6 @@ public class ReadWriteClipboard implements Clipboard {
 			GwtPermissions.queryPermission("clipboard-write", writeHandler);
 			requestedWritePermissions = true;
 		}
-	}
-
-	// kindly borrowed from our dear playn friends...
-	static native void addPasteEventListener (JavaScriptObject target, String name, ReadWriteClipboard handler, boolean capture) /*-{0
-		target
-				.addEventListener(
-						name,
-						function(e) {
-						    e.preventDefault();
-							handler.@com.github.tommyettinger.ReadWriteClipboard::usePaste(*)((e.clipboardData || $wnd.clipboardData).getData("text"));
-						}, capture);
-	}-*/;
-
-	private void usePaste (String con) {
-		content = con;
 	}
 
 	private native void setContentJSNI (String content) /*-{

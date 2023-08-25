@@ -1,12 +1,11 @@
 package com.github.tommyettinger;
 
+import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
@@ -17,18 +16,15 @@ import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.AnimatedGif;
-import com.github.tommyettinger.anim8.AnimatedPNG;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.PaletteReducer;
+import com.github.tommyettinger.anim8.QualityPalette;
 import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.ObjectList;
-import com.github.yellowstonegames.core.DescriptiveColor;
 import com.github.yellowstonegames.grid.FlawedPointHash;
 import com.github.yellowstonegames.grid.IPointHash;
 import com.github.yellowstonegames.grid.IntPointHash;
 import com.github.yellowstonegames.grid.Noise;
-
-import java.io.IOException;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
@@ -67,8 +63,8 @@ public class NoiseViewer extends ApplicationAdapter {
     private long startTime;
 
     private AnimatedGif gif;
-    private AnimatedPNG apng;
-    private PixmapIO.PNG png;
+//    private AnimatedPNG apng;
+//    private PixmapIO.PNG png;
     private final Array<Pixmap> frames = new Array<>(256);
 
     public static float basicPrepare(float n)
@@ -91,7 +87,7 @@ public class NoiseViewer extends ApplicationAdapter {
      * @return an RGBA8888-format int
      */
     public static int hsl2rgb(final float h, final float s, final float l, final float a) {
-        final float hue = h - MathUtils.floor(h);
+        final float hue = MathTools.barronSpline(h - MathUtils.floor(h), 1.7f, 0.9f);
         float x = Math.min(Math.max(Math.abs(hue * 6f - 3f) - 1f, 0f), 1f);
         float y = hue + (2f / 3f);
         float z = hue + (1f / 3f);
@@ -116,13 +112,15 @@ public class NoiseViewer extends ApplicationAdapter {
         noise.setFractalType(Noise.RIDGED_MULTI);
         noise.setPointHash(pointHashes[hashIndex]);
 
-        apng = new AnimatedPNG();
-        png = new PixmapIO.PNG();
-        png.setCompression(2);
-        gif = new AnimatedGif();
-        gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
-        gif.setDitherStrength(0.3f);
-        gif.palette = new PaletteReducer();
+//        apng = new AnimatedPNG();
+//        png = new PixmapIO.PNG();
+//        png.setCompression(2);
+        if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
+            gif = new AnimatedGif();
+            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
+            gif.setDitherStrength(0.3f);
+            gif.palette = new QualityPalette(PaletteReducer.AURORA);
+        }
 
         updateColor(Hasher.randomize3Float(TimeUtils.millis()));
 //        colorList.toArray(gif.palette.paletteArray);
@@ -329,27 +327,28 @@ public class NoiseViewer extends ApplicationAdapter {
                 Gdx.files.local("out/").mkdirs();
                 String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis();
                 prettyPrint();
-                gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 16);
-                if(apng != null) {
-                    for (int i = 0; i < frames.size; i++) {
-                        Pixmap frame = frames.get(i);
-                        frame.setBlending(Pixmap.Blending.None);
-                        int h = frame.getHeight(), w = frame.getWidth(), halfH = h >> 1, halfW = w >> 1;
-                        for (int y = 0; y < h; y++) {
-                            for (int x = 0; x < w; x++) {
-                                int p = frame.getPixel(x, y);
-                                frame.drawPixel(x, y, (p & 0xFFFFFF00) | Math.min(Math.max(
-                                        (int) (300 - 0x2.8p7 / (halfH * halfH) * ((x - halfW) * (x - halfW) + (y - halfH) * (y - halfH))), 0), 255));
-                            }
-
-                        }
-                    }
-                    apng.write(Gdx.files.local("out/apng/" + ser + ".png"), frames, 16);
-                }
-                try {
-                    png.write(Gdx.files.local("out/png/" + ser + ".png"), frames.get(0));
-                } catch (IOException ignored) {
-                }
+                if(Gdx.app.getType() != Application.ApplicationType.WebGL)
+                    gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 16);
+//                if(apng != null) {
+//                    for (int i = 0; i < frames.size; i++) {
+//                        Pixmap frame = frames.get(i);
+//                        frame.setBlending(Pixmap.Blending.None);
+//                        int h = frame.getHeight(), w = frame.getWidth(), halfH = h >> 1, halfW = w >> 1;
+//                        for (int y = 0; y < h; y++) {
+//                            for (int x = 0; x < w; x++) {
+//                                int p = frame.getPixel(x, y);
+//                                frame.drawPixel(x, y, (p & 0xFFFFFF00) | Math.min(Math.max(
+//                                        (int) (300 - 0x2.8p7 / (halfH * halfH) * ((x - halfW) * (x - halfW) + (y - halfH) * (y - halfH))), 0), 255));
+//                            }
+//
+//                        }
+//                    }
+//                    apng.write(Gdx.files.local("out/apng/" + ser + ".png"), frames, 16);
+//                }
+//                try {
+//                    png.write(Gdx.files.local("out/png/" + ser + ".png"), frames.get(0));
+//                } catch (IOException ignored) {
+//                }
                 for (int i = 0; i < frames.size; i++) {
                     frames.get(i).dispose();
                 }
