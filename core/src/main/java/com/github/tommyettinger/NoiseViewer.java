@@ -7,6 +7,7 @@ import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
+import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Array;
@@ -52,8 +53,8 @@ public class NoiseViewer extends ApplicationAdapter {
     private ImmediateModeRenderer20 renderer;
 
     private Clipboard clipboard;
-//    public static final int width = 400, height = 400;
-    public static final int width = 256, height = 256;
+    public static final int width = 400, height = 400;
+//    public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
 
 //    private IntList colorList = new IntList(256);
@@ -79,6 +80,8 @@ public class NoiseViewer extends ApplicationAdapter {
      * Converts the four HSLA components, each in the 0.0 to 1.0 range, to an int in RGBA8888 format.
      * I brought this over from colorful-gdx's FloatColors class. I can't recall where I got the original HSL(A) code
      * from, but there's a strong chance it was written by cypherdare/cyphercove for their color space comparison.
+     * It also includes a change to the hue (the fractional part of {@code h}) so cyan is less frequent and orange is
+     * more frequent.
      *
      * @param h hue, usually from 0.0 to 1.0, but only the fractional part is used
      * @param s saturation, from 0.0 to 1.0
@@ -87,6 +90,7 @@ public class NoiseViewer extends ApplicationAdapter {
      * @return an RGBA8888-format int
      */
     public static int hsl2rgb(final float h, final float s, final float l, final float a) {
+        // note: the spline is used here to change hue distribution so there's more orange, less cyan.
         final float hue = MathTools.barronSpline(h - MathUtils.floor(h), 1.7f, 0.9f);
         float x = Math.min(Math.max(Math.abs(hue * 6f - 3f) - 1f, 0f), 1f);
         float y = hue + (2f / 3f);
@@ -119,7 +123,7 @@ public class NoiseViewer extends ApplicationAdapter {
             gif = new AnimatedGif();
             gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
             gif.setDitherStrength(0.3f);
-            gif.palette = new QualityPalette(PaletteReducer.AURORA);
+            gif.palette = new QualityPalette();
         }
 
         updateColor(Hasher.randomize3Float(TimeUtils.millis()));
@@ -141,6 +145,48 @@ public class NoiseViewer extends ApplicationAdapter {
 
         startTime = TimeUtils.millis();
         renderer = new ImmediateModeRenderer20(width * height * 2, false, true, 0);
+        ShaderProgram hslShader = new ShaderProgram(
+                "attribute vec4 a_position;\n" +
+                        "attribute vec4 a_color;\n" +
+                        "uniform mat4 u_projModelView;\n" +
+                        "varying vec4 v_col;\n" +
+                        "void main() {\n" +
+                        "   gl_Position = u_projModelView * a_position;\n" +
+                        "   v_col = a_color;\n" +
+                        "   v_col.a *= 255.0 / 254.0;\n" +
+                        "   gl_PointSize = 1.0;\n" +
+                        "}",
+                "#ifdef GL_ES\n" +
+                        "precision mediump float;\n" +
+                        "#endif\n" +
+                        "varying vec4 v_col;\n" +
+                        "float barronSpline(float x) {\n" +
+                        "    const float shape = 1.7;\n" +
+                        "    const float turning = 0.9;\n" +
+                        "    float d = turning - x;\n" +
+                        "    return mix(\n" +
+                        "      ((1. - turning) * (x - 1.)) / (1. - (x + shape * d)) + 1.,\n" +
+                        "      (turning * x) / (1.0e-20 + (x + shape * d)),\n" +
+                        "      step(0.0, d));\n" +
+                        "}\n" +
+                        "vec4 hsl2rgb(vec4 c)\n" +
+                        "{\n" +
+                        "    const vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n" +
+                        "    vec3 p = abs(fract(barronSpline(c.x) + K.xyz) * 6.0 - K.www);\n" +
+                        "    float v = (c.z + c.y * min(c.z, 1.0 - c.z));\n" +
+                        "    return vec4(v * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), 2.0 * (1.0 - c.z / (v + 1e-10))), c.w);\n" +
+                        "}" +
+                        "void main() {\n" +
+                        "   gl_FragColor = hsl2rgb(v_col);\n" +
+                        "}");
+        if(!hslShader.isCompiled())
+            System.out.println("HSL Shader compilation failed: " + hslShader.getLog());
+        renderer.setShader(hslShader);
+//        System.out.println();
+//        System.out.println(renderer.getShader().getVertexShaderSource());
+//        System.out.println();
+//        System.out.println(renderer.getShader().getFragmentShaderSource());
+//        System.out.println();
         view = new ScreenViewport();
         InputAdapter input = new InputAdapter() {
             @Override
@@ -248,6 +294,10 @@ public class NoiseViewer extends ApplicationAdapter {
         System.out.println("Data for Copy/Paste: " + noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + System.currentTimeMillis());
     }
 
+    public static float fract(final float x) {
+        return x - MathUtils.floor(x);
+    }
+
     public void putMap() {
         if (Gdx.input.isKeyPressed(M))
             noise.setMutation(noise.getMutation() + (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
@@ -270,12 +320,13 @@ public class NoiseViewer extends ApplicationAdapter {
                                 B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
                 )), 0), 1);
                 renderer.color(
-                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
-                                //DescriptiveColor.oklabIntToFloat(DescriptiveColor.oklabByHCL(
-                                varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue,
+//                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
+                                fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue),
                                 TrigTools.sin(1 + bright * 1.375f),
                                 TrigTools.sin(bright * 1.5f),
-                                1f)));
+                                1f
+//                        ))
+                );
 //                renderer.color(colorFloats[(int) (bright * 255.99f)]);
                 renderer.vertex(x, y, 0);
             }
@@ -302,7 +353,7 @@ public class NoiseViewer extends ApplicationAdapter {
 
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
-                                            varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue,
+                                            fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue),
                                             TrigTools.sin(1 + bright * 1.375f),
                                             TrigTools.sin(bright * 1.5f),
                                             1f))
