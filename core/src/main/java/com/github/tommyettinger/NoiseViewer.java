@@ -46,6 +46,7 @@ public class NoiseViewer extends ApplicationAdapter {
     private int octaves = 0;
     private float freq = 0.125f;
     private boolean paused;
+    private boolean hueCycle = false;
     private ImmediateModeRenderer20 renderer;
 
     private Clipboard clipboard;
@@ -239,6 +240,9 @@ public class NoiseViewer extends ApplicationAdapter {
                     case BACKSLASH: // fractal spiral mode, I don't know if there is a mnemonic
                         noise.setFractalSpiral(!noise.isFractalSpiral());
                         break;
+                    case Y:
+                        hueCycle = !hueCycle;
+                        break;
                     case P: { // paste
                         if (clipboard.hasContents()) {
                             String paste = clipboard.getContents();
@@ -294,6 +298,9 @@ public class NoiseViewer extends ApplicationAdapter {
         renderer.begin(view.getCamera().combined, GL_POINTS);
         float bright, nf = noise.getFrequency(), c = (paused ? startTime
                 : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf;
+        float hc = hue;
+        if(hueCycle) hc = c * 0x4p-8f;
+
         for (int x = 0; x < width; x++) {
             float distX = x - (width - 1) * 0.5f;
             for (int y = 0; y < height; y++) {
@@ -311,7 +318,7 @@ public class NoiseViewer extends ApplicationAdapter {
                 )), 0), 1);
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
-                                fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue),
+                                fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hc),
                                 TrigTools.sin(1 + bright * 1.375f),
                                 TrigTools.sin(bright * 1.5f),
                                 1f
@@ -324,6 +331,8 @@ public class NoiseViewer extends ApplicationAdapter {
         if (Gdx.input.isKeyJustPressed(W)) {
             if (Gdx.files.isLocalStorageAvailable()) {
                 for (int ct = 0; ct < 256; ct++) {
+                    if(hueCycle) hc = ct * 0x4p-8f;
+                    else hc = hue;
                     Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
                     for (int x = 0; x < width; x++) {
                         float distX = x - (width - 1) * 0.5f;
@@ -343,7 +352,7 @@ public class NoiseViewer extends ApplicationAdapter {
 
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
-                                            fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hue),
+                                            fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hc),
                                             TrigTools.sin(1 + bright * 1.375f),
                                             TrigTools.sin(bright * 1.5f),
                                             1f))
