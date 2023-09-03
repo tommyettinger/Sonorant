@@ -45,6 +45,8 @@ public class NoiseViewer extends ApplicationAdapter {
     private int divisions = 2;
     private int octaves = 0;
     private float freq = 0.125f;
+    private float a = 1f;
+    private float b = 1f;
     private boolean paused;
     private boolean hueCycle = false;
     private ImmediateModeRenderer20 renderer;
@@ -294,12 +296,18 @@ public class NoiseViewer extends ApplicationAdapter {
         if (Gdx.input.isKeyPressed(C))
             hue = (hue + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         if (Gdx.input.isKeyPressed(V))
-            variance = (variance + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
+            variance = Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
+        if (Gdx.input.isKeyPressed(NUM_0))
+            a = Math.max(0.001f, a + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
+        if (Gdx.input.isKeyPressed(NUM_1))
+            b = Math.max(0.001f, b + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         renderer.begin(view.getCamera().combined, GL_POINTS);
         float bright, nf = noise.getFrequency(), c = (paused ? startTime
                 : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf;
         float hc = hue;
         if(hueCycle) hc = c * 0x4p-8f;
+
+        double aa = 1.0/a, bb = 1.0/b;
 
         for (int x = 0; x < width; x++) {
             float distX = x - (width - 1) * 0.5f;
@@ -316,6 +324,9 @@ public class NoiseViewer extends ApplicationAdapter {
                         noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
                                 B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
                 )), 0), 1);
+
+                bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
+
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
                                 fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hc),
@@ -349,6 +360,8 @@ public class NoiseViewer extends ApplicationAdapter {
                                     noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
                                             B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
                             )), 0), 1);
+
+                            bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
 
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
