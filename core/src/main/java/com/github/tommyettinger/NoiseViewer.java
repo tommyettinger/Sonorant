@@ -10,15 +10,11 @@ import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.Clipboard;
-import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.*;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.AnimatedGif;
 import com.github.tommyettinger.anim8.Dithered;
-import com.github.tommyettinger.anim8.PaletteReducer;
 import com.github.tommyettinger.anim8.QualityPalette;
 import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.ObjectList;
@@ -53,7 +49,7 @@ public class NoiseViewer extends ApplicationAdapter {
     private ImmediateModeRenderer20 renderer;
 
     private Clipboard clipboard;
-    public static final int width = 400, height = 400;
+    public static final int width = 350, height = 350;
 //    public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
 
@@ -126,7 +122,6 @@ public class NoiseViewer extends ApplicationAdapter {
             gif.palette = new QualityPalette();
         }
 
-        updateColor(Hasher.randomize3Float(TimeUtils.millis()));
 //        colorList.toArray(gif.palette.paletteArray);
 //
 //        IntList g = ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(new IntList(256), 256, Interpolation.smooth::apply,
@@ -197,14 +192,6 @@ public class NoiseViewer extends ApplicationAdapter {
                     case SPACE: // pause
                         paused = !paused;
                         break;
-                    case C: // color
-                        updateColor(Hasher.randomize3Float(TimeUtils.millis()));
-                        break;
-                    case V: // color hue variance
-                        variance *= (UIUtils.shift() ? 0.8f : 1.25f);
-//                        varianceNoise.setFrequency(varianceNoise.getFrequency() + (UIUtils.shift() ? -0.25f : 0.25f));
-                        updateColor(hue);
-                        break;
                     case E: //earlier seed
                         s = (int) (ls = noise.getSeed() - 1);
                         noise.setSeed(s);
@@ -264,7 +251,6 @@ public class NoiseViewer extends ApplicationAdapter {
                                         Interpolations.get(paste.substring(last + 1, last = paste.indexOf('_', last + 1))));
                                 hue = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
                                 variance = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
-                                updateColor(hue);
                                 prettyPrint();
                             }
                         } else
@@ -301,6 +287,10 @@ public class NoiseViewer extends ApplicationAdapter {
     public void putMap() {
         if (Gdx.input.isKeyPressed(M))
             noise.setMutation(noise.getMutation() + (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
+        if (Gdx.input.isKeyPressed(C))
+            hue = (hue + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
+        if (Gdx.input.isKeyPressed(V))
+            variance = (variance + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         renderer.begin(view.getCamera().combined, GL_POINTS);
         float bright, nf = noise.getFrequency(), c = (paused ? startTime
                 : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf;
@@ -428,8 +418,8 @@ public class NoiseViewer extends ApplicationAdapter {
         view.apply(true);
     }
 
-    public void updateColor(float h) {
-        hue = h;
+//    public void updateColor(float h) {
+//        hue = h;
 //        colorList.clear();
 //        ColorGradients.toRGBA8888(ColorGradients.appendGradientChain(colorList, 256, Interpolations.smooth,
 //                DescriptiveColor.oklabByHSL(variance * 0.05f + hue, 0.85f, 0.2f, 1f),
@@ -440,5 +430,5 @@ public class NoiseViewer extends ApplicationAdapter {
 //        for (int i = 0; i < 256; i++) {
 //            colorFloats[i] = BitConversion.reversedIntBitsToFloat(colorList.get(i) & -2);
 //        }
-    }
+//    }
 }
