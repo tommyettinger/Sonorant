@@ -44,8 +44,8 @@ public class NoiseLive extends ApplicationAdapter {
     private int divisions = 2;
     private int octaves = 0;
     private float freq = 0.125f;
-    private float a = 1f;
-    private float b = 1f;
+    private float a = 0.1f;
+    private float b = 0.9f;
     private boolean paused;
     private boolean hueCycle = true;
     private ImmediateModeRenderer20 renderer;
@@ -317,17 +317,17 @@ public class NoiseLive extends ApplicationAdapter {
                 len = (len - c) * 0x1p-8f;
                 int flip = -((int) theta & 1 & divisions) | 1;
                 theta *= flip;
-                float A, B, C, D;
+                float A, B, C;
                 bright = Math.min(Math.max(basicPrepare(
                         noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
-                                B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
+                                B = TrigTools.sinTurns(theta) * shrunk, C = len * 128f)
                 ), 0), 1);
 
                 bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
 
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
-                                fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hc),
+                                fract(varianceNoise.getConfiguredNoise(A, B, C) * variance + hc),
                                 TrigTools.sin(1 + bright * 1.375f),
                                 TrigTools.sin(bright * 1.5f),
                                 1f
@@ -353,17 +353,17 @@ public class NoiseLive extends ApplicationAdapter {
                             len = (len - ct) * 0x1p-8f;
                             int flip = -((int) theta & 1 & divisions) | 1;
                             theta *= flip;
-                            float A, B, C, D;
+                            float A, B, C;
                             bright = Math.min(Math.max(basicPrepare(
                                     noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
-                                            B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
+                                            B = TrigTools.sinTurns(theta) * shrunk, C = len * 128f)
                             ), 0), 1);
 
                             bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
 
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
-                                            fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hc),
+                                            fract(varianceNoise.getConfiguredNoise(A, B, C) * variance + hc),
                                             TrigTools.sin(1 + bright * 1.375f),
                                             TrigTools.sin(bright * 1.5f),
                                             1f))
