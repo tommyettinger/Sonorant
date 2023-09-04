@@ -24,6 +24,7 @@ import com.github.tommyettinger.digital.Interpolations;
 import com.github.tommyettinger.digital.MathTools;
 import com.github.tommyettinger.digital.TrigTools;
 import com.github.tommyettinger.ds.ObjectList;
+import com.github.tommyettinger.random.LineWobble;
 import com.github.yellowstonegames.grid.FlawedPointHash;
 import com.github.yellowstonegames.grid.IPointHash;
 import com.github.yellowstonegames.grid.IntPointHash;
@@ -300,12 +301,15 @@ public class NoiseLive extends ApplicationAdapter {
         if (Gdx.input.isKeyPressed(NUM_1))
             b = Math.max(0.001f, b + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         renderer.begin(view.getCamera().combined, GL_POINTS);
-        float bright, nf = noise.getFrequency(), c = (paused ? startTime
-                : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf;
+        float bright;
+        float nf = noise.getFrequency();
+        float c = (paused ? startTime
+                        : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf;
         float hc = hue;
         if(hueCycle) hc = c * 0x4p-8f;
 
-        double aa = 1.0/a, bb = 1.0/b;
+        double aa = (LineWobble.bicubicWobble((int)noise.getSeed(), c * 0x1p-5f) + 1.5) / a;
+        double bb = (LineWobble.bicubicWobble(~(int)noise.getSeed(), 1.618f - c * 0x1p-5f) + 1.5) / b;
 
         for (int x = 0; x < width; x++) {
             float distX = x - (width - 1) * 0.5f;
