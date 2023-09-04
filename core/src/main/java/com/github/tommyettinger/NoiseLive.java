@@ -37,9 +37,9 @@ import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
  */
 public class NoiseLive extends ApplicationAdapter {
 
-    private final Noise noise = new Noise(322420472, 0.0625f);
+    private final Noise noise = new Noise(322420472, 0.0625f, Noise.VALUE_FRACTAL, 1);
+    private final Noise alternateNoise = new Noise(~322420472, 0.0625f, Noise.PERLIN_FRACTAL, 1);
     private final Noise varianceNoise = new Noise(-1, 0.025f, Noise.VALUE);
-    private final IntPointHash iph = new IntPointHash();
     private float hue = 0;
     private float variance = 1f;
     private int divisions = 2;
@@ -115,9 +115,8 @@ public class NoiseLive extends ApplicationAdapter {
     public void create() {
         if(clipboard == null) clipboard = Gdx.app.getClipboard();
 
-        noise.setNoiseType(Noise.VALUE_FRACTAL);
         noise.setFractalType(Noise.RIDGED_MULTI);
-        noise.setPointHash(iph);
+        alternateNoise.setFractalType(Noise.RIDGED_MULTI);
 
 //        apng = new AnimatedPNG();
 //        png = new PixmapIO.PNG();
@@ -202,15 +201,18 @@ public class NoiseLive extends ApplicationAdapter {
                     case E: //earlier seed
                         s = (int) (ls = noise.getSeed() - 1);
                         noise.setSeed(s);
+                        alternateNoise.setSeed(~s);
                         System.out.println("Using seed " + s);
                         break;
                     case S: //seed after
                         s = (int) (ls = noise.getSeed() + 1);
                         noise.setSeed(s);
+                        alternateNoise.setSeed(~s);
                         System.out.println("Using seed " + s);
                         break;
                     case N: // noise type
                         noise.setNoiseType((noise.getNoiseType() + (UIUtils.shift() ? 16 : 2)) % 18);
+                        alternateNoise.setNoiseType((alternateNoise.getNoiseType() + (UIUtils.shift() ? 16 : 2)) % 18);
                         break;
                     case ENTER:
                     case D: //dimension
@@ -218,25 +220,27 @@ public class NoiseLive extends ApplicationAdapter {
                         break;
                     case B: //blur
                         noise.setSharpness(noise.getSharpness() + (UIUtils.shift() ? 0.05f : -0.05f));
+                        alternateNoise.setSharpness(alternateNoise.getSharpness() + (UIUtils.shift() ? 0.05f : -0.05f));
                         break;
                     case F: // frequency
                         noise.setFrequency(freq *= (UIUtils.shift() ? 1.25f : 0.8f));
+                        alternateNoise.setFrequency(freq);
                         break;
                     case R: // fRactal type
                         noise.setFractalType((noise.getFractalType() + (UIUtils.shift() ? 3 : 1)) & 3);
+                        alternateNoise.setFractalType((alternateNoise.getFractalType() + (UIUtils.shift() ? 3 : 1)) & 3);
                         break;
                     case H: // higher octaves
                         noise.setFractalOctaves((octaves = octaves + 1 & 7) + 1);
+                        alternateNoise.setFractalOctaves(octaves + 1);
                         break;
                     case L: // lower octaves
                         noise.setFractalOctaves((octaves = octaves + 7 & 7) + 1);
+                        alternateNoise.setFractalOctaves(octaves + 1);
                         break;
-//                    case I: // interpolator
-//                        interpolatorIndex = (interpolatorIndex + (UIUtils.shift() ? interpolators.size() - 1 : 1)) % interpolators.size();
-//                        interpolator = interpolators.get(interpolatorIndex);
-//                        break;
                     case BACKSLASH: // fractal spiral mode, I don't know if there is a mnemonic
                         noise.setFractalSpiral(!noise.isFractalSpiral());
+                        alternateNoise.setFractalSpiral(!alternateNoise.isFractalSpiral());
                         break;
                     case Y:
                         hueCycle = !hueCycle;
@@ -311,6 +315,8 @@ public class NoiseLive extends ApplicationAdapter {
         double aa = (LineWobble.bicubicWobble((int)noise.getSeed(), c * 0x1p-5f) + 1.5) / a;
         double bb = (LineWobble.bicubicWobble(~(int)noise.getSeed(), 1.618f - c * 0x1p-5f) + 1.5) / b;
 
+        float lerp = LineWobble.wobbleWrappedTight(noise.getSeed() ^ 0x9E3779B97F4A7C15L, c * 0x1.5p-5f + 0.618f, 256);
+
         for (int x = 0; x < width; x++) {
             float distX = x - (width - 1) * 0.5f;
             for (int y = 0; y < height; y++) {
@@ -322,9 +328,10 @@ public class NoiseLive extends ApplicationAdapter {
                 int flip = -((int) theta & 1 & divisions) | 1;
                 theta *= flip;
                 float A, B, C;
-                bright = Math.min(Math.max(basicPrepare(
+                bright = Math.min(Math.max(basicPrepare(MathTools.lerp(
                         noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
-                                B = TrigTools.sinTurns(theta) * shrunk, C = len * 128f)
+                                B = TrigTools.sinTurns(theta) * shrunk, C = len * 128f),
+                        alternateNoise.getConfiguredNoise(A, B, C), lerp)
                 ), 0), 1);
 
                 bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
@@ -346,6 +353,10 @@ public class NoiseLive extends ApplicationAdapter {
                 for (int ct = 0; ct < 256; ct++) {
                     if(hueCycle) hc = ct * 0x4p-8f;
                     else hc = hue;
+                    aa = (LineWobble.bicubicWobble((int)noise.getSeed(), ct * 0x1p-5f) + 1.5) / a;
+                    bb = (LineWobble.bicubicWobble(~(int)noise.getSeed(), 1.618f - ct * 0x1p-5f) + 1.5) / b;
+                    lerp = LineWobble.wobbleWrappedTight(noise.getSeed() ^ 0x9E3779B97F4A7C15L, ct * 0x1.5p-5f + 0.618f, 256);
+
                     Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
                     for (int x = 0; x < width; x++) {
                         float distX = x - (width - 1) * 0.5f;
@@ -358,9 +369,10 @@ public class NoiseLive extends ApplicationAdapter {
                             int flip = -((int) theta & 1 & divisions) | 1;
                             theta *= flip;
                             float A, B, C;
-                            bright = Math.min(Math.max(basicPrepare(
+                            bright = Math.min(Math.max(basicPrepare(MathTools.lerp(
                                     noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
-                                            B = TrigTools.sinTurns(theta) * shrunk, C = len * 128f)
+                                            B = TrigTools.sinTurns(theta) * shrunk, C = len * 128f),
+                                    alternateNoise.getConfiguredNoise(A, B, C), lerp)
                             ), 0), 1);
 
                             bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
