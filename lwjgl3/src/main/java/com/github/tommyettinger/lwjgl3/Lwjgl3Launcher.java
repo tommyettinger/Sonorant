@@ -2,9 +2,10 @@ package com.github.tommyettinger.lwjgl3;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.github.tommyettinger.NoiseLive;
 import com.github.tommyettinger.NoiseViewer;
 
-import static com.github.tommyettinger.NoiseViewer.*;
+import static com.github.tommyettinger.NoiseLive.*;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
@@ -13,12 +14,12 @@ public class Lwjgl3Launcher {
     }
 
     private static Lwjgl3Application createApplication() {
-        return new Lwjgl3Application(new NoiseViewer(null), getDefaultConfiguration());
+        return new Lwjgl3Application(new NoiseLive(null), getDefaultConfiguration());
     }
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
-        configuration.setTitle("Sonorant");
+        configuration.setTitle("Noise Live");
         configuration.useVsync(true);
         //// Limits FPS to the refresh rate of the currently active monitor.
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate);

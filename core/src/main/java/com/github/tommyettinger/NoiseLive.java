@@ -10,13 +10,19 @@ import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
-import com.badlogic.gdx.utils.*;
+import com.badlogic.gdx.utils.Array;
+import com.badlogic.gdx.utils.Clipboard;
+import com.badlogic.gdx.utils.ScreenUtils;
+import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.AnimatedGif;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.QualityPalette;
-import com.github.tommyettinger.digital.*;
+import com.github.tommyettinger.digital.Base;
+import com.github.tommyettinger.digital.Interpolations;
+import com.github.tommyettinger.digital.MathTools;
+import com.github.tommyettinger.digital.TrigTools;
 import com.github.tommyettinger.ds.ObjectList;
 import com.github.yellowstonegames.grid.FlawedPointHash;
 import com.github.yellowstonegames.grid.IPointHash;
@@ -28,18 +34,11 @@ import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
 
 /**
  */
-public class NoiseViewer extends ApplicationAdapter {
+public class NoiseLive extends ApplicationAdapter {
 
     private final Noise noise = new Noise(322420472, 0.0625f);
     private final Noise varianceNoise = new Noise(-1, 0.025f, Noise.VALUE);
     private final IntPointHash iph = new IntPointHash();
-    private final FlawedPointHash.CubeHash cube = new FlawedPointHash.CubeHash(1, 64);
-    private final FlawedPointHash.FlowerHash flower = new FlawedPointHash.FlowerHash(1);
-    private final IPointHash[] pointHashes = new IPointHash[] {iph, cube, flower};
-    private int hashIndex = 0;
-    private final ObjectList<Interpolations.Interpolator> interpolators = new ObjectList<>(Interpolations.getInterpolatorArray());
-    private int interpolatorIndex = 58;
-    private Interpolations.Interpolator interpolator = interpolators.get(interpolatorIndex);
     private float hue = 0;
     private float variance = 1f;
     private int divisions = 2;
@@ -48,7 +47,7 @@ public class NoiseViewer extends ApplicationAdapter {
     private float a = 1f;
     private float b = 1f;
     private boolean paused;
-    private boolean hueCycle = false;
+    private boolean hueCycle = true;
     private ImmediateModeRenderer20 renderer;
 
     private Clipboard clipboard;
@@ -75,6 +74,10 @@ public class NoiseViewer extends ApplicationAdapter {
     public static int rgba8888 (float r, float g, float b, float a) {
         return ((int)(r * 255.999f) << 24) | ((int)(g * 255.999f) << 16) | ((int)(b * 255.999f) << 8) | (int)(a * 127.999f) << 1;
     }
+
+    public static int rgb888 (float r, float g, float b) {
+        return ((int)(r * 255.999f) << 24) | ((int)(g * 255.999f) << 16) | ((int)(b * 255.999f) << 8) | 0xFE;
+    }
     /**
      * Converts the four HSLA components, each in the 0.0 to 1.0 range, to an int in RGBA8888 format.
      * I brought this over from colorful-gdx's FloatColors class. I can't recall where I got the original HSL(A) code
@@ -100,10 +103,10 @@ public class NoiseViewer extends ApplicationAdapter {
         z = Math.min(Math.max(Math.abs(z * 6f - 3f) - 1f, 0f), 1f);
         float v = (l + s * Math.min(l, 1f - l));
         float d = 2f * (1f - l / (v + 1e-10f));
-        return rgba8888(v * MathUtils.lerp(1f, x, d), v * MathUtils.lerp(1f, y, d), v * MathUtils.lerp(1f, z, d), a);
+        return rgb888(v * MathUtils.lerp(1f, x, d), v * MathUtils.lerp(1f, y, d), v * MathUtils.lerp(1f, z, d));
     }
 
-    public NoiseViewer(Clipboard clippy) {
+    public NoiseLive(Clipboard clippy) {
         clipboard = clippy;
     }
 
@@ -113,7 +116,7 @@ public class NoiseViewer extends ApplicationAdapter {
 
         noise.setNoiseType(Noise.VALUE_FRACTAL);
         noise.setFractalType(Noise.RIDGED_MULTI);
-        noise.setPointHash(pointHashes[hashIndex]);
+        noise.setPointHash(iph);
 
 //        apng = new AnimatedPNG();
 //        png = new PixmapIO.PNG();
@@ -198,15 +201,11 @@ public class NoiseViewer extends ApplicationAdapter {
                     case E: //earlier seed
                         s = (int) (ls = noise.getSeed() - 1);
                         noise.setSeed(s);
-                        cube.setState(ls);
-                        flower.setState(ls);
                         System.out.println("Using seed " + s);
                         break;
                     case S: //seed after
                         s = (int) (ls = noise.getSeed() + 1);
                         noise.setSeed(s);
-                        cube.setState(ls);
-                        flower.setState(ls);
                         System.out.println("Using seed " + s);
                         break;
                     case N: // noise type
@@ -225,20 +224,16 @@ public class NoiseViewer extends ApplicationAdapter {
                     case R: // fRactal type
                         noise.setFractalType((noise.getFractalType() + (UIUtils.shift() ? 3 : 1)) & 3);
                         break;
-                    case G: // "glitch" (only affects Cubic Noise type)
-                        noise.setPointHash(pointHashes[
-                                hashIndex = (UIUtils.shift() ? hashIndex + pointHashes.length - 1 :hashIndex + 1) % pointHashes.length]);
-                        break;
                     case H: // higher octaves
                         noise.setFractalOctaves((octaves = octaves + 1 & 7) + 1);
                         break;
                     case L: // lower octaves
                         noise.setFractalOctaves((octaves = octaves + 7 & 7) + 1);
                         break;
-                    case I: // interpolator
-                        interpolatorIndex = (interpolatorIndex + (UIUtils.shift() ? interpolators.size() - 1 : 1)) % interpolators.size();
-                        interpolator = interpolators.get(interpolatorIndex);
-                        break;
+//                    case I: // interpolator
+//                        interpolatorIndex = (interpolatorIndex + (UIUtils.shift() ? interpolators.size() - 1 : 1)) % interpolators.size();
+//                        interpolator = interpolators.get(interpolatorIndex);
+//                        break;
                     case BACKSLASH: // fractal spiral mode, I don't know if there is a mnemonic
                         noise.setFractalSpiral(!noise.isFractalSpiral());
                         break;
@@ -253,8 +248,7 @@ public class NoiseViewer extends ApplicationAdapter {
                                 noise.deserializeFromString(paste);
                                 Base base = Base.BASE10;
                                 divisions = base.readInt(paste, last + 2, last = paste.indexOf('_', last + 2));
-                                interpolatorIndex = interpolators.indexOf(interpolator =
-                                        Interpolations.get(paste.substring(last + 1, last = paste.indexOf('_', last + 1))));
+                                last = paste.indexOf('_', last + 1);
                                 hue = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
                                 variance = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
                                 a = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
@@ -284,11 +278,10 @@ public class NoiseViewer extends ApplicationAdapter {
     public void prettyPrint() {
         noise.prettyPrint();
         System.out.println("Divisions: " + divisions);
-        System.out.println("Gradient Interpolator: " + interpolator.tag + " (index " + interpolatorIndex + ")");
         System.out.println("Hue: " + hue);
         System.out.println("Gradient Variance: " + variance);
         System.out.println("Kumaraswamy a: " + a + ", b: " + b);
-        System.out.println("Data for Copy/Paste: " + noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis());
+        System.out.println("Data for Copy/Paste: " + noise.serializeToString() + "_" + divisions + "_linear" + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis());
     }
 
     public static float fract(final float x) {
@@ -325,10 +318,10 @@ public class NoiseViewer extends ApplicationAdapter {
                 int flip = -((int) theta & 1 & divisions) | 1;
                 theta *= flip;
                 float A, B, C, D;
-                bright = Math.min(Math.max(interpolator.apply(basicPrepare(
+                bright = Math.min(Math.max(basicPrepare(
                         noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
                                 B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
-                )), 0), 1);
+                ), 0), 1);
 
                 bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
 
@@ -361,10 +354,10 @@ public class NoiseViewer extends ApplicationAdapter {
                             int flip = -((int) theta & 1 & divisions) | 1;
                             theta *= flip;
                             float A, B, C, D;
-                            bright = Math.min(Math.max(interpolator.apply(basicPrepare(
+                            bright = Math.min(Math.max(basicPrepare(
                                     noise.getConfiguredNoise(A = TrigTools.cosTurns(theta) * shrunk,
                                             B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f)
-                            )), 0), 1);
+                            ), 0), 1);
 
                             bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
 
@@ -393,7 +386,7 @@ public class NoiseViewer extends ApplicationAdapter {
 //                gif.palette.exact(colorList.items, colorList.size());
 
                 Gdx.files.local("out/").mkdirs();
-                String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis();
+                String ser = noise.serializeToString() + "_" + divisions + "_linear" + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis();
                 prettyPrint();
                 if(Gdx.app.getType() != Application.ApplicationType.WebGL)
                     gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 16);
@@ -422,7 +415,7 @@ public class NoiseViewer extends ApplicationAdapter {
                 }
                 frames.clear();
             } else {
-                String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis();
+                String ser = noise.serializeToString() + "_" + divisions + "_linear" + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis();
                 System.out.println(ser);
                 clipboard.setContents(ser);
             }
