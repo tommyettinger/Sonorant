@@ -240,7 +240,7 @@ public class NoiseLive extends ApplicationAdapter {
                         break;
                     case BACKSLASH: // fractal spiral mode, I don't know if there is a mnemonic
                         noise.setFractalSpiral(!noise.isFractalSpiral());
-                        alternateNoise.setFractalSpiral(!alternateNoise.isFractalSpiral());
+                        alternateNoise.setFractalSpiral(noise.isFractalSpiral());
                         break;
                     case Y:
                         hueCycle = !hueCycle;
@@ -251,6 +251,9 @@ public class NoiseLive extends ApplicationAdapter {
                             int last = paste.lastIndexOf('`');
                             if (last >= 1) {
                                 noise.deserializeFromString(paste);
+                                alternateNoise.deserializeFromString(paste);
+                                alternateNoise.setSeed(~(int)noise.getSeed());
+                                alternateNoise.setNoiseType((noise.getNoiseType() + 2) % 18);
                                 Base base = Base.BASE10;
                                 divisions = base.readInt(paste, last + 2, last = paste.indexOf('_', last + 2));
                                 last = paste.indexOf('_', last + 1);
