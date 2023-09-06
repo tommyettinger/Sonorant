@@ -4,6 +4,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.github.tommyettinger.NoiseLive;
 import com.github.tommyettinger.NoiseViewer;
+import com.github.tommyettinger.ShaderNoise;
 
 import static com.github.tommyettinger.NoiseLive.*;
 
@@ -14,7 +15,7 @@ public class Lwjgl3Launcher {
     }
 
     private static Lwjgl3Application createApplication() {
-        return new Lwjgl3Application(new NoiseLive(null), getDefaultConfiguration());
+        return new Lwjgl3Application(new ShaderNoise(null), getDefaultConfiguration());
     }
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
