@@ -1,4 +1,7 @@
 d:assets:assets:0:application/unknown:1
+t:foam_fragment.glsl:foam_fragment-54be0466c591996e67538f7b199f0a99.glsl:6357:application/unknown:1
+t:foam_vertex.glsl:foam_vertex-ea75eceaeb6fc10f63783e42bb81d800.glsl:345:application/unknown:1
+t:sonorant_fragment.glsl:sonorant_fragment-2486fe5fe6105c23d72a15834b1b0170.glsl:4005:application/unknown:1
 t:com/badlogic/gdx/graphics/g3d/particles/particles.fragment.glsl:particles.fragment-b90524761fdf09b0a836056d590c30b8.glsl:820:application/unknown:1
 t:com/badlogic/gdx/graphics/g3d/particles/particles.vertex.glsl:particles.vertex-f25b8b2fae10b9bfa09bfdd484923148.glsl:2886:application/unknown:1
 t:com/badlogic/gdx/graphics/g3d/shaders/default.fragment.glsl:default.fragment-e1c018bd48044c8b67c7bbc53145e540.glsl:5874:application/unknown:1

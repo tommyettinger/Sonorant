@@ -38,7 +38,7 @@ public class ShaderNoise extends ApplicationAdapter {
 	}
 
 	@Override public void create () {
-		Gdx.app.setLogLevel(Application.LOG_ERROR);
+		Gdx.app.setLogLevel(Application.LOG_INFO);
 		batch = new SpriteBatch();
 		
 		Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -81,20 +81,23 @@ public class ShaderNoise extends ApplicationAdapter {
 				Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 			}
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.S)){ // seed
-			seed += UIUtils.shift() ? 1 : -1;
+			seed += UIUtils.shift() ? 0.25f : -0.25f;
+		} else if(Gdx.input.isKeyJustPressed(SLASH)){ // seed
+			long state = (long) (System.nanoTime() * seed) + 0xD1B54A32D192ED03L;
+			seed = ((((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L) >>> 36) * 0x1.5bf0a8p-16f;;
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.R)){ // reset
 			startTime = TimeUtils.millis();
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.F)){ // fps
-			System.out.println(Gdx.graphics.getFramesPerSecond());
+			Gdx.app.log("FPS", String.valueOf(Gdx.graphics.getFramesPerSecond()));
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){ // quit
 			Gdx.app.exit();
 		}
 		if (Gdx.input.isKeyPressed(V))
-			variance = Math.min(Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime())), 1f);
+			variance = Math.min(Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
 		if (Gdx.input.isKeyPressed(A))
-			a = Math.min(Math.max(0.001f, a + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime())), 1f);
+			a = Math.min(Math.max(0.001f, a + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
 		if (Gdx.input.isKeyPressed(B))
-			b = Math.min(Math.max(0.001f, b + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime())), 1f);
+			b = Math.min(Math.max(0.001f, b + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
 
 		final float ftm = TimeUtils.timeSinceMillis(startTime) * (0x1p-10f);
 		batch.begin();
