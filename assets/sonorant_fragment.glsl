@@ -89,17 +89,17 @@ float swayRandomized(float seed, float value)
 void main() {
   if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
   vec2 center = (gl_FragCoord.xy - u_resolution * 0.5) / 400.;
-  float c = u_time, hc = c * (1.0/64.0), kc = c * (1.0/8.0);
-  float theta = atan(center.y, center.x) * divisions + hc;
+  float c = u_time, dc = c * (1.0/64.0), hc = c * (1.0/32.0);
+  float theta = atan(center.y, center.x) * divisions + dc;
   float len = length(center);
   float shrunk = len * 16.0 / divisions;
   float adj = (len * 16. - c) * 0.5;
-  float aa = (swayRandomized(-2.618 - -u_seed, adj) + 1.125) / 0.1;
-  float bb = (swayRandomized(u_seed, 1.618 - adj) + 1.125) / 0.9;
+  float aa = (swayRandomized(-2.618 - u_seed, adj) + 1.125) / (0.1 + v_color.g);
+  float bb = (swayRandomized(u_seed, 1.618 - adj) + 1.125) / (0.9 + v_color.b);
   vec3 i = vec3(sin(theta) * shrunk, cos(theta) * shrunk, adj);
   float bright = pow(1.0 - pow(1.0 - ridged(4.3 + u_seed, i), bb), aa);
   gl_FragColor = hsl2rgb(vec4(
-    fract(foam(1.111 + u_seed, i) * v_color.r + hc),
+    fract(foam(1.111 + u_seed, i) * v_color.r * 2.0 + hc),
     sin(1.0 + bright * 1.375),
     sin(bright * 1.5),
     v_color.a));

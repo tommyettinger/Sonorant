@@ -13,6 +13,8 @@ import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 
+import static com.badlogic.gdx.Input.Keys.*;
+
 /**
  * Credit for the shader adaptation goes to angelickite , a very helpful user on the libGDX Discord.
  * The Discord can be found at <a href="https://discord.gg/crTrDEK">this link</a>.
@@ -25,6 +27,9 @@ public class ShaderNoise extends ApplicationAdapter {
 
 	private long startTime;
 	private float seed;
+	private float variance = 0.5f;
+	private float a = 0f;
+	private float b = 0f;
 	public static int width = 350, height = 350;
 	private Clipboard clipboard;
 
@@ -84,11 +89,19 @@ public class ShaderNoise extends ApplicationAdapter {
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){ // quit
 			Gdx.app.exit();
 		}
+		if (Gdx.input.isKeyPressed(V))
+			variance = Math.min(Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime())), 1f);
+		if (Gdx.input.isKeyPressed(A))
+			a = Math.min(Math.max(0.001f, a + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime())), 1f);
+		if (Gdx.input.isKeyPressed(B))
+			b = Math.min(Math.max(0.001f, b + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime())), 1f);
+
 		final float ftm = TimeUtils.timeSinceMillis(startTime) * (0x1p-10f);
 		batch.begin();
 		shader.setUniformf("u_seed", seed);
 		shader.setUniformf("u_time", ftm);
 		shader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		batch.setColor(variance, a, b, 1f);
 		batch.draw(pixel, 0, 0, width, height);
 		batch.end();
 	}
