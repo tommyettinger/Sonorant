@@ -25,7 +25,7 @@ public class ShaderNoise extends ApplicationAdapter {
 
 	private long startTime;
 	private float seed;
-	private int width, height;
+	public static int width = 350, height = 350;
 	private Clipboard clipboard;
 
 	public ShaderNoise(Clipboard clippy) {
@@ -61,8 +61,8 @@ public class ShaderNoise extends ApplicationAdapter {
 	}
 
 	@Override public void resize (int width, int height) {
-		this.width = width;
-		this.height = height;
+		ShaderNoise.width = width;
+		ShaderNoise.height = height;
 		batch.getProjectionMatrix().setToOrtho2D(0, 0, width, height);
 	}
 

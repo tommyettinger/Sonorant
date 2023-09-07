@@ -20,14 +20,9 @@ import com.github.tommyettinger.anim8.AnimatedGif;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.QualityPalette;
 import com.github.tommyettinger.digital.Base;
-import com.github.tommyettinger.digital.Interpolations;
 import com.github.tommyettinger.digital.MathTools;
 import com.github.tommyettinger.digital.TrigTools;
-import com.github.tommyettinger.ds.ObjectList;
 import com.github.tommyettinger.random.LineWobble;
-import com.github.yellowstonegames.grid.FlawedPointHash;
-import com.github.yellowstonegames.grid.IPointHash;
-import com.github.yellowstonegames.grid.IntPointHash;
 import com.github.yellowstonegames.grid.Noise;
 
 import static com.badlogic.gdx.Input.Keys.*;

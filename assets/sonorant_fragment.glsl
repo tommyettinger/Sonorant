@@ -27,57 +27,37 @@ float hash(float seed, float p) {
     return fract(fract((p - seed) * PHI + seed) * (PHI - p) - seed);
 }
 
-float noise(float seed, vec4 x) {
-    const vec4 step = vec4(59.0, 43.0, 37.0, 53.0);
+float noise(float seed, vec3 x) {
+    const vec3 step = vec3(59.0, 43.0, 37.0); //vec3(110.0, 241.0, 171.0);
 
-    vec4 i = floor(x);
-    vec4 f = fract(x);
+    vec3 i = floor(x);
+    vec3 f = fract(x);
 
     float n = dot(i, step);
 
-    vec4 u = f * f * (3.0 - 2.0 * f);
-    return
-       mix(mix(mix(mix( hash(seed, n                                  ), hash(seed, n + dot(step, vec4(1., 0., 0., 0.))), u.x),
-                   mix( hash(seed, n + dot(step, vec4(0., 1., 0., 0.))), hash(seed, n + dot(step, vec4(1., 1., 0., 0.))), u.x), u.y),
-               mix(mix( hash(seed, n + dot(step, vec4(0., 0., 1., 0.))), hash(seed, n + dot(step, vec4(1., 0., 1., 0.))), u.x),
-                   mix( hash(seed, n + dot(step, vec4(0., 1., 1., 0.))), hash(seed, n + dot(step, vec4(1., 1., 1., 0.))), u.x), u.y), u.z),
-           mix(mix(mix( hash(seed, n + dot(step, vec4(0., 0., 0., 1.))), hash(seed, n + dot(step, vec4(1., 0., 0., 1.))), u.x),
-                   mix( hash(seed, n + dot(step, vec4(0., 1., 0., 1.))), hash(seed, n + dot(step, vec4(1., 1., 0., 1.))), u.x), u.y),
-               mix(mix( hash(seed, n + dot(step, vec4(0., 0., 1., 1.))), hash(seed, n + dot(step, vec4(1., 0., 1., 1.))), u.x),
-                   mix( hash(seed, n + dot(step, vec4(0., 1., 1., 1.))), hash(seed, n + dot(step, vec4(1., 1., 1., 1.))), u.x), u.y), u.z), u.w);
+    vec3 u = f * f * (3.0 - 2.0 * f);
+    return mix(mix(mix( hash(seed, n                              ), hash(seed, n + dot(step, vec3(1., 0., 0.))), u.x),
+                   mix( hash(seed, n + dot(step, vec3(0., 1., 0.))), hash(seed, n + dot(step, vec3(1., 1., 0.))), u.x), u.y),
+               mix(mix( hash(seed, n + dot(step, vec3(0., 0., 1.))), hash(seed, n + dot(step, vec3(1., 0., 1.))), u.x),
+                   mix( hash(seed, n + dot(step, vec3(0., 1., 1.))), hash(seed, n + dot(step, vec3(1., 1., 1.))), u.x), u.y), u.z);
 }
 
-float foam(float seed, vec4 x) {
-    vec4 p = vec4(
-                  dot(x.xy,  vec2(-0.25, 0.9682458365518543)),
-                  dot(x.xyz, vec3(-0.25, -0.3227486121839514,  0.91287092917527690)),
-                  dot(x,     vec4(-0.25, -0.3227486121839514, -0.45643546458763834,  0.7905694150420948)),
-                  dot(x,     vec4(-0.25, -0.3227486121839514, -0.45643546458763834, -0.7905694150420948)));
-
-    float a = noise(seed, p.xyzw);
-    float b = noise(seed + 23.1, vec4(x.x, p.yzw) + a * H4.x);
-    float c = noise(seed + 46.2, vec4(x.x, p.xzw) + b * H4.y);
-    float d = noise(seed + 69.3, vec4(x.x, p.xyw) + c * H4.z);
-    float e = noise(seed + 92.4, vec4(x.x, p.xyz) + d * H4.w);
-    return smoothstep(0.0, 1.0, smoothstep(0.0, 1.0, (a + b + c + d + e) * 0.2));
+float foam(float seed, vec3 x) {
+    vec4 p = vec4(x.x,
+                  dot(x.xy, vec2(-0.333, 0.942)),
+                  dot(x, vec3(-0.333, -0.471,  0.816)),
+                  dot(x, vec3(-0.333, -0.471, -0.816)));
+    float a = noise(seed, p.yzw);
+    float b = noise(seed + 42.1, p.xzw + a * H3.x);
+    float c = noise(seed + 84.2, p.xyw + b * H3.y);
+    float d = noise(seed + 126.3, p.xyz + c * H3.z);
+    return smoothstep(0.0, 1.0, smoothstep(0.0, 1.0, (a + b + c + d) * 0.25));
 }
 
-float ridged(float seed, vec4 x) {
+float ridged(float seed, vec3 x) {
   float f = foam(seed, x);
   return 1. - abs(1. - 2. * f);
 }
-// Credit to Andrey-Postelzhuk,
-// https://forum.unity.com/threads/hue-saturation-brightness-contrast-shader.260649/
-vec3 rodriguesHue(vec3 rgb, float hue)
-{
-    vec3 k = vec3(0.57735);
-    float c = cos(hue);
-    //Rodrigues' rotation formula
-    return rgb * c + cross(k, rgb) * sin(hue) + k * dot(k, rgb) * (1.0 - c);
-}
-
-
-
 
 float barronSpline(float x) {
     const float shape = 1.7;
@@ -109,16 +89,14 @@ float swayRandomized(float seed, float value)
 void main() {
   if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
   vec2 center = (gl_FragCoord.xy - u_resolution * 0.5) / 400.;
-  float c = u_time, hc = c * (1.0/64.0), kc = c * (1.0/32.0);
-  float aa = swayRandomized(-2.618 - -u_seed, kc + 1.5) / 0.1;
-  float bb = swayRandomized(u_seed, 1.618 - kc + 1.5) / 0.9;
+  float c = u_time, hc = c * (1.0/64.0), kc = c * (1.0/8.0);
   float theta = atan(center.y, center.x) * divisions + hc;
   float len = length(center);
-  vec2 shrunk = vec2(len / divisions, 32.0);
-  //vec2 shrunk = vec2((len + 0.125 * sin(c - len)) / divisions, 32.0);
-  float adj = (len * 16. - c) * (1.0 / (256.0));
-  vec2 pos = vec2(theta, adj);
-  vec4 i = vec4(sin(pos) * shrunk, cos(pos) * shrunk) * 16.;
+  float shrunk = len * 16.0 / divisions;
+  float adj = (len * 16. - c) * 0.5;
+  float aa = (swayRandomized(-2.618 - -u_seed, adj) + 1.125) / 0.1;
+  float bb = (swayRandomized(u_seed, 1.618 - adj) + 1.125) / 0.9;
+  vec3 i = vec3(sin(theta) * shrunk, cos(theta) * shrunk, adj);
   float bright = pow(1.0 - pow(1.0 - ridged(4.3 + u_seed, i), bb), aa);
   gl_FragColor = hsl2rgb(vec4(
     fract(foam(1.111 + u_seed, i) * v_color.r + hc),

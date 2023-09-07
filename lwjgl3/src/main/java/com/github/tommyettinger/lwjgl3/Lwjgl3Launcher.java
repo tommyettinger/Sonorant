@@ -2,11 +2,10 @@ package com.github.tommyettinger.lwjgl3;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.github.tommyettinger.NoiseLive;
-import com.github.tommyettinger.NoiseViewer;
 import com.github.tommyettinger.ShaderNoise;
 
-import static com.github.tommyettinger.NoiseLive.*;
+import static com.github.tommyettinger.ShaderNoise.height;
+import static com.github.tommyettinger.ShaderNoise.width;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
