@@ -28,8 +28,9 @@ public class ShaderNoise extends ApplicationAdapter {
 	private long startTime;
 	private float seed;
 	private float variance = 0.5f;
-	private float a = 0f;
-	private float b = 0f;
+	private float a = 0.07f;
+	private float b = 0.9f;
+	private float frequency = 1f;
 	public static int width = 350, height = 350;
 	private Clipboard clipboard;
 
@@ -87,11 +88,13 @@ public class ShaderNoise extends ApplicationAdapter {
 			seed = ((((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L) >>> 36) * 0x1.5bf0a8p-16f;;
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.R)){ // reset
 			startTime = TimeUtils.millis();
-		} else if(Gdx.input.isKeyJustPressed(Input.Keys.F)){ // fps
+		} else if(Gdx.input.isKeyJustPressed(Input.Keys.P)){ // performance
 			Gdx.app.log("FPS", String.valueOf(Gdx.graphics.getFramesPerSecond()));
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){ // quit
 			Gdx.app.exit();
 		}
+		if (Gdx.input.isKeyPressed(F))
+			frequency = Math.min(Math.max(0.001f, frequency + 0.1f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
 		if (Gdx.input.isKeyPressed(V))
 			variance = Math.min(Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
 		if (Gdx.input.isKeyPressed(A))
@@ -104,7 +107,7 @@ public class ShaderNoise extends ApplicationAdapter {
 		shader.setUniformf("u_seed", seed);
 		shader.setUniformf("u_time", ftm);
 		shader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		batch.setColor(variance, a, b, 1f);
+		batch.setColor(variance, a, b, frequency);
 		batch.draw(pixel, 0, 0, width, height);
 		batch.end();
 	}
