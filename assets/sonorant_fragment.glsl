@@ -65,11 +65,10 @@ float foamNoise(float seed, vec3 x) {
 //}
 
 vec3 hash(float s, vec3 p) {
-    return fract(fract((s - p) * H3 + p.yzx) * (H3.zxy - s) - p);
+    return fract(fract((s - p) * PHI + p) * (PHI - s) - p) * 2.0 - 1.0;
 }
 
-//vec3 hash( vec3 p ) // replace this by something better
-//{
+//vec3 hash(float s, vec3 p) {
 //	p = vec3( dot(p,vec3(127.1,311.7, 74.7)),
 //			  dot(p,vec3(269.5,183.3,246.1)),
 //			  dot(p,vec3(113.5,271.9,124.6)));
@@ -77,7 +76,7 @@ vec3 hash(float s, vec3 p) {
 //	return -1.0 + 2.0*fract(sin(p)*43758.5453123);
 //}
 
-float perlinNoise(float seed, vec3 p)
+float gradientNoise(float seed, vec3 p)
 {
     vec3 i = floor( p );
     vec3 f = fract( p );
@@ -107,10 +106,10 @@ float ridgedFoamNoise(float seed, vec3 x) {
   return 1.0 - abs(1. - f);
 }
 
-float ridgedPerlinNoise(float seed, vec3 x) {
-  float f = perlinNoise(seed, x);
-  //f *= f * f * (f * (f * 6.0 - 15.0) + 10.0);
+float ridgedGradientNoise(float seed, vec3 x) {
+  float f = gradientNoise(seed, x);
   return 1.0 - abs(1. - f);
+//  return f * f * f * (f * (f * 6.0 - 15.0) + 10.0);
 }
 
 // START HSL AND HUE CHANGES
@@ -147,22 +146,23 @@ float swayRandomized(float seed, float value)
 void main() {
   if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
   vec2 center = (gl_FragCoord.xy - u_resolution * 0.5) / 400.;
-  float c = u_time, dc = c * (1.0/64.0), hc = c * (1.0/8.0);
+  float c = u_time, dc = c * (1.0/64.0), hc = c * (1.0/16.0);
   float theta = atan(center.y, center.x) * divisions + dc;
   float len = length(center);
   float shrunk = len * 16.0 / divisions;
   float adj = (len * 16. - c) * 0.5;
-  float aa = (swayRandomized(-2.618 - u_seed, adj * 0.25) + 1.25) / (0.1 + v_color.g);
-  float bb = (swayRandomized(u_seed, 1.618 - adj * 0.35) + 1.25) / (0.9 + v_color.b);
+  float aa = (swayRandomized(-2.618 - u_seed, adj) + 1.125) / (0.35 + v_color.g);
+  float bb = (swayRandomized(u_seed, 1.618 - adj) + 1.125) / (0.7 + v_color.b);
   vec3 i = vec3(sin(theta) * shrunk, cos(theta) * shrunk, adj);
   float bright = pow(1.0 - pow(1.0 -
     mix(
       ridgedFoamNoise(4.3 + u_seed, i),
-      ridgedPerlinNoise(-3.4 - u_seed, i),
-      1.0//swayRandomized(u_seed * 3.618, dc + len) * 0.5 + 0.5
-      ), bb), aa);
+      ridgedValueNoise(-3.4 - u_seed, i),
+      swayRandomized(u_seed * 3.618, dc + len) * 0.4 + 0.5
+      )
+      , bb), aa);
   gl_FragColor = hsl2rgb(vec4(
-    fract(foamNoise(1.111 + u_seed, i) * v_color.r * 2.0 + hc),
+    fract(foamNoise(1.111 + u_seed, -i) * v_color.r * 2.0 + hc),
     sin(1.0 + bright * 1.375),
     sin(bright * 1.5),
     v_color.a));
