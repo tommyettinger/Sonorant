@@ -24,6 +24,8 @@ public class ShaderNoise extends ApplicationAdapter {
 	private SpriteBatch batch;
 	private Texture pixel;
 	private ShaderProgram shader;
+	private ShaderProgram shaderStandard;
+	private ShaderProgram shaderRidged;
 
 	private long startTime;
 	private float seed;
@@ -47,13 +49,20 @@ public class ShaderNoise extends ApplicationAdapter {
 		pixel = new Texture(pixmap);
 		startTime = TimeUtils.millis();
 		ShaderProgram.pedantic = true;
-		shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment.glsl"));
+		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment.glsl"));
 //		shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("foam_fragment.glsl"));
-		if (!shader.isCompiled()) {
-			Gdx.app.error("Shader", "error compiling shader:\n" + shader.getLog());
+		if (!shaderStandard.isCompiled()) {
+			Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shader.getLog());
 			Gdx.app.exit();
 			return;
 		}
+		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment_ridged.glsl"));
+		if (!shaderRidged.isCompiled()) {
+			Gdx.app.error("Shader", "error compiling shaderRidged:\n" + shaderRidged.getLog());
+			Gdx.app.exit();
+			return;
+		}
+		shader = shaderRidged;
 		batch.setShader(shader);
 
 		// System.nanoTime() is supported by GWT 2.10.0 .
@@ -94,13 +103,15 @@ public class ShaderNoise extends ApplicationAdapter {
 			Gdx.app.exit();
 		}
 		if (Gdx.input.isKeyPressed(F))
-			frequency = Math.min(Math.max(0.001f, frequency + 0.1f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
+			frequency = Math.min(Math.max(0.001f, frequency + (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
 		if (Gdx.input.isKeyPressed(V))
 			variance = Math.min(Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
 		if (Gdx.input.isKeyPressed(A))
 			a = Math.min(Math.max(0.001f, a + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
 		if (Gdx.input.isKeyPressed(B))
 			b = Math.min(Math.max(0.001f, b + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
+		if(Gdx.input.isKeyJustPressed(C))
+			batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
 
 		final float ftm = TimeUtils.timeSinceMillis(startTime) * (0x1p-10f);
 		batch.begin();

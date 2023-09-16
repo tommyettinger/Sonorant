@@ -157,8 +157,8 @@ void main() {
   vec3 i = vec3(sin(theta) * shrunk, cos(theta) * shrunk, adj);
   float bright = pow(1.0 - pow(1.0 -
     mix(
-      foamNoise(4.3 + u_seed, i),
-      valueNoise(-3.4 - u_seed, i),
+      ridgedFoamNoise(4.3 + u_seed, i),
+      ridgedValueNoise(-3.4 - u_seed, i),
       swayRandomized(u_seed * 3.618, dc + len) * 0.4 + 0.5
       )
       , bb), aa);
