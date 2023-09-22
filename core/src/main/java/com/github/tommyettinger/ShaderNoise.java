@@ -32,7 +32,7 @@ public class ShaderNoise extends ApplicationAdapter {
 	private float variance = 0.5f;
 	private float a = 0.07f;
 	private float b = 0.9f;
-	private float frequency = 1f;
+	private float frequency = 0.7f;
 	public static int width = 350, height = 350;
 	private Clipboard clipboard;
 
@@ -52,7 +52,7 @@ public class ShaderNoise extends ApplicationAdapter {
 		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment.glsl"));
 //		shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("foam_fragment.glsl"));
 		if (!shaderStandard.isCompiled()) {
-			Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shader.getLog());
+			Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shaderStandard.getLog());
 			Gdx.app.exit();
 			return;
 		}

@@ -56,12 +56,6 @@ float foamNoise(float seed, vec3 x) {
     return smoothstep(0.0, 1.0, smoothstep(0.0, 1.0, (a + b + c + d) * 0.25));
 }
 
-// START MIT-LICENSED CODE BY QUILEZ
-
-// The MIT License
-// Copyright © 2013 Inigo Quilez
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
 //vec3 hash(vec3 seed, vec3 p) {
 //    return fract((dot((p + seed), H3) + seed) * (0.5 + fract(dot(H3.zxy - seed, p.yzx))));
 //}
@@ -69,6 +63,12 @@ float foamNoise(float seed, vec3 x) {
 vec3 hash(float s, vec3 p) {
     return fract(fract((s - p) * PHI + p) * (PHI - s) - p) * 2.0 - 1.0;
 }
+
+// START MIT-LICENSED CODE BY QUILEZ
+
+// The MIT License
+// Copyright © 2013 Inigo Quilez
+// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 //vec3 hash(float s, vec3 p) {
 //	p = vec3( dot(p,vec3(127.1,311.7, 74.7)),
@@ -96,6 +96,8 @@ float gradientNoise(float seed, vec3 p)
                      mix( dot( hash(seed, i + vec3(0.0,1.0,1.0) ), f - vec3(0.0,1.0,1.0) ),
                           dot( hash(seed, i + vec3(1.0,1.0,1.0) ), f - vec3(1.0,1.0,1.0) ), u.x), u.y), u.z );
 }
+
+// END QUILEZ CODE
 
 // These have a range of 0 to 1.
 float ridgedValueNoise(float seed, vec3 x) {
@@ -135,14 +137,14 @@ vec4 hsl2rgb(vec4 c)
 
 // END HSL AND HUE CHANGES
 
+// 1D noise, range is -1.0 to 1.0
 float swayRandomized(float seed, float value)
 {
     float f = floor(value);
     float start = sin((cos(f + seed) * 12.973 + seed) * 31.413);
     float end   = sin((cos(f + 1.0 + seed) * 12.973 + seed) * 31.413);
-    return mix(start, end, smoothstep(0.0, 1.0, value - f)) * 0.625;
+    return mix(start, end, smoothstep(0.0, 1.0, value - f));
 }
-
 
 void main() {
   if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
@@ -152,19 +154,21 @@ void main() {
   float len = length(center);
   float shrunk = len * 16.0 / divisions;
   float adj = (len * 16. - c) * 0.5;
-  float aa = (swayRandomized(-2.618 - u_seed, adj) + 1.125) / (0.01 + v_color.g);
-  float bb = (swayRandomized(u_seed, 1.618 - adj) + 1.125) / (0.01 + v_color.b);
+  float aa = (swayRandomized(-1.234 - u_seed, adj) * 0.625 + 1.125) / (1.01 - v_color.g);
+  float bb = (swayRandomized(u_seed, 3.456 - adj) * 0.625 + 1.125) / (1.01 - v_color.b);
   vec3 i = vec3(sin(theta) * shrunk, cos(theta) * shrunk, adj);
-  float bright = pow(1.0 - pow(1.0 -
+  float bright =
+    pow(1.0 - pow(1.0 -
     mix(
       foamNoise(4.3 + u_seed, i),
       valueNoise(-3.4 - u_seed, i),
       swayRandomized(u_seed * 3.618, dc + len) * 0.4 + 0.5
       )
-      , bb), aa);
+      , bb), aa)
+    ;
   gl_FragColor = hsl2rgb(vec4(
-    fract(foamNoise(1.111 + u_seed, -i) * v_color.r * 2.0 + adj * 0.125),
-    sin(1.0 + bright * 1.375),
-    sin(bright * 1.5),
+    fract(foamNoise(1.111 + u_seed, -i) * (v_color.r * 1.5 + 0.25) + adj * 0.125),
+    sin(1.0 + bright * 0.75),
+    (bright * foamNoise(-u_seed, 1.618 - i)),
     1.0));
 }
