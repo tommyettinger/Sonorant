@@ -10,16 +10,19 @@ import static com.github.tommyettinger.ShaderNoise.width;
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
     public static void main(String[] args) {
-        createApplication();
+        // Needed for macOS support, but also Windows with non-ASCII usernames.
+        if (StartupHelper.startNewJvmIfRequired()) return;
+        // Graal stuff
+        org.lwjgl.system.Library.initialize();
+        org.lwjgl.system.ThreadLocalUtil.setupEnvData();
+
+        new Lwjgl3Application(new ShaderNoise(null), getDefaultConfiguration());
     }
 
-    private static Lwjgl3Application createApplication() {
-        return new Lwjgl3Application(new ShaderNoise(null), getDefaultConfiguration());
-    }
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
-        configuration.setTitle("Noise Live");
+        configuration.setTitle("Shader Noise Live");
         configuration.useVsync(true);
         //// Limits FPS to the refresh rate of the currently active monitor.
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate);

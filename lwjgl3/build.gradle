@@ -5,17 +5,13 @@ buildscript {
   dependencies {
 // using jpackage only works if the JDK version is 14 or higher.
 // your JAVA_HOME environment variable may also need to be a JDK with version 14 or higher.
-    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
-      classpath "org.beryx:badass-runtime-plugin:1.12.7"
-    }
+     classpath "org.beryx:badass-runtime-plugin:1.13.0"
   }
 }
-if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
-  apply plugin: 'org.beryx.runtime'
-}
-else {
-  apply plugin: 'application'
-}
+import proguard.gradle.ProGuardTask
+
+apply plugin: 'org.beryx.runtime'
+
 
 sourceSets.main.resources.srcDirs += [ rootProject.file('assets').path ]
 mainClassName = 'com.github.tommyettinger.lwjgl3.Lwjgl3Launcher'
@@ -25,6 +21,10 @@ sourceCompatibility = 11
 dependencies {
   implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
   implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+
+  implementation "com.github.Berstanio.gdx-graalhelper:gdx-svmhelper-backend-lwjgl3:$graalHelperVersion"
+  compileOnly "org.graalvm.nativeimage:svm:$graalvmVersion"
+
   implementation project(':core')
 }
 
@@ -42,9 +42,11 @@ run {
 
 jar {
 // sets the name of the .jar file this produces to the name of the game or app.
-  archiveBaseName.set(appName)
+  archiveFileName.set("${appName}-${version}.jar")
+  var buildDirectory = project.layout.buildDirectory.asFile.get().absolutePath
+
 // using 'lib' instead of the default 'libs' appears to be needed by jpackageimage.
-  destinationDirectory = file("$project.buildDir/lib")
+  destinationDirectory = file("$buildDirectory/lib")
 // the duplicatesStrategy matters starting in Gradle 7.0; this setting works.
   duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
   dependsOn configurations.runtimeClasspath
@@ -64,7 +66,27 @@ jar {
   }
 }
 
+tasks.register('proguard', ProGuardTask) {
+  outputs.upToDateWhen { false }
+  configuration 'proguard-rules.pro'
+  //printmapping 'build/lib/out.map'
+  var buildDirectory = project.layout.buildDirectory.asFile.get().absolutePath
+
+  if (System.getProperty('java.version').startsWith('1.')) {
+    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
+  } else {
+    libraryjars "${System.getProperty('java.home')}/jmods/java.base.jmod", jarfilter: '!**.jar', filter: '!module-info.class'
+  }
+  injars(file("${buildDirectory}/lib/${appName}-${version}.jar"))
+
+  outjars "${buildDirectory}/lib/${appName}.jar"
+}
+
+proguard.dependsOn jar
+
+
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
+  tasks.jpackageImage.doNotTrackState("This task reads and writes to the build folder.")
   runtime {
     options.set(['--strip-debug',
            '--compress', '2',
@@ -77,7 +99,7 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
     modules.set([
         'jdk.unsupported'
     ])
-    distDir.set(file(buildDir))
+    distDir.set(file(project.layout.buildDirectory))
     jpackage {
       imageName = appName
 // you can set this to false if you want to build an installer, or keep it as true to build just an app.
