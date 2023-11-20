@@ -120,8 +120,8 @@ public class NoiseViewer extends ApplicationAdapter {
 //        png.setCompression(2);
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
-            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
-            gif.setDitherStrength(0.3f);
+            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.WREN);
+            gif.setDitherStrength(1f);
             gif.palette = new QualityPalette();
         }
 
@@ -252,20 +252,21 @@ public class NoiseViewer extends ApplicationAdapter {
                             if (last >= 1) {
                                 noise.stringDeserialize(paste);
                                 Base base = Base.BASE10;
-                                divisions = base.readInt(paste, last + 2, last = paste.indexOf('_', last + 2));
+                                divisions = base.readInt(paste, last + 2, last = paste.indexOf('~', last + 2));
                                 interpolatorIndex = interpolators.indexOf(interpolator =
-                                        Interpolations.get(paste.substring(last + 1, last = paste.indexOf('_', last + 1))));
-                                hue = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
-                                variance = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
-                                a = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
+                                        Interpolations.get(paste.substring(last + 1, last = paste.indexOf('~', last + 1))));
+                                hue = base.readFloat(paste, last + 1, last = paste.indexOf('~', last + 1));
+                                variance = base.readFloat(paste, last + 1, last = paste.indexOf('~', last + 1));
+                                a = base.readFloat(paste, last + 1, last = paste.indexOf('~', last + 1));
                                 if(a <= 0) a = 1f;
-                                b = base.readFloat(paste, last + 1, last = paste.indexOf('_', last + 1));
+                                b = base.readFloat(paste, last + 1, last = paste.indexOf('~', last + 1));
                                 if(b <= 0) b = 1f;
                                 prettyPrint();
                             }
                         } else
                             System.out.println("Clipboard is empty!");
                     }
+                    //`322420472~11~1~2~1~0~0~0~32829~64~63~-466088384~1701193279~164548413`~2~pow0_75~0.7793921~0.1937514~1.0~1.0~1700476003842
                     break;
                     case A: // analyze
                         prettyPrint();
@@ -288,7 +289,7 @@ public class NoiseViewer extends ApplicationAdapter {
         System.out.println("Hue: " + hue);
         System.out.println("Gradient Variance: " + variance);
         System.out.println("Kumaraswamy a: " + a + ", b: " + b);
-        System.out.println("Data for Copy/Paste: " + noise.stringSerialize() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis());
+        System.out.println("Data for Copy/Paste: " + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + System.currentTimeMillis());
     }
 
     public static float fract(final float x) {
@@ -354,7 +355,7 @@ public class NoiseViewer extends ApplicationAdapter {
                         float distX = x - (width - 1) * 0.5f;
                         for (int y = 0; y < height; y++) {
                             float distY = y - (height - 1) * 0.5f;
-                            float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x4p-8f);
+                            float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x1p-8f);
                             float len = (float) Math.sqrt(distX * distX + distY * distY);
                             float shrunk = len / (3f + divisions);
                             len = (len - ct) * 0x1p-8f;
@@ -393,10 +394,10 @@ public class NoiseViewer extends ApplicationAdapter {
 //                gif.palette.exact(colorList.items, colorList.size());
 
                 Gdx.files.local("out/").mkdirs();
-                String ser = noise.stringSerialize() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis();
+                String ser = noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + System.currentTimeMillis();
                 prettyPrint();
                 if(Gdx.app.getType() != Application.ApplicationType.WebGL)
-                    gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 16);
+                    gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 30);
 //                if(apng != null) {
 //                    for (int i = 0; i < frames.size; i++) {
 //                        Pixmap frame = frames.get(i);
@@ -422,7 +423,7 @@ public class NoiseViewer extends ApplicationAdapter {
                 }
                 frames.clear();
             } else {
-                String ser = noise.stringSerialize() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis();
+                String ser = noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + System.currentTimeMillis();
                 System.out.println(ser);
                 clipboard.setContents(ser);
             }
