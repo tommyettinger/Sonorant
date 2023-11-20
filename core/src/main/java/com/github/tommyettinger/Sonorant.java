@@ -375,7 +375,7 @@ public class Sonorant extends ApplicationAdapter {
                 colorList.toArray(gif.palette.paletteArray);
 
                 Gdx.files.local("out/").mkdirs();
-                String ser = noise.serializeToString() + "_" + TimeUtils.millis();
+                String ser = noise.stringSerialize() + "_" + TimeUtils.millis();
                 System.out.println(ser);
                 gif.write(Gdx.files.local("out/" + ser + ".gif"), frames, 16);
                 for (int i = 0; i < frames.size; i++) {

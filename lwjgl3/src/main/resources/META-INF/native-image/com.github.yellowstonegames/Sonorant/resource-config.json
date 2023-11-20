@@ -6,6 +6,9 @@
     },
     {
       "pattern":"lsans.+"
+    },
+    {
+      "pattern":".+\\.glsl"
     }
   ]},
   "bundles":[]

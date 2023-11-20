@@ -250,7 +250,7 @@ public class NoiseViewer extends ApplicationAdapter {
                             String paste = clipboard.getContents();
                             int last = paste.lastIndexOf('`');
                             if (last >= 1) {
-                                noise.deserializeFromString(paste);
+                                noise.stringDeserialize(paste);
                                 Base base = Base.BASE10;
                                 divisions = base.readInt(paste, last + 2, last = paste.indexOf('_', last + 2));
                                 interpolatorIndex = interpolators.indexOf(interpolator =
@@ -288,7 +288,7 @@ public class NoiseViewer extends ApplicationAdapter {
         System.out.println("Hue: " + hue);
         System.out.println("Gradient Variance: " + variance);
         System.out.println("Kumaraswamy a: " + a + ", b: " + b);
-        System.out.println("Data for Copy/Paste: " + noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis());
+        System.out.println("Data for Copy/Paste: " + noise.stringSerialize() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis());
     }
 
     public static float fract(final float x) {
@@ -393,7 +393,7 @@ public class NoiseViewer extends ApplicationAdapter {
 //                gif.palette.exact(colorList.items, colorList.size());
 
                 Gdx.files.local("out/").mkdirs();
-                String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis();
+                String ser = noise.stringSerialize() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis();
                 prettyPrint();
                 if(Gdx.app.getType() != Application.ApplicationType.WebGL)
                     gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 16);
@@ -422,7 +422,7 @@ public class NoiseViewer extends ApplicationAdapter {
                 }
                 frames.clear();
             } else {
-                String ser = noise.serializeToString() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis();
+                String ser = noise.stringSerialize() + "_" + divisions + "_" + interpolator.tag + "_" + hue + "_" + variance + "_" + a + "_" + b + "_" + System.currentTimeMillis();
                 System.out.println(ser);
                 clipboard.setContents(ser);
             }

@@ -3,9 +3,12 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-// using jpackage only works if the JDK version is 14 or higher.
-// your JAVA_HOME environment variable may also need to be a JDK with version 14 or higher.
-     classpath "org.beryx:badass-runtime-plugin:1.13.0"
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
+      classpath "org.beryx:badass-runtime-plugin:1.13.0"
+    }
+    if(enableGraalNative == 'true') {
+      classpath "org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin:0.9.28"
+    }
   }
 }
 import proguard.gradle.ProGuardTask
@@ -21,9 +24,6 @@ sourceCompatibility = 11
 dependencies {
   implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
   implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
-
-  implementation "com.github.Berstanio.gdx-graalhelper:gdx-svmhelper-backend-lwjgl3:$graalHelperVersion"
-  compileOnly "org.graalvm.nativeimage:svm:$graalvmVersion"
 
   implementation project(':core')
 }
@@ -120,4 +120,8 @@ if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
 
 // Equivalent to the jar task; here for compatibility with gdx-setup.
 task dist(dependsOn: [jar]) {
+}
+
+if(enableGraalNative == 'true') {
+  apply from: file("nativeimage.gradle")
 }

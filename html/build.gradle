@@ -24,15 +24,15 @@ gwt {
   compiler.strict = true
   compiler.disableCastChecking = true
   //// The next line can be useful to uncomment if you want output that hasn't been obfuscated.
-//  compiler.style = org.wisepersist.gradle.plugins.gwt.Style.DETAILED
+//  compiler.style = org.docstr.gradle.plugins.gwt.Style.DETAILED
 
   sourceLevel = 1.11
 }
 
 dependencies {
-  implementation "com.github.tommyettinger:gdx-backend-gwt:1.1200.1"
-  implementation "com.github.tommyettinger:gdx-backend-gwt:1.1200.1:sources"
-  implementation "com.google.jsinterop:jsinterop-annotations:2.0.0:sources"
+  implementation "com.github.tommyettinger:gdx-backend-gwt:1.1210.0"
+  implementation "com.github.tommyettinger:gdx-backend-gwt:1.1210.0:sources"
+  implementation "com.google.jsinterop:jsinterop-annotations:2.0.2:sources"
 
   implementation "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
   implementation "com.github.tommyettinger:anim8-gdx:$anim8Version:sources"
@@ -48,10 +48,11 @@ dependencies {
 }
 
 import org.akhikhl.gretty.AppBeforeIntegrationTestTask
-import org.wisepersist.gradle.plugins.gwt.GwtSuperDev
+import org.docstr.gradle.plugins.gwt.GwtSuperDev
 
 gretty.httpPort = 8080
-gretty.resourceBase = project.buildDir.path + "/gwt/draftOut"
+// The line below will need to be changed only if you change the build directory to something other than "build".
+gretty.resourceBase = "${project.layout.buildDirectory.asFile.get().absolutePath}/gwt/draftOut"
 gretty.contextPath = "/"
 gretty.portPropertiesFileName = "TEMP_PORTS.properties"
 
