@@ -32,7 +32,7 @@ public class ShaderNoise extends ApplicationAdapter {
 	private float variance = 0.5f;
 	private float a = 0.07f;
 	private float b = 0.9f;
-	private float frequency = 0.7f;
+	private float frequency = 0.6f;
 	public static int width = 350, height = 350;
 	private Clipboard clipboard;
 
@@ -68,11 +68,16 @@ public class ShaderNoise extends ApplicationAdapter {
 		// System.nanoTime() is supported by GWT 2.10.0 .
 		long state = System.nanoTime() + startTime;//-1234567890L;
 		// Sarong's DiverRNG.randomize()
-		seed = ((((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L) >>> 36) * 0x1.5bf0a8p-16f;
+		reseed(state);
 		// changes the start time (in milliseconds) by up to 65535 ms, based on state (which uses nanoseconds).
 		startTime -= (state ^ state >>> 11) & 0xFFFFL;
 		width = Gdx.graphics.getWidth();
 		height = Gdx.graphics.getHeight();
+	}
+
+	public void reseed(long state) {
+		seed = ((((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L) >>> 36) * 0x1.1p-17f + 4096f;
+		System.out.println("Now using seed " + seed);
 	}
 
 	@Override public void resize (int width, int height) {
@@ -93,8 +98,8 @@ public class ShaderNoise extends ApplicationAdapter {
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.S)){ // seed
 			seed += UIUtils.shift() ? 0.25f : -0.25f;
 		} else if(Gdx.input.isKeyJustPressed(SLASH)){ // seed
-			long state = (long) (System.nanoTime() * seed) + 0xD1B54A32D192ED03L;
-			seed = ((((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L) >>> 36) * 0x1.5bf0a8p-16f;;
+			long state = (System.nanoTime() * (long)seed) + 0xD1B54A32D192ED03L;
+			reseed(state);
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.R)){ // reset
 			startTime = TimeUtils.millis();
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.P)){ // performance

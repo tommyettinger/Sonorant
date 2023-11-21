@@ -17,7 +17,7 @@ public class Lwjgl3Launcher {
         org.lwjgl.system.Library.initialize();
         org.lwjgl.system.ThreadLocalUtil.setupEnvData();
 
-        new Lwjgl3Application(new NoiseViewer(null), getDefaultConfiguration());
+        new Lwjgl3Application(new ShaderNoise(null), getDefaultConfiguration());
     }
 
 

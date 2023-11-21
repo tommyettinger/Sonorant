@@ -157,13 +157,14 @@ void main() {
   float aa = (swayRandomized(-1.234 - u_seed, adj) * 0.625 + 1.125) / (0.01 + v_color.g);
   float bb = (swayRandomized(u_seed, 3.456 - adj) * 0.625 + 1.125) / (0.01 + v_color.b);
   vec3 i = vec3(sin(theta) * shrunk, cos(theta) * shrunk, adj);
-  float bright = pow(1.0 - pow(1.0 -
-    mix(
-      ridgedFoamNoise(4.3 + u_seed, i),
-      ridgedValueNoise(-3.4 - u_seed, i),
-      swayRandomized(u_seed * 3.618, dc + len) * 0.4 + 0.5
-      )
-      , bb), aa)
+  float bright =
+    pow(1.0 - pow(1.0 -
+      mix(
+        ridgedFoamNoise(4.3 + u_seed, i),
+        ridgedValueNoise(-3.4 - u_seed, i),
+        swayRandomized(u_seed * 3.618, dc + len) * 0.4 + 0.5
+        )
+    , bb), aa)
       ;
   gl_FragColor = hsl2rgb(vec4(
     fract(foamNoise(1.111 + u_seed, -i) * v_color.r * 2.0 + adj * 0.125),
