@@ -166,6 +166,10 @@ void main() {
         )
     , bb), aa)
       ;
+//  if(bright < 0.) {
+//      gl_FragColor = vec4(1., 0., fract(c * 7.), 1.);
+//  }
+//  else
   gl_FragColor = hsl2rgb(vec4(
     fract(foamNoise(1.111 + u_seed, -i) * v_color.r * 2.0 + adj * 0.125),
     sin(1.0 + bright * 0.75),

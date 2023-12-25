@@ -121,7 +121,7 @@ public class NoiseViewer extends ApplicationAdapter {
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
             gif.setDitherAlgorithm(Dithered.DitherAlgorithm.WREN);
-            gif.setDitherStrength(1f);
+            gif.setDitherStrength(0.25f);
             gif.palette = new QualityPalette();
         }
 
@@ -308,10 +308,11 @@ public class NoiseViewer extends ApplicationAdapter {
         if (Gdx.input.isKeyPressed(NUM_1))
             b = Math.max(0.001f, b + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         renderer.begin(view.getCamera().combined, GL_POINTS);
-        float bright, nf = noise.getFrequency(), c = (paused ? startTime
-                : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf;
+        float bright, nf = noise.getFrequency(), counter = (paused ? startTime
+                : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf,
+                c = counter * (1 + (divisions & 1));
         float hc = hue;
-        if(hueCycle) hc = c * 0x4p-8f;
+        if(hueCycle) hc = counter * 0x4p-8f;
 
         double aa = 1.0/a, bb = 1.0/b;
 
@@ -322,7 +323,7 @@ public class NoiseViewer extends ApplicationAdapter {
                 float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f);
                 float len = (float) Math.sqrt(distX * distX + distY * distY);
                 float shrunk = len / (3f + divisions);
-                len = (len - c) * 0x1p-8f;
+                len = (len - counter) * 0x1p-8f;
                 int flip = -((int) theta & 1 & divisions) | 1;
                 theta *= flip;
                 float A, B, C, D;
@@ -347,8 +348,9 @@ public class NoiseViewer extends ApplicationAdapter {
         }
         if (Gdx.input.isKeyJustPressed(W)) {
             if (Gdx.files.isLocalStorageAvailable()) {
-                for (int ct = 0; ct < 256; ct++) {
-                    if(hueCycle) hc = ct * 0x4p-8f;
+                for (int ctr = 0; ctr < 256; ctr++) {
+                    int ct = ctr * (1 + (divisions & 1));
+                    if(hueCycle) hc = ctr * 0x4p-8f;
                     else hc = hue;
                     Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
                     for (int x = 0; x < width; x++) {
@@ -358,7 +360,7 @@ public class NoiseViewer extends ApplicationAdapter {
                             float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x1p-8f);
                             float len = (float) Math.sqrt(distX * distX + distY * distY);
                             float shrunk = len / (3f + divisions);
-                            len = (len - ct) * 0x1p-8f;
+                            len = (len - ctr) * 0x1p-8f;
                             int flip = -((int) theta & 1 & divisions) | 1;
                             theta *= flip;
                             float A, B, C, D;
