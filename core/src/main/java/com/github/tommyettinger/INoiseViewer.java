@@ -32,11 +32,11 @@ import static com.github.tommyettinger.digital.MathTools.fract;
 public class INoiseViewer extends ApplicationAdapter {
 
     private final INoise[] noises = new INoise[]{new CyclicNoise(1234567890L, 3), new CyclicNoise(1234567890L, 4), new CyclicNoise(1234567890L, 5),
-            new SorbetNoise(1234567890L, 5), new SorbetNoise(1234567890L, 4), new SorbetNoise(1234567890L, 3)};
+            new SorbetNoise(1234567890L, 5), new SorbetNoise(1234567890L, 4), new SorbetNoise(1234567890L, 3),
+            new FlanNoise(1234567890L, 4), new TaffyNoise(1234567890L, 4)};
     private int noiseIndex = 0;
     private final NoiseWrapper noise = new NoiseWrapper(noises[noiseIndex], 322420472, 0.0625f, 2, 1);
     private final Noise varianceNoise = new Noise(-1, 0.025f, Noise.VALUE);
-    private int hashIndex = 0;
     private final ObjectList<Interpolations.Interpolator> interpolators = new ObjectList<>(Interpolations.getInterpolatorArray());
     private int interpolatorIndex = 58;
     private Interpolations.Interpolator interpolator = interpolators.get(interpolatorIndex);
@@ -314,7 +314,9 @@ public class INoiseViewer extends ApplicationAdapter {
             for (int y = 0; y < height; y++) {
                 float distY = y - (height - 1) * 0.5f;
                 float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f);
-                float len = (float) Math.sqrt(distX * distX + distY * distY);
+//                float len = 0x1p-9f * (distX * distX + distY * distY);
+                float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
+//                float len = (float) Math.sqrt(distX * distX + distY * distY);
                 float shrunk = len / (3f + divisions);
                 len = (len - counter) * 0x1p-8f;
                 int flip = -((int) theta & 1 & divisions) | 1;
@@ -351,7 +353,9 @@ public class INoiseViewer extends ApplicationAdapter {
                         for (int y = 0; y < height; y++) {
                             float distY = y - (height - 1) * 0.5f;
                             float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x1p-8f);
-                            float len = (float) Math.sqrt(distX * distX + distY * distY);
+//                float len = 0x1p-9f * (distX * distX + distY * distY);
+                            float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
+//                float len = (float) Math.sqrt(distX * distX + distY * distY);
                             float shrunk = len / (3f + divisions);
                             len = (len - ctr) * 0x1p-8f;
                             int flip = -((int) theta & 1 & divisions) | 1;
