@@ -45,6 +45,7 @@ public class INoiseViewer extends ApplicationAdapter {
     private Interpolations.Interpolator interpolator = interpolators.get(interpolatorIndex);
     private float hue = 0;
     private float variance = 1f;
+    private float hard = 0f;
     private int divisions = 2;
     private int octaves = 0;
     private float freq = 0.125f;
@@ -258,6 +259,8 @@ public class INoiseViewer extends ApplicationAdapter {
                                 if(a <= 0) a = 1f;
                                 b = base.readFloat(paste, last + 1, last = paste.indexOf('~', last + 1));
                                 if(b <= 0) b = 1f;
+                                hard = base.readFloat(paste, last + 1, last = paste.indexOf('~', last + 1));
+                                if(hard <= 0) hard = 0f;
                                 prettyPrint();
                             }
                         } else
@@ -290,8 +293,9 @@ public class INoiseViewer extends ApplicationAdapter {
         System.out.println("Gradient Interpolator: " + interpolator.tag + " (index " + interpolatorIndex + ")");
         System.out.println("Hue: " + hue);
         System.out.println("Gradient Variance: " + variance);
+        System.out.println("Gradient Hardness: " + hard);
         System.out.println("Kumaraswamy a: " + a + ", b: " + b);
-        System.out.println("Data for Copy/Paste: " + noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + System.currentTimeMillis());
+        System.out.println("Data for Copy/Paste: " + noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + hard + "~" + System.currentTimeMillis());
     }
 
     public void putMap() {
@@ -299,6 +303,8 @@ public class INoiseViewer extends ApplicationAdapter {
             hue = (hue + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         if (Gdx.input.isKeyPressed(V))
             variance = Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
+        if (Gdx.input.isKeyPressed(A))
+            hard = Math.min(Math.max(hard + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()), 0f), 1f);
         if (Gdx.input.isKeyPressed(NUM_0))
             a = Math.max(0.001f, a + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         if (Gdx.input.isKeyPressed(NUM_1))
@@ -346,9 +352,10 @@ public class INoiseViewer extends ApplicationAdapter {
 
                 bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
 
+                float n = varianceNoise.getConfiguredNoise(A, B, C, D);
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
-                                fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hc),
+                                fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
                                 TrigTools.sin(1 + bright * 1.375f),
                                 TrigTools.sin(bright * 1.5f),
                                 1f
@@ -384,10 +391,10 @@ public class INoiseViewer extends ApplicationAdapter {
                             )), 0), 1);
 
                             bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
-
+                            float n = varianceNoise.getConfiguredNoise(A, B, C, D);
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
-                                            fract(varianceNoise.getConfiguredNoise(A, B, C, D) * variance + hc),
+                                            fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
                                             TrigTools.sin(1 + bright * 1.375f),
                                             TrigTools.sin(bright * 1.5f),
                                             1f))
