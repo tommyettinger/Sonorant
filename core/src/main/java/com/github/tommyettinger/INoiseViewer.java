@@ -34,6 +34,9 @@ public class INoiseViewer extends ApplicationAdapter {
     private final INoise[] noises = new INoise[]{new CyclicNoise(1234567890L, 3), new CyclicNoise(1234567890L, 4), new CyclicNoise(1234567890L, 5),
             new SorbetNoise(1234567890L, 5), new SorbetNoise(1234567890L, 4), new SorbetNoise(1234567890L, 3),
             new FlanNoise(1234567890L, 4), new TaffyNoise(1234567890L, 4)};
+    {
+        for(INoise i : noises) INoise.Serializer.register(i);
+    }
     private int noiseIndex = 0;
     private final NoiseWrapper noise = new NoiseWrapper(noises[noiseIndex], 322420472, 0.0625f, 2, 1);
     private final Noise varianceNoise = new Noise(-1, 0.025f, Noise.VALUE);
@@ -310,21 +313,35 @@ public class INoiseViewer extends ApplicationAdapter {
         double aa = 1.0/a, bb = 1.0/b;
 
         for (int x = 0; x < width; x++) {
-            float distX = x - (width - 1) * 0.5f;
+            float distX = x - (width - 1) * 0.5f; // x distance from center
             for (int y = 0; y < height; y++) {
-                float distY = y - (height - 1) * 0.5f;
+                float distY = y - (height - 1) * 0.5f; // y distance from center
+                // this is the angle to get from the center to our current point, multiplies by the number of times the
+                // pattern needs to repeat (which is 3 + divisions), plus a slowly increasing value to make it rotate.
                 float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f);
-//                float len = 0x1p-9f * (distX * distX + distY * distY);
+                // not actually the length, but like it. It "should" use square root, but cube root looks better.
                 float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
 //                float len = (float) Math.sqrt(distX * distX + distY * distY);
+                // this is used to expand each "pizza slice" of noise as it gets further from the center.
                 float shrunk = len / (3f + divisions);
+                // we need to subtract counter to make increasing time appear to "zoom in" forever. I don't know why.
                 len = (len - counter) * 0x1p-8f;
+                // can be ignored; when there are an even number of slices, this reverses every other slice.
                 int flip = -((int) theta & 1 & divisions) | 1;
+                // if the above found it needs to reverse a slice, it does so here.
                 theta *= flip;
-                float A, B, C, D;
+                float A, B, C, D; // these are used later, they get assigned the 4D position's x, y, z, w coordinates
+                // the interpolator is used to adjust brightness, like ramps or curves in an image editor.
                 bright = Math.min(Math.max(interpolator.apply(basicPrepare(
-                        noise.getNoiseWithSeed(A = TrigTools.cosTurns(theta) * shrunk,
-                                B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f, noise.getSeed())
+                        noise.getNoiseWithSeed(
+                                // A and B are given the angle going around the center, and get split into sin and cos.
+                                A = TrigTools.cosTurns(theta) * shrunk,
+                                B = TrigTools.sinTurns(theta) * shrunk,
+                                // C and D also get split, but are given the distance from the center going out.
+                                C = TrigTools.cosTurns(len) * 32f,
+                                D = TrigTools.sinTurns(len) * 32f,
+                                // the noise seed allows us to make a different "random" pattern by changing the seed.
+                                noise.getSeed())
                 )), 0), 1);
 
                 bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
