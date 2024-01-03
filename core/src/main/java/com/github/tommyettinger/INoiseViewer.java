@@ -59,7 +59,7 @@ public class INoiseViewer extends ApplicationAdapter {
 
     private Clipboard clipboard;
 //    public static final int width = 350, height = 350;
-    public static final int width = 720, height = 480;
+    public static final int width = 512, height = 512;
 //    public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
 
@@ -123,10 +123,10 @@ public class INoiseViewer extends ApplicationAdapter {
 
 //        apng = new AnimatedPNG();
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
-//            gif = new AnimatedGif();
-//            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.WREN);
-//            gif.setDitherStrength(0.25f);
-//            gif.palette = new QualityPalette();
+            gif = new AnimatedGif();
+            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.WREN);
+            gif.setDitherStrength(0.25f);
+            gif.palette = new QualityPalette();
             png = new FastPNG();
 //            png.setCompression(2);
         }
