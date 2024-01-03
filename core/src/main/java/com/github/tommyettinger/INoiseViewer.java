@@ -6,6 +6,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
@@ -18,6 +19,7 @@ import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.AnimatedGif;
 import com.github.tommyettinger.anim8.Dithered;
+import com.github.tommyettinger.anim8.FastPNG;
 import com.github.tommyettinger.anim8.QualityPalette;
 import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.ObjectList;
@@ -56,7 +58,8 @@ public class INoiseViewer extends ApplicationAdapter {
     private ImmediateModeRenderer20 renderer;
 
     private Clipboard clipboard;
-    public static final int width = 350, height = 350;
+//    public static final int width = 350, height = 350;
+    public static final int width = 720, height = 480;
 //    public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
 
@@ -68,7 +71,7 @@ public class INoiseViewer extends ApplicationAdapter {
 
     private AnimatedGif gif;
 //    private AnimatedPNG apng;
-//    private PixmapIO.PNG png;
+    private FastPNG png;
     private final Array<Pixmap> frames = new Array<>(256);
 
     public static float basicPrepare(float n)
@@ -119,13 +122,13 @@ public class INoiseViewer extends ApplicationAdapter {
         noise.setFractalType(Noise.RIDGED_MULTI);
 
 //        apng = new AnimatedPNG();
-//        png = new PixmapIO.PNG();
-//        png.setCompression(2);
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
-            gif = new AnimatedGif();
-            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.WREN);
-            gif.setDitherStrength(0.25f);
-            gif.palette = new QualityPalette();
+//            gif = new AnimatedGif();
+//            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.WREN);
+//            gif.setDitherStrength(0.25f);
+//            gif.palette = new QualityPalette();
+            png = new FastPNG();
+//            png.setCompression(2);
         }
 
 //        colorList.toArray(gif.palette.paletteArray);
@@ -420,7 +423,16 @@ public class INoiseViewer extends ApplicationAdapter {
                 String ser = noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + System.currentTimeMillis();
                 prettyPrint();
                 if(Gdx.app.getType() != Application.ApplicationType.WebGL)
-                    gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 30);
+                {
+                    if(gif != null)
+                        gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 30);
+                    if(png != null)
+                    {
+                        for(int i = 0; i < frames.size; i++){
+                            png.write(Gdx.files.local("out/png/"+ser+"/frame_" + i + ".png"), frames.get(i));
+                        }
+                    }
+                }
 //                if(apng != null) {
 //                    for (int i = 0; i < frames.size; i++) {
 //                        Pixmap frame = frames.get(i);

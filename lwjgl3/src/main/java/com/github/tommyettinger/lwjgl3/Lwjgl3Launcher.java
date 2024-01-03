@@ -4,8 +4,8 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.github.tommyettinger.INoiseViewer;
 
-import static com.github.tommyettinger.ShaderNoise.height;
-import static com.github.tommyettinger.ShaderNoise.width;
+import static com.github.tommyettinger.INoiseViewer.height;
+import static com.github.tommyettinger.INoiseViewer.width;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
