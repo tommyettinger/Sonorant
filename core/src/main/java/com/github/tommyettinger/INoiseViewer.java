@@ -57,13 +57,9 @@ public class INoiseViewer extends ApplicationAdapter {
     private boolean hueCycle = false;
     private ImmediateModeRenderer20 renderer;
 
-    private int frameCount = 64;
-//    private int frameCount = 256;
-
     private Clipboard clipboard;
 //    public static final int width = 350, height = 350;
-    public static final int width = 960, height = 540;
-//    public static final int width = 512, height = 512;
+    public static final int width = 512, height = 512;
 //    public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
 
@@ -76,7 +72,7 @@ public class INoiseViewer extends ApplicationAdapter {
     private AnimatedGif gif;
 //    private AnimatedPNG apng;
     private FastPNG png;
-    private final Array<Pixmap> frames = new Array<>(frameCount);
+    private final Array<Pixmap> frames = new Array<>(256);
 
     public static float basicPrepare(float n)
     {
@@ -328,19 +324,19 @@ public class INoiseViewer extends ApplicationAdapter {
         for (int x = 0; x < width; x++) {
             float distX = x - (width - 1) * 0.5f; // x distance from center
             for (int y = 0; y < height; y++) {
-                float distY = y - (height - 1) * 0.25f; // y distance from center
+                float distY = y - (height - 1) * 0.5f; // y distance from center
                 // this is the angle to get from the center to our current point, multiplies by the number of times the
                 // pattern needs to repeat (which is 3 + divisions), plus a slowly increasing value to make it rotate.
-                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions);// + TrigTools.sinTurns(c / frameCount) * 0.125f;
+                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f);
                 // not actually the length, but like it. It "should" use square root, but cube root looks better.
-                float len = MathTools.cbrt(distX * distX + distY * distY) * 3f;
+                float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
 //                float len = (float) Math.sqrt(distX * distX + distY * distY);
                 // this is used to expand each "pizza slice" of noise as it gets further from the center.
-                float shrunk = 2f * len / (3f + divisions);
+                float shrunk = len / (3f + divisions);
                 // we need to subtract counter to make increasing time appear to "zoom in" forever. I don't know why.
-                len = (len - counter) / (float) frameCount;
+                len = (len - counter) * 0x1p-8f;
                 // can be ignored; when there are an even number of slices, this reverses every other slice.
-                int flip = -(MathTools.fastFloor(theta) & 1 & divisions) | 1;
+                int flip = -((int) theta & 1 & divisions) | 1;
                 // if the above found it needs to reverse a slice, it does so here.
                 theta *= flip;
                 float A, B, C, D; // these are used later, they get assigned the 4D position's x, y, z, w coordinates
@@ -351,8 +347,8 @@ public class INoiseViewer extends ApplicationAdapter {
                                 A = TrigTools.cosTurns(theta) * shrunk,
                                 B = TrigTools.sinTurns(theta) * shrunk,
                                 // C and D also get split, but are given the distance from the center going out.
-                                C = TrigTools.cosTurns(len) * 8f,
-                                D = TrigTools.sinTurns(len) * 8f,
+                                C = TrigTools.cosTurns(len) * 32f,
+                                D = TrigTools.sinTurns(len) * 32f,
                                 // the noise seed allows us to make a different "random" pattern by changing the seed.
                                 noise.getSeed())
                 )), 0), 1);
@@ -362,9 +358,9 @@ public class INoiseViewer extends ApplicationAdapter {
                 float n = varianceNoise.getConfiguredNoise(A, B, C, D);
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
-                        fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
-                        MathTools.lerp(TrigTools.sin(1 + bright * 1.375f), 0f, MathTools.square(y * 0.8f / height)),
-                        MathTools.lerp(TrigTools.sin(bright * 1.5f), 0f, MathTools.square(y * 0.9f / height)),
+                                fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
+                                TrigTools.sin(1 + bright * 1.375f),
+                                TrigTools.sin(bright * 1.5f),
                                 1f
 //                        ))
                 );
@@ -374,7 +370,7 @@ public class INoiseViewer extends ApplicationAdapter {
         }
         if (Gdx.input.isKeyJustPressed(W)) {
             if (Gdx.files.isLocalStorageAvailable()) {
-                for (int ctr = 0; ctr < frameCount; ctr++) {
+                for (int ctr = 0; ctr < 256; ctr++) {
                     int ct = ctr * (1 + (divisions & 1));
                     if(hueCycle) hc = ctr * 0x4p-8f;
                     else hc = hue;
@@ -382,19 +378,19 @@ public class INoiseViewer extends ApplicationAdapter {
                     for (int x = 0; x < width; x++) {
                         float distX = x - (width - 1) * 0.5f;
                         for (int y = 0; y < height; y++) {
-                            float distY = y - (height - 1) * 0.25f;
-                            float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions);// + TrigTools.sinTurns(ct / (float)frameCount) * 0.125f;
+                            float distY = y - (height - 1) * 0.5f;
+                            float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x1p-8f);
 //                float len = 0x1p-9f * (distX * distX + distY * distY);
-                            float len = MathTools.cbrt(distX * distX + distY * distY) * 3f;
+                            float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
 //                float len = (float) Math.sqrt(distX * distX + distY * distY);
-                            float shrunk = 2f * len / (3f + divisions);
-                            len = (len - ctr) / (float) frameCount;
-                            int flip = -(MathTools.fastFloor(theta) & 1 & divisions) | 1;
+                            float shrunk = len / (3f + divisions);
+                            len = (len - ctr) * 0x1p-8f;
+                            int flip = -((int) theta & 1 & divisions) | 1;
                             theta *= flip;
                             float A, B, C, D;
                             bright = Math.min(Math.max(interpolator.apply(basicPrepare(
                                     noise.getNoiseWithSeed(A = TrigTools.cosTurns(theta) * shrunk,
-                                            B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 8f, D = TrigTools.sinTurns(len) * 8f, noise.getSeed())
+                                            B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f, noise.getSeed())
                             )), 0), 1);
 
                             bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
@@ -402,8 +398,8 @@ public class INoiseViewer extends ApplicationAdapter {
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
                                             fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
-                                            MathTools.lerp(TrigTools.sin(1 + bright * 1.375f), 0f, MathTools.square(y * 0.8f / height)),
-                                            MathTools.lerp(TrigTools.sin(bright * 1.5f), 0f, MathTools.square(y * 0.9f / height)),
+                                            TrigTools.sin(1 + bright * 1.375f),
+                                            TrigTools.sin(bright * 1.5f),
                                             1f))
 //                            )
                             ;
@@ -429,7 +425,7 @@ public class INoiseViewer extends ApplicationAdapter {
                 if(Gdx.app.getType() != Application.ApplicationType.WebGL)
                 {
                     if(gif != null)
-                        gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 24);
+                        gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 30);
                     if(png != null)
                     {
                         for(int i = 0; i < frames.size; i++){
