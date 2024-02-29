@@ -35,9 +35,12 @@ public class INoiseViewer extends ApplicationAdapter {
 
     private final INoise[] noises = new INoise[]{new CyclicNoise(1234567890L, 3), new CyclicNoise(1234567890L, 4), new CyclicNoise(1234567890L, 5),
             new SorbetNoise(1234567890L, 5), new SorbetNoise(1234567890L, 4), new SorbetNoise(1234567890L, 3),
-            new FlanNoise(1234567890L, 4), new TaffyNoise(1234567890L, 4)};
+            new FlanNoise(1234567890L, 4), new TaffyNoise(1234567890L, 4), new FoamplexNoise(1234567890L),
+            new FoamNoise(1234567890L), new HoneyNoise(1234567890L), new PerlinNoise(1234567890L), new SimplexNoise(1234567890L),
+            new SnakeNoise(1234567890L), new BadgerNoise(1234567890L), new ValueNoise(1234567890L)
+    };
     private int noiseIndex = 0;
-    private final NoiseWrapper noise = new NoiseWrapper(noises[noiseIndex], 322420472, 0.0625f, 2, 1);
+    private final NoiseWrapper noise = new NoiseWrapper(noises[noiseIndex], 1234567890L, 0.0625f, 2, 1);
     private final Noise varianceNoise = new Noise(-1, 0.025f, Noise.VALUE);
     private final ObjectList<Interpolations.Interpolator> interpolators = new ObjectList<>(Interpolations.getInterpolatorArray());
     private int interpolatorIndex = 58;
@@ -55,8 +58,8 @@ public class INoiseViewer extends ApplicationAdapter {
     private ImmediateModeRenderer20 renderer;
 
     private Clipboard clipboard;
-//    public static final int width = 350, height = 350;
-    public static final int width = 512, height = 512;
+    public static final int width = 400, height = 400;
+//    public static final int width = 512, height = 512;
 //    public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
 
@@ -220,9 +223,10 @@ public class INoiseViewer extends ApplicationAdapter {
                     case D: //dimension
                         divisions = (divisions + (UIUtils.shift() ? 9 : 1)) % 10;
                         break;
-                    case F: // frequency
-                        noise.setFrequency(freq *= (UIUtils.shift() ? 1.25f : 0.8f));
-                        break;
+                        // commented out because changing this makes the looping break.
+//                    case F: // frequency
+//                        noise.setFrequency(freq *= (UIUtils.shift() ? 1.25f : 0.8f));
+//                        break;
                     case R: // fRactal type
                         noise.setFractalType((noise.getFractalType() + (UIUtils.shift() ? 3 : 1)) & 3);
                         break;
@@ -314,7 +318,7 @@ public class INoiseViewer extends ApplicationAdapter {
                 : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf,
                 c = counter * (1 + (divisions & 1));
         float hc = hue;
-        if(hueCycle) hc = counter * 0x4p-8f;
+        if(hueCycle) hc = counter * 0x1p-8f;
 
         double aa = 1.0/a, bb = 1.0/b;
 
@@ -369,7 +373,7 @@ public class INoiseViewer extends ApplicationAdapter {
             if (Gdx.files.isLocalStorageAvailable()) {
                 for (int ctr = 0; ctr < 256; ctr++) {
                     int ct = ctr * (1 + (divisions & 1));
-                    if(hueCycle) hc = ctr * 0x4p-8f;
+                    if(hueCycle) hc = ctr * 0x1p-8f;
                     else hc = hue;
                     Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
                     for (int x = 0; x < width; x++) {

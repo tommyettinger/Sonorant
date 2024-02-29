@@ -117,7 +117,6 @@ public class INoiseBanner extends ApplicationAdapter {
     @Override
     public void create() {
         if(clipboard == null) clipboard = Gdx.app.getClipboard();
-
         noise.setWrapped(noises[noiseIndex]);
         noise.setFractalType(Noise.RIDGED_MULTI);
 
