@@ -48,6 +48,7 @@ public class INoiseViewer extends ApplicationAdapter {
     private float hue = 0;
     private float variance = 1f;
     private float hard = 0f;
+    private float saturation = 1f;
     private int divisions = 2;
     private int octaves = 0;
     private float freq = 0.125f;
@@ -105,7 +106,7 @@ public class INoiseViewer extends ApplicationAdapter {
         z -= (int) z;
         y = Math.min(Math.max(Math.abs(y * 6f - 3f) - 1f, 0f), 1f);
         z = Math.min(Math.max(Math.abs(z * 6f - 3f) - 1f, 0f), 1f);
-        float v = (l + s * Math.min(l, 1f - l));
+        float v = (l + Math.min(Math.max(s, 0f), 1f) * Math.min(l, 1f - l));
         float d = 2f * (1f - l / (v + 1e-10f));
         return rgba8888(v * MathUtils.lerp(1f, x, d), v * MathUtils.lerp(1f, y, d), v * MathUtils.lerp(1f, z, d), a);
     }
@@ -125,9 +126,9 @@ public class INoiseViewer extends ApplicationAdapter {
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
             gif.setDitherAlgorithm(Dithered.DitherAlgorithm.WREN);
-            gif.setDitherStrength(0.25f);
+            gif.setDitherStrength(0.15f);
             gif.palette = new QualityPalette();
-            png = new FastPNG();
+//            png = new FastPNG();
 //            png.setCompression(2);
         }
 
@@ -252,6 +253,7 @@ public class INoiseViewer extends ApplicationAdapter {
                             int last = paste.lastIndexOf('`');
                             if (last >= 1) {
                                 Base base = Base.BASE10;
+                                //9~`FoaN`1234567890`~-2520166047429742850~0.0625~3~2~0`~4~circleIn~-0.098345466~1.0~2.4474833~0.8675451~1.0~0.1~1712959125737
                                 noiseIndex = (base.readInt(paste) % noises.length + noises.length) % noises.length;
                                 noise.stringDeserialize(paste.substring(paste.indexOf('~') + 1));
                                 divisions = base.readInt(paste, last + 2, last = paste.indexOf('~', last + 2));
@@ -265,6 +267,8 @@ public class INoiseViewer extends ApplicationAdapter {
                                 if(b <= 0) b = 1f;
                                 hard = base.readFloat(paste, last + 1, last = paste.indexOf('~', last + 1));
                                 if(hard <= 0) hard = 0f;
+                                saturation = base.readFloat(paste, last + 1, last = paste.indexOf('~', last + 1));
+                                if(saturation <= 0) saturation = 0f;
                                 prettyPrint();
                             }
                         } else
@@ -296,10 +300,11 @@ public class INoiseViewer extends ApplicationAdapter {
         System.out.println("Divisions: " + divisions);
         System.out.println("Gradient Interpolator: " + interpolator.tag + " (index " + interpolatorIndex + ")");
         System.out.println("Hue: " + hue);
+        System.out.println("Saturation: " + saturation);
         System.out.println("Gradient Variance: " + variance);
         System.out.println("Gradient Hardness: " + hard);
         System.out.println("Kumaraswamy a: " + a + ", b: " + b);
-        System.out.println("Data for Copy/Paste: " + noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + hard + "~" + System.currentTimeMillis());
+        System.out.println("Data for Copy/Paste: " + noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + hard + "~"  + saturation + "~" + System.currentTimeMillis());
     }
 
     public void putMap() {
@@ -309,6 +314,8 @@ public class INoiseViewer extends ApplicationAdapter {
             variance = Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         if (Gdx.input.isKeyPressed(A))
             hard = Math.min(Math.max(hard + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()), 0f), 1f);
+        if (Gdx.input.isKeyPressed(Z))
+            saturation = Math.min(Math.max(saturation + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()), 0f), 1f);
         if (Gdx.input.isKeyPressed(NUM_0))
             a = Math.max(0.001f, a + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         if (Gdx.input.isKeyPressed(NUM_1))
@@ -360,7 +367,7 @@ public class INoiseViewer extends ApplicationAdapter {
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
                                 fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
-                                TrigTools.sin(1 + bright * 1.375f),
+                                TrigTools.sin(1 + bright * 1.375f) * saturation,
                                 TrigTools.sin(bright * 1.5f),
                                 1f
 //                        ))
@@ -399,7 +406,7 @@ public class INoiseViewer extends ApplicationAdapter {
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
                                             fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
-                                            TrigTools.sin(1 + bright * 1.375f),
+                                            TrigTools.sin(1 + bright * 1.375f) * saturation,
                                             TrigTools.sin(bright * 1.5f),
                                             1f))
 //                            )
@@ -421,14 +428,15 @@ public class INoiseViewer extends ApplicationAdapter {
 //                gif.palette.exact(colorList.items, colorList.size());
 
                 Gdx.files.local("out/").mkdirs();
-                String ser = noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + System.currentTimeMillis();
+                String ser = noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + hard + "~" + saturation + "~" + System.currentTimeMillis();
                 prettyPrint();
                 if(Gdx.app.getType() != Application.ApplicationType.WebGL)
                 {
-                    if(gif != null)
+                    if(gif != null) {
+                        gif.palette.analyze(frames);
                         gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 30);
-                    if(png != null)
-                    {
+                    }
+                    if(png != null) {
                         for(int i = 0; i < frames.size; i++){
                             png.write(Gdx.files.local("out/png/"+ser+"/frame_" + i + ".png"), frames.get(i));
                         }
@@ -459,7 +467,7 @@ public class INoiseViewer extends ApplicationAdapter {
                 }
                 frames.clear();
             } else {
-                String ser = noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + System.currentTimeMillis();
+                String ser = noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + hard + "~" + saturation + "~" + System.currentTimeMillis();
                 System.out.println(ser);
                 clipboard.setContents(ser);
             }
