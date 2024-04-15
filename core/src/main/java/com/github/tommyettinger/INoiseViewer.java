@@ -98,6 +98,7 @@ public class INoiseViewer extends ApplicationAdapter {
      */
     public static int hsl2rgb(final float h, final float s, final float l, final float a) {
         // note: the spline is used here to change hue distribution so there's more orange, less cyan.
+//        final float hue = (float) Math.pow((h - MathUtils.floor(h)) * 0.8f + 0.225f, 2f) - 0.050625f;
         final float hue = MathTools.barronSpline(h - MathUtils.floor(h), 1.7f, 0.9f);
         float x = Math.min(Math.max(Math.abs(hue * 6f - 3f) - 1f, 0f), 1f);
         float y = hue + (2f / 3f);
@@ -126,8 +127,9 @@ public class INoiseViewer extends ApplicationAdapter {
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
             gif.setDitherAlgorithm(Dithered.DitherAlgorithm.WREN);
-            gif.setDitherStrength(0.15f);
+            gif.setDitherStrength(0.2f);
             gif.palette = new QualityPalette();
+//            gif.fastAnalysis = false;
 //            png = new FastPNG();
 //            png.setCompression(2);
         }
@@ -433,7 +435,7 @@ public class INoiseViewer extends ApplicationAdapter {
                 if(Gdx.app.getType() != Application.ApplicationType.WebGL)
                 {
                     if(gif != null) {
-                        gif.palette.analyze(frames);
+                        gif.palette.analyzeReductive(frames);
                         gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 30);
                     }
                     if(png != null) {
