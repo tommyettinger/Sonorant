@@ -891,7 +891,7 @@ public class INoiseViewer extends ApplicationAdapter {
                     // we need to subtract counter to make increasing time appear to "zoom in" forever. I don't know why.
                     len = (len - counter) * 0x1p-8f;
                     // can be ignored; when there are an even number of slices, this reverses every other slice.
-                    int flip = -((int) theta & 1 & divisions) | 1;
+                    int flip = -(MathUtils.floor(theta) & 1 & divisions) | 1;
                     // if the above found it needs to reverse a slice, it does so here.
                     theta *= flip;
                     float A, B, C, D; // these are used later, they get assigned the 4D position's x, y, z, w coordinates
@@ -958,7 +958,7 @@ public class INoiseViewer extends ApplicationAdapter {
                                 // we need to subtract counter to make increasing time appear to "zoom in" forever. I don't know why.
                                 len = (len - ctr) * 0x1p-8f;
                                 // can be ignored; when there are an even number of slices, this reverses every other slice.
-                                int flip = -((int) theta & 1 & divisions) | 1;
+                                int flip = -(MathUtils.floor(theta) & 1 & divisions) | 1;
                                 // if the above found it needs to reverse a slice, it does so here.
                                 theta *= flip;
                                 float A, B, C, D; // these are used later, they get assigned the 4D position's x, y, z, w coordinates
