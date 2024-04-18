@@ -869,12 +869,13 @@ public class INoiseViewer extends ApplicationAdapter {
             for (int y = 0; y < height; y++) {
                 float n = 0f, bSum = 0f;
                 for (int cen = 0; cen < cenSize; cen++) {
+                    int direction = 1 - ((~cenSize & cen & 1) << 1);
 
                     float distX = x - centers.get(cen).x; // x distance from center
                     float distY = y - centers.get(cen).y; // y distance from center
                     // this is the angle to get from the center to our current point, multiplies by the number of times the
                     // pattern needs to repeat (which is 3 + divisions), plus a slowly increasing value to make it rotate.
-                    float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f);
+                    float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f) * direction;
                     // not actually the length, but like it. It "should" use square root, but cube root looks better.
                     float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
 //                float len = (float) Math.sqrt(distX * distX + distY * distY);
@@ -899,11 +900,11 @@ public class INoiseViewer extends ApplicationAdapter {
                                     // the noise seed allows us to make a different "random" pattern by changing the seed.
                                     noise.getSeed())
                     )), 0), 1);
-                    bSum += bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
+                    bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
                     n += varianceNoise.getConfiguredNoise(A, B, C, D);
                 }
-                bright = (float) TrigTools.atanUncheckedTurns(bSum - cenSize * 0.5f) * 2f + 0.5f;
-
+//                bright = (float) TrigTools.atanUncheckedTurns(bSum - cenSize * 0.5f) * 2f + 0.5f;
+                bright = bSum / cenSize;
 
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
@@ -928,19 +929,20 @@ public class INoiseViewer extends ApplicationAdapter {
                         for (int y = 0; y < height; y++) {
                             float n = 0f, bSum = 0f;
                             for (int cen = 0; cen < cenSize; cen++) {
+                                int direction = 1 - ((~cenSize & cen & 1) << 1);
 
                                 float distX = x - centers.get(cen).x; // x distance from center
                                 float distY = y - centers.get(cen).y; // y distance from center
                                 // this is the angle to get from the center to our current point, multiplies by the number of times the
                                 // pattern needs to repeat (which is 3 + divisions), plus a slowly increasing value to make it rotate.
-                                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x1p-8f);
+                                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x1p-8f) * direction;
                                 // not actually the length, but like it. It "should" use square root, but cube root looks better.
                                 float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
 //                float len = (float) Math.sqrt(distX * distX + distY * distY);
                                 // this is used to expand each "pizza slice" of noise as it gets further from the center.
                                 float shrunk = len / (3f + divisions);
                                 // we need to subtract counter to make increasing time appear to "zoom in" forever. I don't know why.
-                                len = (len - counter) * 0x1p-8f;
+                                len = (len - ctr) * 0x1p-8f;
                                 // can be ignored; when there are an even number of slices, this reverses every other slice.
                                 int flip = -((int) theta & 1 & divisions) | 1;
                                 // if the above found it needs to reverse a slice, it does so here.
@@ -961,7 +963,8 @@ public class INoiseViewer extends ApplicationAdapter {
                                 bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
                                 n += varianceNoise.getConfiguredNoise(A, B, C, D);
                             }
-                            bright = (float) TrigTools.atanUncheckedTurns(bSum - cenSize * 0.5f) * 2f + 0.5f;
+//                            bright = (float) TrigTools.atanUncheckedTurns(bSum - cenSize * 0.5f) * 2f + 0.5f;
+                            bright = bSum / cenSize;
 
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
