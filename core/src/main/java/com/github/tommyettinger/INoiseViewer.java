@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Clipboard;
@@ -30,13 +31,18 @@ import static com.github.tommyettinger.digital.MathTools.fract;
  */
 public class INoiseViewer extends ApplicationAdapter {
 
+    public static final int width = 350, height = 350;
+//    public static final int width = 512, height = 512;
+//    public static final int width = 256, height = 256;
+//    public static final int width = 64, height = 64;
+
     private final INoise[] noises = new INoise[]{new CyclicNoise(1234567890L, 3), new CyclicNoise(1234567890L, 4), new CyclicNoise(1234567890L, 5),
             new SorbetNoise(1234567890L, 5), new SorbetNoise(1234567890L, 4), new SorbetNoise(1234567890L, 3),
             new FlanNoise(1234567890L, 4), new TaffyNoise(1234567890L, 4), new FoamplexNoise(1234567890L),
             new FoamNoise(1234567890L), new HoneyNoise(1234567890L), new PerlinNoise(1234567890L), new SimplexNoise(1234567890L),
             new SnakeNoise(1234567890L), new BadgerNoise(1234567890L), new ValueNoise(1234567890L)
     };
-    private int noiseIndex = 0;
+    private int noiseIndex = 15;
     private final NoiseWrapper noise = new NoiseWrapper(noises[noiseIndex], 1234567890L, 0.0625f, 2, 1);
     private final Noise varianceNoise = new Noise(-1, 0.025f, Noise.VALUE);
     private final ObjectList<Interpolations.Interpolator> interpolators = new ObjectList<>(Interpolations.getInterpolatorArray());
@@ -53,13 +59,14 @@ public class INoiseViewer extends ApplicationAdapter {
     private float b = 1f;
     private boolean paused;
     private boolean hueCycle = false;
+
+    private final ObjectList<Vector2> centers =
+//            ObjectList.with(new Vector2((width-1) * 0.5f, (height-1) * 0.5f));
+            ObjectList.with(new Vector2((width-1) / 3f, (height-1) * 0.5f), new Vector2((width-1) * 2f / 3f, (height-1) * 0.5f));
+
     private ImmediateModeRenderer20 renderer;
 
     private Clipboard clipboard;
-    public static final int width = 350, height = 350;
-//    public static final int width = 512, height = 512;
-//    public static final int width = 256, height = 256;
-//    public static final int width = 64, height = 64;
 
 //    private IntList colorList = new IntList(256);
 //    private float[] colorFloats = new float[256];
@@ -857,41 +864,47 @@ public class INoiseViewer extends ApplicationAdapter {
 
         double aa = 1.0/a, bb = 1.0/b;
 
+        final int cenSize = centers.size();
         for (int x = 0; x < width; x++) {
-            float distX = x - (width - 1) * 0.5f; // x distance from center
             for (int y = 0; y < height; y++) {
-                float distY = y - (height - 1) * 0.5f; // y distance from center
-                // this is the angle to get from the center to our current point, multiplies by the number of times the
-                // pattern needs to repeat (which is 3 + divisions), plus a slowly increasing value to make it rotate.
-                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f);
-                // not actually the length, but like it. It "should" use square root, but cube root looks better.
-                float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
+                float n = 0f, bSum = 0f;
+                for (int cen = 0; cen < cenSize; cen++) {
+
+                    float distX = x - centers.get(cen).x; // x distance from center
+                    float distY = y - centers.get(cen).y; // y distance from center
+                    // this is the angle to get from the center to our current point, multiplies by the number of times the
+                    // pattern needs to repeat (which is 3 + divisions), plus a slowly increasing value to make it rotate.
+                    float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f);
+                    // not actually the length, but like it. It "should" use square root, but cube root looks better.
+                    float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
 //                float len = (float) Math.sqrt(distX * distX + distY * distY);
-                // this is used to expand each "pizza slice" of noise as it gets further from the center.
-                float shrunk = len / (3f + divisions);
-                // we need to subtract counter to make increasing time appear to "zoom in" forever. I don't know why.
-                len = (len - counter) * 0x1p-8f;
-                // can be ignored; when there are an even number of slices, this reverses every other slice.
-                int flip = -((int) theta & 1 & divisions) | 1;
-                // if the above found it needs to reverse a slice, it does so here.
-                theta *= flip;
-                float A, B, C, D; // these are used later, they get assigned the 4D position's x, y, z, w coordinates
-                // the interpolator is used to adjust brightness, like ramps or curves in an image editor.
-                bright = Math.min(Math.max(interpolator.apply(basicPrepare(
-                        noise.getNoiseWithSeed(
-                                // A and B are given the angle going around the center, and get split into sin and cos.
-                                A = TrigTools.cosTurns(theta) * shrunk,
-                                B = TrigTools.sinTurns(theta) * shrunk,
-                                // C and D also get split, but are given the distance from the center going out.
-                                C = TrigTools.cosTurns(len) * 32f,
-                                D = TrigTools.sinTurns(len) * 32f,
-                                // the noise seed allows us to make a different "random" pattern by changing the seed.
-                                noise.getSeed())
-                )), 0), 1);
+                    // this is used to expand each "pizza slice" of noise as it gets further from the center.
+                    float shrunk = len / (3f + divisions);
+                    // we need to subtract counter to make increasing time appear to "zoom in" forever. I don't know why.
+                    len = (len - counter) * 0x1p-8f;
+                    // can be ignored; when there are an even number of slices, this reverses every other slice.
+                    int flip = -((int) theta & 1 & divisions) | 1;
+                    // if the above found it needs to reverse a slice, it does so here.
+                    theta *= flip;
+                    float A, B, C, D; // these are used later, they get assigned the 4D position's x, y, z, w coordinates
+                    // the interpolator is used to adjust brightness, like ramps or curves in an image editor.
+                    bright = Math.min(Math.max(interpolator.apply(basicPrepare(
+                            noise.getNoiseWithSeed(
+                                    // A and B are given the angle going around the center, and get split into sin and cos.
+                                    A = TrigTools.cosTurns(theta) * shrunk,
+                                    B = TrigTools.sinTurns(theta) * shrunk,
+                                    // C and D also get split, but are given the distance from the center going out.
+                                    C = TrigTools.cosTurns(len) * 32f,
+                                    D = TrigTools.sinTurns(len) * 32f,
+                                    // the noise seed allows us to make a different "random" pattern by changing the seed.
+                                    noise.getSeed())
+                    )), 0), 1);
+                    bSum += bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
+                    n += varianceNoise.getConfiguredNoise(A, B, C, D);
+                }
+                bright = (float) TrigTools.atanUncheckedTurns(bSum - cenSize * 0.5f) * 2f + 0.5f;
 
-                bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
 
-                float n = varianceNoise.getConfiguredNoise(A, B, C, D);
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
                                 fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
@@ -912,25 +925,44 @@ public class INoiseViewer extends ApplicationAdapter {
                     else hc = hue;
                     Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
                     for (int x = 0; x < width; x++) {
-                        float distX = x - (width - 1) * 0.5f;
                         for (int y = 0; y < height; y++) {
-                            float distY = y - (height - 1) * 0.5f;
-                            float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x1p-8f);
-//                float len = 0x1p-9f * (distX * distX + distY * distY);
-                            float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
-//                float len = (float) Math.sqrt(distX * distX + distY * distY);
-                            float shrunk = len / (3f + divisions);
-                            len = (len - ctr) * 0x1p-8f;
-                            int flip = -((int) theta & 1 & divisions) | 1;
-                            theta *= flip;
-                            float A, B, C, D;
-                            bright = Math.min(Math.max(interpolator.apply(basicPrepare(
-                                    noise.getNoiseWithSeed(A = TrigTools.cosTurns(theta) * shrunk,
-                                            B = TrigTools.sinTurns(theta) * shrunk, C = TrigTools.cosTurns(len) * 32f, D = TrigTools.sinTurns(len) * 32f, noise.getSeed())
-                            )), 0), 1);
+                            float n = 0f, bSum = 0f;
+                            for (int cen = 0; cen < cenSize; cen++) {
 
-                            bright = (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
-                            float n = varianceNoise.getConfiguredNoise(A, B, C, D);
+                                float distX = x - centers.get(cen).x; // x distance from center
+                                float distY = y - centers.get(cen).y; // y distance from center
+                                // this is the angle to get from the center to our current point, multiplies by the number of times the
+                                // pattern needs to repeat (which is 3 + divisions), plus a slowly increasing value to make it rotate.
+                                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x1p-8f);
+                                // not actually the length, but like it. It "should" use square root, but cube root looks better.
+                                float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
+//                float len = (float) Math.sqrt(distX * distX + distY * distY);
+                                // this is used to expand each "pizza slice" of noise as it gets further from the center.
+                                float shrunk = len / (3f + divisions);
+                                // we need to subtract counter to make increasing time appear to "zoom in" forever. I don't know why.
+                                len = (len - counter) * 0x1p-8f;
+                                // can be ignored; when there are an even number of slices, this reverses every other slice.
+                                int flip = -((int) theta & 1 & divisions) | 1;
+                                // if the above found it needs to reverse a slice, it does so here.
+                                theta *= flip;
+                                float A, B, C, D; // these are used later, they get assigned the 4D position's x, y, z, w coordinates
+                                // the interpolator is used to adjust brightness, like ramps or curves in an image editor.
+                                bright = Math.min(Math.max(interpolator.apply(basicPrepare(
+                                        noise.getNoiseWithSeed(
+                                                // A and B are given the angle going around the center, and get split into sin and cos.
+                                                A = TrigTools.cosTurns(theta) * shrunk,
+                                                B = TrigTools.sinTurns(theta) * shrunk,
+                                                // C and D also get split, but are given the distance from the center going out.
+                                                C = TrigTools.cosTurns(len) * 32f,
+                                                D = TrigTools.sinTurns(len) * 32f,
+                                                // the noise seed allows us to make a different "random" pattern by changing the seed.
+                                                noise.getSeed())
+                                )), 0), 1);
+                                bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
+                                n += varianceNoise.getConfiguredNoise(A, B, C, D);
+                            }
+                            bright = (float) TrigTools.atanUncheckedTurns(bSum - cenSize * 0.5f) * 2f + 0.5f;
+
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
                                             fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
