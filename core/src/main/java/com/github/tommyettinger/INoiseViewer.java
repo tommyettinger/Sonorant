@@ -25,6 +25,7 @@ import com.github.yellowstonegames.grid.*;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
+import static com.github.tommyettinger.digital.MathTools.floor;
 import static com.github.tommyettinger.digital.MathTools.fract;
 
 /**
@@ -865,6 +866,12 @@ public class INoiseViewer extends ApplicationAdapter {
         double aa = 1.0/a, bb = 1.0/b;
 
         final int cenSize = centers.size();
+
+        for (int i = 0; i < cenSize; i++) {
+            float rot = (counter * 0x1p-8f + i) / (float)cenSize;
+            centers.get(i).set(TrigTools.cosTurns(rot) * width * 0.35f + (width-1f) * 0.5f,
+                    TrigTools.sinTurns(rot) * height * 0.35f + (height-1f) * 0.5f);
+        }
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
                 float n = 0f, bSum = 0f;
@@ -875,7 +882,7 @@ public class INoiseViewer extends ApplicationAdapter {
                     float distY = y - centers.get(cen).y; // y distance from center
                     // this is the angle to get from the center to our current point, multiplies by the number of times the
                     // pattern needs to repeat (which is 3 + divisions), plus a slowly increasing value to make it rotate.
-                    float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f) * direction;
+                    float theta = (TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (c * 0x4p-8f)) * direction;
                     // not actually the length, but like it. It "should" use square root, but cube root looks better.
                     float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
 //                float len = (float) Math.sqrt(distX * distX + distY * distY);
@@ -925,6 +932,13 @@ public class INoiseViewer extends ApplicationAdapter {
                     if(hueCycle) hc = ctr * 0x1p-8f;
                     else hc = hue;
                     Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+
+                    for (int i = 0; i < cenSize; i++) {
+                        float rot = (ctr * 0x1p-8f + i) / (float)cenSize;
+                        centers.get(i).set(TrigTools.cosTurns(rot) * width * 0.35f + (width-1f) * 0.5f,
+                                TrigTools.sinTurns(rot) * height * 0.35f + (height-1f) * 0.5f);
+                    }
+
                     for (int x = 0; x < width; x++) {
                         for (int y = 0; y < height; y++) {
                             float n = 0f, bSum = 0f;
@@ -935,7 +949,7 @@ public class INoiseViewer extends ApplicationAdapter {
                                 float distY = y - centers.get(cen).y; // y distance from center
                                 // this is the angle to get from the center to our current point, multiplies by the number of times the
                                 // pattern needs to repeat (which is 3 + divisions), plus a slowly increasing value to make it rotate.
-                                float theta = TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x1p-8f) * direction;
+                                float theta = (TrigTools.atan2Turns(distY, distX) * (3 + divisions) + (ct * 0x1p-8f)) * direction;
                                 // not actually the length, but like it. It "should" use square root, but cube root looks better.
                                 float len = MathTools.cbrt(distX * distX + distY * distY) * 4f;
 //                float len = (float) Math.sqrt(distX * distX + distY * distY);
