@@ -812,6 +812,12 @@ public class INoiseViewer extends ApplicationAdapter {
                     }
                     //`322420472~11~1~2~1~0~0~0~32829~64~63~-466088384~1701193279~164548413`~2~pow0_75~0.7793921~0.1937514~1.0~1.0~1700476003842
                     break;
+                    case EQUALS:
+                        centers.add(new Vector2());
+                        break;
+                    case MINUS:
+                        centers.pop();
+                        break;
                     case A: // analyze
                         prettyPrint();
                         break;
@@ -867,10 +873,15 @@ public class INoiseViewer extends ApplicationAdapter {
 
         final int cenSize = centers.size();
 
-        for (int i = 0; i < cenSize; i++) {
-            float rot = (counter * 0x1p-8f + i) / (float)cenSize;
-            centers.get(i).set(TrigTools.cosTurns(rot) * width * 0.35f + (width-1f) * 0.5f,
-                    TrigTools.sinTurns(rot) * height * 0.35f + (height-1f) * 0.5f);
+        if(cenSize == 1) {
+            centers.get(0).set((width - 1f) * 0.5f, (height - 1f) * 0.5f);
+        }
+        else {
+            for (int i = 0; i < cenSize; i++) {
+                float rot = (counter * 0x1p-8f + i) / (float) cenSize;
+                centers.get(i).set(TrigTools.cosTurns(rot) * width * 0.35f + (width - 1f) * 0.5f,
+                        TrigTools.sinTurns(rot) * height * 0.35f + (height - 1f) * 0.5f);
+            }
         }
         for (int x = 0; x < width; x++) {
             for (int y = 0; y < height; y++) {
@@ -933,10 +944,15 @@ public class INoiseViewer extends ApplicationAdapter {
                     else hc = hue;
                     Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
 
-                    for (int i = 0; i < cenSize; i++) {
-                        float rot = (ctr * 0x1p-8f + i) / (float)cenSize;
-                        centers.get(i).set(TrigTools.cosTurns(rot) * width * 0.35f + (width-1f) * 0.5f,
-                                TrigTools.sinTurns(rot) * height * 0.35f + (height-1f) * 0.5f);
+                    if(cenSize == 1) {
+                        centers.get(0).set((width - 1f) * 0.5f, (height - 1f) * 0.5f);
+                    }
+                    else {
+                        for (int i = 0; i < cenSize; i++) {
+                            float rot = (ctr * 0x1p-8f + i) / (float) cenSize;
+                            centers.get(i).set(TrigTools.cosTurns(rot) * width * 0.35f + (width - 1f) * 0.5f,
+                                    TrigTools.sinTurns(rot) * height * 0.35f + (height - 1f) * 0.5f);
+                        }
                     }
 
                     for (int x = 0; x < width; x++) {
