@@ -918,11 +918,12 @@ public class INoiseViewer extends ApplicationAdapter {
                                     // the noise seed allows us to make a different "random" pattern by changing the seed.
                                     noise.getSeed())
                     )), 0), 1);
-                    bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
+                    bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa) - 0.5f;
                     n += varianceNoise.getConfiguredNoise(A, B, C, D);
                 }
 //                bright = (float) TrigTools.atanUncheckedTurns(bSum - cenSize * 0.5f) * 2f + 0.5f;
-                bright = bSum / cenSize;
+//                bright = bSum / cenSize;
+                bright = screenistic(bSum * 2f / cenSize);
 
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
@@ -990,11 +991,12 @@ public class INoiseViewer extends ApplicationAdapter {
                                                 // the noise seed allows us to make a different "random" pattern by changing the seed.
                                                 noise.getSeed())
                                 )), 0), 1);
-                                bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa);
+                                bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa) - 0.5f;
                                 n += varianceNoise.getConfiguredNoise(A, B, C, D);
                             }
 //                            bright = (float) TrigTools.atanUncheckedTurns(bSum - cenSize * 0.5f) * 2f + 0.5f;
-                            bright = bSum / cenSize;
+//                            bright = bSum / cenSize;
+                            bright = screenistic(bSum * 2f / cenSize);
 
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
@@ -1082,6 +1084,26 @@ public class INoiseViewer extends ApplicationAdapter {
         super.resize(width, height);
         view.update(width, height, true);
         view.apply(true);
+    }
+
+    /**
+     *
+     * @param n centered on 0, so the midpoint of the domain should already be subtracted; min and max should be -1 and 1
+     * @return a float between 0 and 1
+     */
+    public static float screenistic(float n) {
+        return 1.1045f / (1f + BitConversion.intBitsToFloat((int)((1 << 23) * (Math.max(-126.0f, -4.328085f * n) + 126.94269504f)))) - 0.05177f;
+    }
+
+    /**
+     * Mixes two values (each between 0 and 1) to get another value that will be lower if both inputs are low, higher
+     * if both inputs are high, or balanced if both are in the center.
+     * @param a between 0 and 1
+     * @param b between 0 and 1
+     * @return between 0 and 1
+     */
+    public static float screenistic(float a, float b) {
+        return 1.1045f / (1f + BitConversion.intBitsToFloat((int)((1 << 23) * (Math.max(-126.0f, -4.328085f * (a + b - 1f)) + 126.94269504f)))) - 0.05177f;
     }
 
 //    public void updateColor(float h) {
