@@ -35,6 +35,13 @@ run {
   doNotTrackState("no changey changey")
 }
 
+if(enableDebug == 'true') {
+  tasks.withType(JavaCompile).configureEach {
+    options.debug = true
+    options.compilerArgs += ["-g"]
+  }
+}
+
 jar {
 // sets the name of the .jar file this produces to the name of the game or app.
   archiveFileName.set("${appName}-${version}.jar")

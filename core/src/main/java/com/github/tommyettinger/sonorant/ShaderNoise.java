@@ -57,14 +57,14 @@ public class ShaderNoise extends ApplicationAdapter {
 			Gdx.app.exit();
 			return;
 		}
-		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("ana_fragment.glsl"));
-//		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment_ridged.glsl"));
+//		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("ana_fragment.glsl"));
+		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment_ridged.glsl"));
 		if (!shaderRidged.isCompiled()) {
 			Gdx.app.error("Shader", "error compiling shaderRidged:\n" + shaderRidged.getLog());
 			Gdx.app.exit();
 			return;
 		}
-		shader = shaderRidged;
+		shader = shaderStandard;
 		batch.setShader(shader);
 
 		// System.nanoTime() is supported by GWT 2.10.0 .
