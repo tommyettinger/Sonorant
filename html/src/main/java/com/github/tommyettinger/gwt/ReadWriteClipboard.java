@@ -14,14 +14,11 @@
  * limitations under the License.
  ******************************************************************************/
 
-package com.github.tommyettinger;
+package com.github.tommyettinger.gwt;
 
 import com.badlogic.gdx.backends.gwt.GwtApplication;
 import com.badlogic.gdx.backends.gwt.GwtPermissions;
 import com.badlogic.gdx.utils.Clipboard;
-import com.google.gwt.core.client.JavaScriptObject;
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.NativeEvent;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.History;
 

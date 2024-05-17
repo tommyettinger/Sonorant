@@ -1,4 +1,4 @@
-package com.github.tommyettinger;
+package com.github.tommyettinger.sonorant;
 
 import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
@@ -6,7 +6,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.PixmapIO;
 import com.badlogic.gdx.graphics.glutils.ImmediateModeRenderer20;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.math.MathUtils;
@@ -18,7 +17,10 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-import com.github.tommyettinger.anim8.*;
+import com.github.tommyettinger.anim8.AnimatedGif;
+import com.github.tommyettinger.anim8.Dithered;
+import com.github.tommyettinger.anim8.FastPNG;
+import com.github.tommyettinger.anim8.QualityPalette;
 import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.ObjectList;
 import com.github.yellowstonegames.grid.*;
@@ -918,12 +920,12 @@ public class INoiseViewer extends ApplicationAdapter {
                                     // the noise seed allows us to make a different "random" pattern by changing the seed.
                                     noise.getSeed())
                     )), 0), 1);
-                    bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa) - 0.5f;
+                    bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa) - 0.4f;
                     n += varianceNoise.getConfiguredNoise(A, B, C, D);
                 }
 //                bright = (float) TrigTools.atanUncheckedTurns(bSum - cenSize * 0.5f) * 2f + 0.5f;
 //                bright = bSum / cenSize;
-                bright = screenistic(bSum * 2f / cenSize);
+                bright = screenistic(bSum * 1.9f / cenSize);
 
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
@@ -991,12 +993,12 @@ public class INoiseViewer extends ApplicationAdapter {
                                                 // the noise seed allows us to make a different "random" pattern by changing the seed.
                                                 noise.getSeed())
                                 )), 0), 1);
-                                bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa) - 0.5f;
+                                bSum += (float)Math.pow(1.0 - Math.pow(1.0 - bright, bb), aa) - 0.4f;
                                 n += varianceNoise.getConfiguredNoise(A, B, C, D);
                             }
 //                            bright = (float) TrigTools.atanUncheckedTurns(bSum - cenSize * 0.5f) * 2f + 0.5f;
 //                            bright = bSum / cenSize;
-                            bright = screenistic(bSum * 2f / cenSize);
+                            bright = screenistic(bSum * 1.9f / cenSize);
 
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(

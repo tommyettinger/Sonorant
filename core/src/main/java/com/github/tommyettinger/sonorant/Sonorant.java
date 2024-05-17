@@ -1,4 +1,4 @@
-package com.github.tommyettinger;
+package com.github.tommyettinger.sonorant;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
