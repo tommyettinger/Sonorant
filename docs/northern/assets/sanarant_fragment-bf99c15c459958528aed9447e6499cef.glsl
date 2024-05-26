@@ -46,8 +46,8 @@ float cosmic(float seed, vec4 con)
 void main() {
     if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
     // Normalized pixel coordinates (from 0 to 1)
-    vec2 center = (gl_FragCoord.xy/u_resolution - 0.5) * SCALE;// * 6.283185307179586;
-  float c = u_time / (v_color.a + 0.01), dc = c * (1.0/64.0), hc = c * (1.0/8.0);
+    vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;// * 6.283185307179586;
+  float c = u_time / (v_color.a + 0.01), dc = c * (1.0/64.0), hc = c * (1.0/10.0);
   float theta = atan(center.y, center.x) * DIVISIONS + dc;
   float len = length(center);
   float shrunk = len * (TWISTINESS / DIVISIONS);
