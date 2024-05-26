@@ -2,7 +2,7 @@ package com.github.tommyettinger.lwjgl3;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.github.tommyettinger.sonorant.INoiseViewer;
+import com.github.tommyettinger.sonorant.ShaderNoise;
 
 import static com.github.tommyettinger.sonorant.INoiseViewer.height;
 import static com.github.tommyettinger.sonorant.INoiseViewer.width;
@@ -13,8 +13,8 @@ public class Lwjgl3Launcher {
         // Needed for macOS support, but also Windows with non-ASCII usernames.
         if (StartupHelper.startNewJvmIfRequired()) return;
 
-//        new Lwjgl3Application(new ShaderNoise(null), getDefaultConfiguration());
-        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
+        new Lwjgl3Application(new ShaderNoise(null), getDefaultConfiguration());
+//        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
     }
 
 

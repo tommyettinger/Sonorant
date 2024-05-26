@@ -49,16 +49,17 @@ public class ShaderNoise extends ApplicationAdapter {
 		pixel = new Texture(pixmap);
 		startTime = TimeUtils.millis();
 		ShaderProgram.pedantic = true;
-		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("northern_fragment.glsl"));
+//		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("northern_fragment.glsl"));
 //		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment.glsl"));
+		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanarant_fragment.glsl"));
 //		shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("foam_fragment.glsl"));
 		if (!shaderStandard.isCompiled()) {
 			Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shaderStandard.getLog());
 			Gdx.app.exit();
 			return;
 		}
-//		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("ana_fragment.glsl"));
-		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment_ridged.glsl"));
+		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("ana_fragment.glsl"));
+//		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment_ridged.glsl"));
 		if (!shaderRidged.isCompiled()) {
 			Gdx.app.error("Shader", "error compiling shaderRidged:\n" + shaderRidged.getLog());
 			Gdx.app.exit();
