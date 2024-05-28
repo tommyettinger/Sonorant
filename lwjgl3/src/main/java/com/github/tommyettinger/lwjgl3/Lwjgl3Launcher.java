@@ -13,7 +13,7 @@ public class Lwjgl3Launcher {
         // Needed for macOS support, but also Windows with non-ASCII usernames.
         if (StartupHelper.startNewJvmIfRequired()) return;
 
-        new Lwjgl3Application(new ShaderNoise(null), getDefaultConfiguration());
+        new Lwjgl3Application(new ShaderNoise(null, 1L), getDefaultConfiguration());
 //        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
     }
 

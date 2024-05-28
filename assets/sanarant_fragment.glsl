@@ -5,7 +5,6 @@ precision highp float;
 #define LOWP 
 #endif
 
-const float DIVISIONS = 5.0;
 const float SCALE = 0.875;
 const float TWISTINESS = 18.0;
 
@@ -44,7 +43,8 @@ float cosmic(float seed, vec4 con)
 //}
 
 void main() {
-    if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
+  if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
+  float DIVISIONS = floor(fract(u_seed) * 10.0) + 3.0;
     // Normalized pixel coordinates (from 0 to 1)
     vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;// * 6.283185307179586;
   float c = u_time / (v_color.a + 0.01), dc = c * (1.0/64.0), hc = c * (1.0/10.0);

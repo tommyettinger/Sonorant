@@ -10,8 +10,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Clipboard;
+import com.badlogic.gdx.utils.NumberUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.github.tommyettinger.digital.BitConversion;
 
 import static com.badlogic.gdx.Input.Keys.*;
 
@@ -28,7 +30,7 @@ public class ShaderNoise extends ApplicationAdapter {
 	private ShaderProgram shaderRidged;
 
 	private long startTime;
-	private float seed;
+	private float seed = 31337;
 	private float variance = 0.5f;
 	private float a = 0.07f;
 	private float b = 0.9f;
@@ -36,8 +38,9 @@ public class ShaderNoise extends ApplicationAdapter {
 	public static int width = 350, height = 350;
 	private Clipboard clipboard;
 
-	public ShaderNoise(Clipboard clippy) {
+	public ShaderNoise(Clipboard clippy, long initialSeed) {
 		clipboard = clippy;
+		reseed(initialSeed);
 	}
 
 	@Override public void create () {
@@ -69,7 +72,8 @@ public class ShaderNoise extends ApplicationAdapter {
 		batch.setShader(shader);
 
 		// System.nanoTime() is supported by GWT 2.10.0 .
-		long state = System.nanoTime() + startTime;//-1234567890L;
+//		long state = System.nanoTime() + startTime;//-1234567890L;
+		long state = BitConversion.doubleToLongBits(seed * 1234567890.0987654321);
 		// Sarong's DiverRNG.randomize()
 		reseed(state);
 		// changes the start time (in milliseconds) by up to 65535 ms, based on state (which uses nanoseconds).
@@ -99,7 +103,7 @@ public class ShaderNoise extends ApplicationAdapter {
 				Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 			}
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.S)){ // seed
-			seed += UIUtils.shift() ? 0.25f : -0.25f;
+			seed += UIUtils.shift() ? 0.1f : -0.1f;
 		} else if(Gdx.input.isKeyJustPressed(SLASH)){ // seed
 			long state = (System.nanoTime() * (long)seed) + 0xD1B54A32D192ED03L;
 			reseed(state);
@@ -117,7 +121,7 @@ public class ShaderNoise extends ApplicationAdapter {
 		if (Gdx.input.isKeyPressed(A))
 			a = Math.min(Math.max(0.001f, a + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
 		if (Gdx.input.isKeyPressed(B))
-			b = Math.min(Math.max(0.001f, b + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
+			b = Math.min(Math.max(0.001f, b + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.25f : -0.25f)), 1f);
 		if(Gdx.input.isKeyJustPressed(C))
 			batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
 
