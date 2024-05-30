@@ -503,19 +503,17 @@ public class BlueViewer extends ApplicationAdapter {
                 Gdx.files.local("out/").mkdirs();
                 String ser = noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + hard + "~" + saturation + "~" + System.currentTimeMillis();
                 prettyPrint();
-                if(Gdx.app.getType() != Application.ApplicationType.WebGL)
-                {
-                    if(gif != null) {
+                if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
+                    if (gif != null) {
                         gif.palette.analyze(frames);
                         gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 24);
                     }
-                    if(png != null) {
-                        for(int i = 0; i < frames.size; i++){
-                            png.write(Gdx.files.local("out/png/"+ser+"/frame_" + i + ".png"), frames.get(i));
+                    if (png != null) {
+                        for (int i = 0; i < frames.size; i++) {
+                            png.write(Gdx.files.local("out/png/" + ser + "/frame_" + i + ".png"), frames.get(i));
                         }
                     }
-                }
-                if(apng != null) {
+                    if (apng != null) {
 //                    for (int i = 0; i < frames.size; i++) {
 //                        Pixmap frame = frames.get(i);
 //                        frame.setBlending(Pixmap.Blending.None);
@@ -529,7 +527,8 @@ public class BlueViewer extends ApplicationAdapter {
 //
 //                        }
 //                    }
-                    apng.write(Gdx.files.local("out/apng/" + ser + ".png"), frames, 24);
+                        apng.write(Gdx.files.local("out/apng/" + ser + ".png"), frames, 24);
+                    }
                 }
 //                try {
 //                    png.write(Gdx.files.local("out/png/" + ser + ".png"), frames.get(0));

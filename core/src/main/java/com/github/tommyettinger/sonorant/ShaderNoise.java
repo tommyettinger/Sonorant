@@ -9,10 +9,13 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
+import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Clipboard;
-import com.badlogic.gdx.utils.NumberUtils;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.github.tommyettinger.anim8.AnimatedGif;
+import com.github.tommyettinger.anim8.Dithered;
+import com.github.tommyettinger.anim8.QualityPalette;
 import com.github.tommyettinger.digital.BitConversion;
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -28,6 +31,7 @@ public class ShaderNoise extends ApplicationAdapter {
 	private ShaderProgram shader;
 	private ShaderProgram shaderStandard;
 	private ShaderProgram shaderRidged;
+	private AnimatedGif gif;
 
 	private long startTime;
 	private float seed = 31337;
@@ -35,7 +39,9 @@ public class ShaderNoise extends ApplicationAdapter {
 	private float a = 0.07f;
 	private float b = 0.9f;
 	private float frequency = 0.6f;
-	public static int width = 350, height = 350;
+	public static final int WIDTH = 400, HEIGHT = 400;
+	public static int width = WIDTH, height = HEIGHT;
+	private final Array<Pixmap> frames = new Array<>(256);
 	private Clipboard clipboard;
 
 	public ShaderNoise(Clipboard clippy, long initialSeed) {
@@ -51,6 +57,15 @@ public class ShaderNoise extends ApplicationAdapter {
 		pixmap.drawPixel(0, 0, 0xFFFFFFFF);
 		pixel = new Texture(pixmap);
 		startTime = TimeUtils.millis();
+
+		if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
+			gif = new AnimatedGif();
+			gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
+			gif.setDitherStrength(2f);
+			gif.palette = new QualityPalette();
+		}
+
+
 		ShaderProgram.pedantic = true;
 //		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("northern_fragment.glsl"));
 //		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment.glsl"));
@@ -114,16 +129,35 @@ public class ShaderNoise extends ApplicationAdapter {
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){ // quit
 			Gdx.app.exit();
 		}
-		if (Gdx.input.isKeyPressed(F))
+		else if (Gdx.input.isKeyPressed(F))
 			frequency = Math.min(Math.max(0.001f, frequency + (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
-		if (Gdx.input.isKeyPressed(V))
+		else if (Gdx.input.isKeyPressed(V))
 			variance = Math.min(Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
-		if (Gdx.input.isKeyPressed(A))
+		else if (Gdx.input.isKeyPressed(A))
 			a = Math.min(Math.max(0.001f, a + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
-		if (Gdx.input.isKeyPressed(B))
+		else if (Gdx.input.isKeyPressed(B))
 			b = Math.min(Math.max(0.001f, b + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.25f : -0.25f)), 1f);
-		if(Gdx.input.isKeyJustPressed(C))
+		else if(Gdx.input.isKeyJustPressed(C))
 			batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
+		else if(Gdx.input.isKeyJustPressed(W) && Gdx.app.getType() != Application.ApplicationType.WebGL) {
+			if (gif != null) {
+				frames.clear();
+				for (int i = 0; i < 256; i++) {
+					final float ftm = i * (0x1p-5f);
+					batch.begin();
+					shader.setUniformf("u_seed", seed);
+					shader.setUniformf("u_time", ftm);
+					shader.setUniformf("u_resolution", WIDTH, HEIGHT);
+					batch.setColor(variance, a, b, frequency);
+					batch.draw(pixel, 0f, 0f, WIDTH<<1, HEIGHT<<1);
+					batch.end();
+					frames.add(Pixmap.createFromFrameBuffer(0, 0, WIDTH, HEIGHT));
+				}
+				gif.palette.analyzeHueWise(frames);
+				gif.write(Gdx.files.local("out/gif/" + seed + "_" + frequency + "_" + variance + "_" + a + "_" + b + "_" + ".gif"), frames, 24);
+			}
+
+		}
 
 		final float ftm = TimeUtils.timeSinceMillis(startTime) * (0x1p-10f);
 		batch.begin();
