@@ -24,14 +24,13 @@ import com.github.yellowstonegames.grid.*;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
-import static com.github.tommyettinger.digital.MathTools.floor;
 import static com.github.tommyettinger.digital.MathTools.fract;
 
 /**
  */
-public class INoiseViewer extends ApplicationAdapter {
+public class BlueViewer extends ApplicationAdapter {
 
-    public static final int width = 350, height = 350;
+    public static final int width = 200, height = 200;
 //    public static final int width = 512, height = 512;
 //    public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
@@ -103,7 +102,7 @@ public class INoiseViewer extends ApplicationAdapter {
     public static int hsl2rgb(final float h, final float s, final float l, final float a) {
         // note: the spline is used here to change hue distribution so there's more orange, less cyan.
 //        final float hue = (float) Math.pow((h - MathUtils.floor(h)) * 0.8f + 0.225f, 2f) - 0.050625f;
-        final float hue = MathTools.barronSpline(h - MathUtils.floor(h), 1.7f, 0.9f);
+        final float hue = (h - MathUtils.floor(h));
         float x = Math.min(Math.max(Math.abs(hue * 6f - 3f) - 1f, 0f), 1f);
         float y = hue + (2f / 3f);
         float z = hue + (1f / 3f);
@@ -116,7 +115,7 @@ public class INoiseViewer extends ApplicationAdapter {
         return rgba8888(v * MathUtils.lerp(1f, x, d), v * MathUtils.lerp(1f, y, d), v * MathUtils.lerp(1f, z, d), a);
     }
 
-    public INoiseViewer(Clipboard clippy) {
+    public BlueViewer(Clipboard clippy) {
         clipboard = clippy;
     }
 
@@ -183,12 +182,14 @@ public class INoiseViewer extends ApplicationAdapter {
                         "vec4 hsl2rgb(vec4 c)\n" +
                         "{\n" +
                         "    const vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n" +
-                        "    vec3 p = abs(fract(barronSpline(c.x) + K.xyz) * 6.0 - K.www);\n" +
+                        "    vec3 p = abs(fract(c.x + K.xyz) * 6.0 - K.www);\n" +
                         "    float v = (c.z + c.y * min(c.z, 1.0 - c.z));\n" +
                         "    return vec4(v * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), 2.0 * (1.0 - c.z / (v + 1e-10))), c.w);\n" +
                         "}" +
                         "void main() {\n" +
-                        "   gl_FragColor = hsl2rgb(v_col);\n" +
+                        "   vec4 color = v_col;\n" +
+//                        "   color.x = sin(color.x * 6.28) * 0.05 + 0.65;\n" +
+                        "   gl_FragColor = hsl2rgb(color);\n" +
                         "}");
         if(!hslShader.isCompiled())
             System.out.println("HSL Shader compilation failed: " + hslShader.getLog());
@@ -403,11 +404,11 @@ public class INoiseViewer extends ApplicationAdapter {
 
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
-                                fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
-                                TrigTools.sin(1 + bright * 1.375f) * saturation,
-                                TrigTools.sin(bright * 1.5f),
-                                1f
-//                        ))
+                        TrigTools.sinSmootherTurns(fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc)) * 0.05f + 0.65f,
+                        TrigTools.sin(1 + bright * 1.375f) * saturation,
+                        TrigTools.sin(bright * 1.5f),
+                        1f
+//                    ))
                 );
 //                renderer.color(colorFloats[(int) (bright * 255.99f)]);
                 renderer.vertex(x, y, 0);
@@ -419,6 +420,7 @@ public class INoiseViewer extends ApplicationAdapter {
                     int ct = ctr * (1 + (divisions & 1));
                     if(hueCycle) hc = ctr * 0x1p-8f;
                     else hc = hue;
+
                     Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
 
                     if(cenSize == 1) {
@@ -476,7 +478,7 @@ public class INoiseViewer extends ApplicationAdapter {
 
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
-                                            fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
+                                            TrigTools.sinSmootherTurns(fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc)) * 0.05f + 0.65f,
                                             TrigTools.sin(1 + bright * 1.375f) * saturation,
                                             TrigTools.sin(bright * 1.5f),
                                             1f))
