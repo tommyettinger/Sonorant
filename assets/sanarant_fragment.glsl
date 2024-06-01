@@ -5,6 +5,7 @@ precision highp float;
 #define LOWP 
 #endif
 
+const float PI2 = 6.283185307179586;
 const float SCALE = 0.875;
 const float TWISTINESS = 18.0;
 
@@ -44,22 +45,28 @@ float cosmic(float seed, vec4 con)
 
 void main() {
   if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
-  float DIVISIONS = floor(fract(u_seed) * 10.0) + 3.0;
+  float DIVISIONS = mod(floor(u_seed), 10.0) + 3.0;
     // Normalized pixel coordinates (from 0 to 1)
-    vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;// * 6.283185307179586;
-  float c = u_time / (v_color.a + 0.01), dc = c * (1.0/64.0), hc = c * (1.0/10.0);
-  float theta = atan(center.y, center.x) * DIVISIONS + dc;
-  float len = length(center);
+    vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;// * PI2;
+  float c = u_time, dc = c * (1.0/64.0), hc = c * (1.0/10.0);
+  float theta = atan(center.y, center.x) * DIVISIONS + c;
+  float len = length(center) * 0.375;
   float shrunk = len * (TWISTINESS / DIVISIONS);
-  float adj = (len * 16. - c) * 0.5;
-  vec3 i = vec3(sin(theta) * shrunk, cos(theta) * shrunk, adj);
+  float adj = (len * PI2 * 3. - c + len * PI2) * 0.5;
+  vec2 i = vec2(theta, adj);
 
-    float aTime = hc - len;
-    vec4 s = vec4(swayRandomized(-16405.3157, aTime - 1.11),
-                  swayRandomized(-77664.8142, aTime + 1.41),
-                  swayRandomized(-50993.5190, aTime + 2.61),
-                  swayRandomized(-42069.1984, aTime - 2.31)) * 1.5 * (vec4(sin(i.xy), cos(i.xy)) + 1.25);
-    vec4 con = vec4(0.0004375, 0.0005625, 0.0008125, 0.000625) * aTime + s;
+    vec4 v = vec4(sin(i.x) * shrunk, cos(i.x) * shrunk, sin(i.y), cos(i.y));
+    vec4 s = vec4(sin(v.x - 1.11 + PI2 * cos(v.x - 5.3157)),
+                  sin(v.y + 1.41 + PI2 * cos(v.y + 4.8142)),
+                  sin(v.z + 2.61 + PI2 * cos(v.z - 3.5190)),
+                  sin(v.w - 2.31 + PI2 * cos(v.w + 9.1984))) * 1.5;
+//    float aTime = hc - len;
+//    vec4 s = vec4(swayRandomized(-16405.3157, aTime - 1.11),
+//                  swayRandomized(-77664.8142, aTime + 1.41),
+//                  swayRandomized(-50993.5190, aTime + 2.61),
+//                  swayRandomized(-42069.1984, aTime - 2.31)) * 1.5 * (vec4(sin(i.xy), cos(i.xy)) + 1.25);
+//    vec4 con = vec4(0.0004375, 0.0005625, 0.0008125, 0.000625) + s;
+    vec4 con = vec4(0.4375, 0.5625, 0.8125, 0.625) + s;
     con.x = cosmic(u_seed, con);
     con.y = cosmic(u_seed, con);
     con.z = cosmic(u_seed, con);

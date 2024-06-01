@@ -17,6 +17,8 @@ import com.github.tommyettinger.anim8.AnimatedGif;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.QualityPalette;
 import com.github.tommyettinger.digital.BitConversion;
+import com.github.tommyettinger.digital.MathTools;
+import com.github.tommyettinger.digital.TrigTools;
 
 import static com.badlogic.gdx.Input.Keys.*;
 
@@ -34,12 +36,12 @@ public class ShaderNoise extends ApplicationAdapter {
 	private AnimatedGif gif;
 
 	private long startTime;
-	private float seed = 31337;
+	private float seed = 3.1337f;
 	private float variance = 0.5f;
 	private float a = 0.07f;
 	private float b = 0.9f;
 	private float frequency = 0.6f;
-	public static final int WIDTH = 400, HEIGHT = 400;
+	public static final int WIDTH = 350, HEIGHT = 350;
 	public static int width = WIDTH, height = HEIGHT;
 	private final Array<Pixmap> frames = new Array<>(256);
 	private Clipboard clipboard;
@@ -99,7 +101,8 @@ public class ShaderNoise extends ApplicationAdapter {
 	}
 
 	public void reseed(long state) {
-		seed = ((((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L) >>> 36) * 0x1.1p-17f + 4096f;
+		final long dim = MathTools.longFloor(seed);
+		seed = MathTools.fract(((((state = (state ^ (state << 41 | state >>> 23) ^ (state << 17 | state >>> 47) ^ 0xD1B54A32D192ED03L) * 0xAEF17502108EF2D9L) ^ state >>> 43 ^ state >>> 31 ^ state >>> 23) * 0xDB4F0B9175AE2165L) >>> 36) * 0x1.1p-17f) + dim;
 		System.out.println("Now using seed " + seed);
 	}
 
@@ -114,14 +117,16 @@ public class ShaderNoise extends ApplicationAdapter {
 		if((Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.F11)) && UIUtils.alt())
 		{
 			if(Gdx.graphics.isFullscreen()) {
-				Gdx.graphics.setWindowedMode(480, 480);
+				Gdx.graphics.setWindowedMode(WIDTH, HEIGHT);
 			} else {
 				Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
 			}
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.S)){ // seed
-			seed += UIUtils.shift() ? 0.1f : -0.1f;
+			seed += UIUtils.shift() ? 0.001f : -0.001f;
+		} else if(Gdx.input.isKeyJustPressed(Input.Keys.D)){ // divisions
+			seed += UIUtils.shift() ? 1f : -1f;
 		} else if(Gdx.input.isKeyJustPressed(SLASH)){ // seed
-			long state = (System.nanoTime() * (long)seed) + 0xD1B54A32D192ED03L;
+			long state = BitConversion.doubleToLongBits(System.nanoTime() * MathTools.fract(seed)) + 0xD1B54A32D192ED03L;
 			reseed(state);
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.R)){ // reset
 			startTime = TimeUtils.millis();
@@ -145,10 +150,9 @@ public class ShaderNoise extends ApplicationAdapter {
 				frames.clear();
 				long millis = TimeUtils.timeSinceMillis(startTime) & -1024L;
 				for (int i = 0; i < 256; i++) {
-					final float ftm = millis * 0x1p-10f + i * (0x1p-5f);
 					batch.begin();
 					shader.setUniformf("u_seed", seed);
-					shader.setUniformf("u_time", ftm);
+					shader.setUniformf("u_time", i * TrigTools.PI2 * 0x1p-7f);
 					shader.setUniformf("u_resolution", WIDTH, HEIGHT);
 					batch.setColor(variance, a, b, frequency);
 					batch.draw(pixel, 0f, 0f, WIDTH<<1, HEIGHT<<1);
@@ -156,12 +160,12 @@ public class ShaderNoise extends ApplicationAdapter {
 					frames.add(Pixmap.createFromFrameBuffer(0, 0, WIDTH, HEIGHT));
 				}
 //				gif.palette.analyzeHueWise(frames);
-				gif.write(Gdx.files.local("out/gif/" + seed + "_" + millis + "_" + frequency + "_" + variance + "_" + a + "_" + b + "_" + ".gif"), frames, 24);
+				gif.write(Gdx.files.local("out/gif/" + seed + "_" + frequency + "_" + variance + "_" + a + "_" + b + "_" + ".gif"), frames, 24);
 			}
 
 		}
 
-		final float ftm = TimeUtils.timeSinceMillis(startTime) * (0x1p-10f);
+		final float ftm = TimeUtils.timeSinceMillis(startTime) * TrigTools.PI2 * 0x1p-12f;
 		batch.begin();
 		shader.setUniformf("u_seed", seed);
 		shader.setUniformf("u_time", ftm);
