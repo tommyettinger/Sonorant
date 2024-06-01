@@ -59,10 +59,11 @@ public class ShaderNoise extends ApplicationAdapter {
 		startTime = TimeUtils.millis();
 
 		if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
-			gif = new AnimatedGif();
+			gif = new LoafGif();
 			gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
-			gif.setDitherStrength(2f);
-			gif.palette = new QualityPalette();
+			gif.setDitherStrength(1f);
+			gif.fastAnalysis = false;
+//			gif.palette = new QualityPalette();
 		}
 
 
@@ -142,8 +143,9 @@ public class ShaderNoise extends ApplicationAdapter {
 		else if(Gdx.input.isKeyJustPressed(W) && Gdx.app.getType() != Application.ApplicationType.WebGL) {
 			if (gif != null) {
 				frames.clear();
+				long millis = TimeUtils.timeSinceMillis(startTime) & -1024L;
 				for (int i = 0; i < 256; i++) {
-					final float ftm = i * (0x1p-5f);
+					final float ftm = millis * 0x1p-10f + i * (0x1p-5f);
 					batch.begin();
 					shader.setUniformf("u_seed", seed);
 					shader.setUniformf("u_time", ftm);
@@ -153,8 +155,8 @@ public class ShaderNoise extends ApplicationAdapter {
 					batch.end();
 					frames.add(Pixmap.createFromFrameBuffer(0, 0, WIDTH, HEIGHT));
 				}
-				gif.palette.analyzeHueWise(frames);
-				gif.write(Gdx.files.local("out/gif/" + seed + "_" + frequency + "_" + variance + "_" + a + "_" + b + "_" + ".gif"), frames, 24);
+//				gif.palette.analyzeHueWise(frames);
+				gif.write(Gdx.files.local("out/gif/" + seed + "_" + millis + "_" + frequency + "_" + variance + "_" + a + "_" + b + "_" + ".gif"), frames, 24);
 			}
 
 		}
