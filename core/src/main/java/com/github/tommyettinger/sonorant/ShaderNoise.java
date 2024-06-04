@@ -15,7 +15,6 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.github.tommyettinger.anim8.AnimatedGif;
 import com.github.tommyettinger.anim8.Dithered;
-import com.github.tommyettinger.anim8.QualityPalette;
 import com.github.tommyettinger.digital.BitConversion;
 import com.github.tommyettinger.digital.MathTools;
 import com.github.tommyettinger.digital.TrigTools;
@@ -37,11 +36,11 @@ public class ShaderNoise extends ApplicationAdapter {
 
 	private long startTime;
 	private float seed = 3.1337f;
-	private float variance = 0.5f;
-	private float a = 0.07f;
-	private float b = 0.9f;
-	private float frequency = 0.6f;
-	public static final int WIDTH = 350, HEIGHT = 350;
+	private float rMod = 0f;
+	private float gMod = 0f;
+	private float bMod = 0f;
+	private float twist = 0.6f;
+	public static final int WIDTH = 300, HEIGHT = 300;
 	public static int width = WIDTH, height = HEIGHT;
 	private final Array<Pixmap> frames = new Array<>(256);
 	private Clipboard clipboard;
@@ -128,39 +127,38 @@ public class ShaderNoise extends ApplicationAdapter {
 		} else if(Gdx.input.isKeyJustPressed(SLASH)){ // seed
 			long state = BitConversion.doubleToLongBits(System.nanoTime() * MathTools.fract(seed)) + 0xD1B54A32D192ED03L;
 			reseed(state);
-		} else if(Gdx.input.isKeyJustPressed(Input.Keys.R)){ // reset
+		} else if(Gdx.input.isKeyJustPressed(Input.Keys.O)){ // start Over
 			startTime = TimeUtils.millis();
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.P)){ // performance
 			Gdx.app.log("FPS", String.valueOf(Gdx.graphics.getFramesPerSecond()));
 		} else if(Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){ // quit
 			Gdx.app.exit();
 		}
-		else if (Gdx.input.isKeyPressed(F))
-			frequency = Math.min(Math.max(0.001f, frequency + (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
-		else if (Gdx.input.isKeyPressed(V))
-			variance = Math.min(Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
-		else if (Gdx.input.isKeyPressed(A))
-			a = Math.min(Math.max(0.001f, a + 0.25f * (UIUtils.shift() ? Gdx.graphics.getDeltaTime() : -Gdx.graphics.getDeltaTime())), 1f);
+		else if (Gdx.input.isKeyPressed(T))
+			twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.025f : -0.025f)), 1f);
+		else if (Gdx.input.isKeyPressed(R))
+			rMod = Math.min(Math.max(0.0f, rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.025f : -0.025f)), 1f);
+		else if (Gdx.input.isKeyPressed(G))
+			gMod = Math.min(Math.max(0.0f, gMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.025f : -0.025f)), 1f);
 		else if (Gdx.input.isKeyPressed(B))
-			b = Math.min(Math.max(0.001f, b + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.25f : -0.25f)), 1f);
+			bMod = Math.min(Math.max(0.0f, bMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.025f : -0.025f)), 1f);
 		else if(Gdx.input.isKeyJustPressed(C))
 			batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
 		else if(Gdx.input.isKeyJustPressed(W) && Gdx.app.getType() != Application.ApplicationType.WebGL) {
 			if (gif != null) {
 				frames.clear();
-				long millis = TimeUtils.timeSinceMillis(startTime) & -1024L;
 				for (int i = 0; i < 256; i++) {
 					batch.begin();
 					shader.setUniformf("u_seed", seed);
 					shader.setUniformf("u_time", i * TrigTools.PI2 * 0x1p-7f);
 					shader.setUniformf("u_resolution", WIDTH, HEIGHT);
-					batch.setColor(variance, a, b, frequency);
+					batch.setColor(rMod, gMod, bMod, twist);
 					batch.draw(pixel, 0f, 0f, WIDTH<<1, HEIGHT<<1);
 					batch.end();
 					frames.add(Pixmap.createFromFrameBuffer(0, 0, WIDTH, HEIGHT));
 				}
 //				gif.palette.analyzeHueWise(frames);
-				gif.write(Gdx.files.local("out/gif/" + seed + "_" + frequency + "_" + variance + "_" + a + "_" + b + "_" + ".gif"), frames, 24);
+				gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".gif"), frames, 24);
 			}
 
 		}
@@ -170,7 +168,7 @@ public class ShaderNoise extends ApplicationAdapter {
 		shader.setUniformf("u_seed", seed);
 		shader.setUniformf("u_time", ftm);
 		shader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		batch.setColor(variance, a, b, frequency);
+		batch.setColor(rMod, gMod, bMod, twist);
 		batch.draw(pixel, 0, 0, width, height);
 		batch.end();
 	}
