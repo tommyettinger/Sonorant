@@ -46,22 +46,22 @@ float cosmic(float seed, vec4 con)
 void main() {
   if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
   float DIVISIONS = mod(floor(u_seed), 10.0) + 3.0;
-  float TWISTINESS = 4.0 * v_color.a;
+  float TWISTINESS = sin(PI2 * v_color.a) * 5.0 + 6.0;
 
     // Normalized pixel coordinates (from 0 to 1)
-    vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;// * PI2;
+    vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;
   float c = u_time, dc = c * (1.0/64.0), hc = c * (1.0/10.0);
-  float theta = atan(center.y, center.x) * DIVISIONS + c;
   float len = length(center) * 0.375;
+  float theta = atan(center.y, center.x) * DIVISIONS + c;
   float shrunk = len * (POINTINESS / DIVISIONS);
   float adj = (len * PI2 * 4. - c) * 0.5;
-  vec2 i = vec2(theta + sin(adj * TWISTINESS + c), adj);
+  vec2 i = vec2(theta, adj);
 
     vec4 v = vec4(sin(i.x) * shrunk, cos(i.x) * shrunk, sin(i.y), cos(i.y));
-    vec4 s = vec4(sin(v.x - 1.11 + PI2 * cos(v.x - 5.3157)),
-                  sin(v.y + 1.41 + PI2 * cos(v.y + 4.8142)),
-                  sin(v.z + 2.61 + PI2 * cos(v.z - 3.5190)),
-                  sin(v.w - 2.31 + PI2 * cos(v.w + 9.1984))) * 1.5;
+    vec4 s = vec4(sin(v.x - 1.11 + TWISTINESS * cos(v.x - 5.3157)),
+                  sin(v.y + 1.41 + TWISTINESS * cos(v.y + 4.8142)),
+                  sin(v.z + 2.61 + TWISTINESS * cos(v.z - 3.5190)),
+                  sin(v.w - 2.31 + TWISTINESS * cos(v.w + 9.1984))) * 1.5;
 //    float aTime = hc - len;
 //    vec4 s = vec4(swayRandomized(-16405.3157, aTime - 1.11),
 //                  swayRandomized(-77664.8142, aTime + 1.41),
