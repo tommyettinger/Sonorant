@@ -2,7 +2,7 @@
 #define LOWP lowp
 precision highp float;
 #else
-#define LOWP 
+#define LOWP
 #endif
 
 const float PI2 = 6.283185307179586;
@@ -50,19 +50,19 @@ void main() {
 
     // Normalized pixel coordinates (from 0 to 1)
     vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;
-  float c = u_time, dc = c * (1.0/64.0), hc = c * (1.0/10.0);
-  float len = length(center) * 0.375;
+  float c = u_time, dc = c * 0.5;
+  float len = length(center);
   float theta = atan(center.y, center.x) * DIVISIONS + c;
-  float shrunk = len * (POINTINESS / DIVISIONS);
-  float adj = (len * PI2 * 4. - c) * 0.5;
-  vec2 i = vec2(theta, adj);
+  float shrunk = len * (0.375 * POINTINESS / DIVISIONS);
+  float adj = (len * PI2 - dc) * 0.5;
+  vec2 i = vec2(theta + len * 5., adj);
 
     vec4 v = vec4(sin(i.x) * shrunk, cos(i.x) * shrunk, sin(i.y), cos(i.y));
     vec4 s = vec4(sin(v.x - 1.11 + TWISTINESS * cos(v.x - 5.3157)),
                   sin(v.y + 1.41 + TWISTINESS * cos(v.y + 4.8142)),
                   sin(v.z + 2.61 + TWISTINESS * cos(v.z - 3.5190)),
                   sin(v.w - 2.31 + TWISTINESS * cos(v.w + 9.1984))) * 1.5;
-//    float aTime = hc - len;
+//    float aTime = c * 0.1 - len;
 //    vec4 s = vec4(swayRandomized(-16405.3157, aTime - 1.11),
 //                  swayRandomized(-77664.8142, aTime + 1.41),
 //                  swayRandomized(-50993.5190, aTime + 2.61),
