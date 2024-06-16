@@ -50,11 +50,11 @@ void main() {
 
     // Normalized pixel coordinates (from 0 to 1)
     vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;
-  float c = u_time, dc = c * 0.5;
+  float c = u_time;
   float len = length(center);
   float theta = atan(center.y, center.x) * DIVISIONS + c;
   float shrunk = len * (0.375 * POINTINESS / DIVISIONS);
-  float adj = (len * PI2 - dc) * 0.5;
+  float adj = (len * PI2 * 1.5 - c) * 0.5;
   vec2 i = vec2(theta + len * 5., adj);
 
     vec4 v = vec4(sin(i.x) * shrunk, cos(i.x) * shrunk, sin(i.y), cos(i.y));
