@@ -73,5 +73,6 @@ void main() {
     con.y = cosmic(u_seed, con);
     con.z = cosmic(u_seed, con);
 
-    gl_FragColor = vec4(sin(con.xyz * 3.14159265 + v_color.rgb) * 0.5 + 0.5,1.0);
+    con.xyz = sin((con.xyz + v_color.ggg) * 3.14159265) * 0.5 + 0.5;
+    gl_FragColor = vec4(pow(con.xyz, 1.0 + 16.0 * (v_color.rrr)), 1.0);
 }
