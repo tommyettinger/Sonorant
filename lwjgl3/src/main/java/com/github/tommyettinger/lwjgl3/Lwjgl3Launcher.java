@@ -6,8 +6,8 @@ import com.github.tommyettinger.sonorant.BlueViewer;
 import com.github.tommyettinger.sonorant.INoiseViewer;
 import com.github.tommyettinger.sonorant.ShaderNoise;
 
-import static com.github.tommyettinger.sonorant.ShaderNoise.height;
-import static com.github.tommyettinger.sonorant.ShaderNoise.width;
+import static com.github.tommyettinger.sonorant.BlueViewer.height;
+import static com.github.tommyettinger.sonorant.BlueViewer.width;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
@@ -15,9 +15,9 @@ public class Lwjgl3Launcher {
         // Needed for macOS support, but also Windows with non-ASCII usernames.
         if (StartupHelper.startNewJvmIfRequired()) return;
 
-        new Lwjgl3Application(new ShaderNoise(null, 1L), getDefaultConfiguration());
+//        new Lwjgl3Application(new ShaderNoise(null, 1L), getDefaultConfiguration());
 //        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
-//        new Lwjgl3Application(new BlueViewer(null), getDefaultConfiguration());
+        new Lwjgl3Application(new BlueViewer(null), getDefaultConfiguration());
     }
 
 
