@@ -47,17 +47,16 @@ public class BlueViewer extends ApplicationAdapter {
     private final ObjectList<Interpolations.Interpolator> interpolators = new ObjectList<>(Interpolations.getInterpolatorArray());
     private int interpolatorIndex = 58;
     private Interpolations.Interpolator interpolator = interpolators.get(interpolatorIndex);
-    private float hue = 0;
+    private float hue = 0.65f;
     private float variance = 1f;
     private float hard = 0f;
     private float saturation = 1f;
     private int divisions = 2;
     private int octaves = 0;
-    private float freq = 0.125f;
+    private float cycling = 0f;
     private float a = 1f;
     private float b = 1f;
     private boolean paused;
-    private boolean hueCycle = false;
 
     private final ObjectList<Vector2> centers =
 //            ObjectList.with(new Vector2((width-1) * 0.5f, (height-1) * 0.5f));
@@ -251,9 +250,6 @@ public class BlueViewer extends ApplicationAdapter {
                     case BACKSLASH: // fractal spiral mode, I don't know if there is a mnemonic
                         noise.setFractalSpiral(!noise.isFractalSpiral());
                         break;
-                    case Y:
-                        hueCycle = !hueCycle;
-                        break;
                     case P: { // paste
                         if (clipboard.hasContents()) {
                             String paste = clipboard.getContents();
@@ -323,16 +319,18 @@ public class BlueViewer extends ApplicationAdapter {
         System.out.println("Gradient Variance: " + variance);
         System.out.println("Gradient Hardness: " + hard);
         System.out.println("Kumaraswamy a: " + a + ", b: " + b);
-        System.out.println("Data for Copy/Paste: " + noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + hard + "~"  + saturation + "~" + System.currentTimeMillis());
+        System.out.println("Data for Copy/Paste: " + noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + hard + "~" + saturation + "~"  + cycling + "~" + System.currentTimeMillis());
     }
 
     public void putMap() {
         if (Gdx.input.isKeyPressed(C))
-            hue = (hue + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
+            hue = (hue + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         if (Gdx.input.isKeyPressed(V))
             variance = Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         if (Gdx.input.isKeyPressed(A))
             hard = Math.min(Math.max(hard + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()), 0f), 1f);
+        if (Gdx.input.isKeyPressed(Y))
+            cycling = Math.min(Math.max(cycling + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()), 0f), 1f);
         if (Gdx.input.isKeyPressed(Z))
             saturation = Math.min(Math.max(saturation + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()), 0f), 1f);
         if (Gdx.input.isKeyPressed(NUM_0))
@@ -343,8 +341,7 @@ public class BlueViewer extends ApplicationAdapter {
         float bright, nf = noise.getFrequency(), counter = (paused ? startTime
                 : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf,
                 c = counter * (1 + (divisions & 1));
-        float hc = hue;
-        if(hueCycle) hc = counter * 0x1p-8f;
+        float hc = cycling;
 
         double aa = 1.0/a, bb = 1.0/b;
 
@@ -404,7 +401,7 @@ public class BlueViewer extends ApplicationAdapter {
 
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
-                        TrigTools.sinSmootherTurns(fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc)) * 0.05f + 0.65f,
+                        TrigTools.sinSmootherTurns(fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc)) * 0.05f + hue,
                         TrigTools.sin(1 + bright * 1.375f) * saturation,
                         TrigTools.sin(bright * 1.5f),
                         1f
@@ -418,8 +415,7 @@ public class BlueViewer extends ApplicationAdapter {
             if (Gdx.files.isLocalStorageAvailable()) {
                 for (int ctr = 0; ctr < 256; ctr++) {
                     int ct = ctr * (1 + (divisions & 1));
-                    if(hueCycle) hc = ctr * 0x1p-8f;
-                    else hc = hue;
+                    hc = cycling;
 
                     Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
 
@@ -478,7 +474,7 @@ public class BlueViewer extends ApplicationAdapter {
 
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
-                                            TrigTools.sinSmootherTurns(fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc)) * 0.05f + 0.65f,
+                                            TrigTools.sinSmootherTurns(fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc)) * 0.05f + hue,
                                             TrigTools.sin(1 + bright * 1.375f) * saturation,
                                             TrigTools.sin(bright * 1.5f),
                                             1f))
