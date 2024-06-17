@@ -120,9 +120,10 @@ public class NoiseViewer extends ApplicationAdapter {
 //        png.setCompression(2);
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
-            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.WREN);
-            gif.setDitherStrength(0.25f);
+            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.BURKES);
+            gif.setDitherStrength(1f);
             gif.palette = new QualityPalette();
+            gif.fastAnalysis = false;
         }
 
 //        colorList.toArray(gif.palette.paletteArray);

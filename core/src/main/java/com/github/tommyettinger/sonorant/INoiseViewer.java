@@ -129,10 +129,10 @@ public class INoiseViewer extends ApplicationAdapter {
 
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
-            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.DODGY);
-            gif.setDitherStrength(0.5f);
+            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.BURKES);
+            gif.setDitherStrength(1f);
             gif.palette = new QualityPalette();
-//            gif.fastAnalysis = false;
+            gif.fastAnalysis = false;
 //            png = new FastPNG();
 //            png.setCompression(2);
             apng = new AnimatedPNG();
@@ -503,7 +503,7 @@ public class INoiseViewer extends ApplicationAdapter {
                 prettyPrint();
                 if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
                     if (gif != null) {
-                        gif.palette.analyze(frames);
+//                        gif.palette.analyze(frames);
                         gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 24);
                     }
                     if (png != null) {

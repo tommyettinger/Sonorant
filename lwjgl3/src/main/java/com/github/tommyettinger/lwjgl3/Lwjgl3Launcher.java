@@ -2,12 +2,10 @@ package com.github.tommyettinger.lwjgl3;
 
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
-import com.github.tommyettinger.sonorant.BlueViewer;
 import com.github.tommyettinger.sonorant.INoiseViewer;
-import com.github.tommyettinger.sonorant.ShaderNoise;
 
-import static com.github.tommyettinger.sonorant.BlueViewer.height;
-import static com.github.tommyettinger.sonorant.BlueViewer.width;
+import static com.github.tommyettinger.sonorant.INoiseViewer.height;
+import static com.github.tommyettinger.sonorant.INoiseViewer.width;
 
 /** Launches the desktop (LWJGL3) application. */
 public class Lwjgl3Launcher {
@@ -16,8 +14,8 @@ public class Lwjgl3Launcher {
         if (StartupHelper.startNewJvmIfRequired()) return;
 
 //        new Lwjgl3Application(new ShaderNoise(null, 1L), getDefaultConfiguration());
-//        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
-        new Lwjgl3Application(new BlueViewer(null), getDefaultConfiguration());
+        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
+//        new Lwjgl3Application(new SoloViewer(null), getDefaultConfiguration());
     }
 
 

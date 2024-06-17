@@ -28,7 +28,7 @@ import static com.github.tommyettinger.digital.MathTools.fract;
 
 /**
  */
-public class BlueViewer extends ApplicationAdapter {
+public class SoloViewer extends ApplicationAdapter {
 
     public static final int width = 200, height = 200;
 //    public static final int width = 512, height = 512;
@@ -59,8 +59,8 @@ public class BlueViewer extends ApplicationAdapter {
     private boolean paused;
 
     private final ObjectList<Vector2> centers =
-//            ObjectList.with(new Vector2((width-1) * 0.5f, (height-1) * 0.5f));
-            ObjectList.with(new Vector2((width-1) / 3f, (height-1) * 0.5f), new Vector2((width-1) * 2f / 3f, (height-1) * 0.5f));
+            ObjectList.with(new Vector2((width-1) * 0.5f, (height-1) * 0.5f));
+//            ObjectList.with(new Vector2((width-1) / 3f, (height-1) * 0.5f), new Vector2((width-1) * 2f / 3f, (height-1) * 0.5f));
 
     private ImmediateModeRenderer20 renderer;
 
@@ -114,7 +114,7 @@ public class BlueViewer extends ApplicationAdapter {
         return rgba8888(v * MathUtils.lerp(1f, x, d), v * MathUtils.lerp(1f, y, d), v * MathUtils.lerp(1f, z, d), a);
     }
 
-    public BlueViewer(Clipboard clippy) {
+    public SoloViewer(Clipboard clippy) {
         clipboard = clippy;
     }
 
