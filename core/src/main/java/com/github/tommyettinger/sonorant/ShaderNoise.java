@@ -99,7 +99,20 @@ public class ShaderNoise extends ApplicationAdapter {
 		startTime -= (state ^ state >>> 11) & 0xFFFFL;
 		width = Gdx.graphics.getWidth();
 		height = Gdx.graphics.getHeight();
-	}
+
+        if(clipboard.hasContents()) {
+            String s = clipboard.getContents();
+            if (TextTools.count(s, "_") == 4) {
+                int gap;
+                seed = Base.BASE10.readFloat(s, 0, gap = s.indexOf('_'));
+                rMod = Base.BASE10.readFloat(s, gap + 1, gap = s.indexOf('_', gap + 1));
+                gMod = Base.BASE10.readFloat(s, gap + 1, gap = s.indexOf('_', gap + 1));
+                bMod = Base.BASE10.readFloat(s, gap + 1, gap = s.indexOf('_', gap + 1));
+                twist = Base.BASE10.readFloat(s, gap + 1, s.length());
+            }
+        }
+
+    }
 
 	public void reseed(long state) {
 		final long dim = MathTools.longFloor(seed);
