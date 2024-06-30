@@ -22,7 +22,11 @@ import com.badlogic.gdx.utils.Clipboard;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.History;
 
-/** Basic implementation of clipboard in GWT. Can copy and paste if given permission. */
+/**
+ * Basic implementation of clipboard in GWT.
+ * Can copy if given permission.
+ * If the clipboard tries to read in pasted text, it gets it from the URL, after any {@code #} .
+ */
 public class ReadWriteClipboard implements Clipboard {
 	private boolean requestedWritePermissions = false;
 	private boolean hasWritePermissions = true;
@@ -36,8 +40,7 @@ public class ReadWriteClipboard implements Clipboard {
 
 	@Override
 	public boolean hasContents () {
-		String contents = getContents();
-		return contents != null && !contents.isEmpty();
+		return !History.getToken().isEmpty();
 	}
 
 	@Override

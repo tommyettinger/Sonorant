@@ -3,6 +3,7 @@
 <module>
   <source path="sonorant">
     <exclude name="INoiseViewer.java" />
+    <exclude name="SoloViewer.java" />
     <exclude name="INoiseBanner.java" />
   </source>
 </module>

@@ -15,10 +15,7 @@ import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.github.tommyettinger.anim8.AnimatedGif;
 import com.github.tommyettinger.anim8.Dithered;
-import com.github.tommyettinger.digital.Base;
-import com.github.tommyettinger.digital.BitConversion;
-import com.github.tommyettinger.digital.MathTools;
-import com.github.tommyettinger.digital.TrigTools;
+import com.github.tommyettinger.digital.*;
 
 import static com.badlogic.gdx.Input.Keys.*;
 
@@ -52,6 +49,7 @@ public class ShaderNoise extends ApplicationAdapter {
 	}
 
 	@Override public void create () {
+        if(clipboard == null) clipboard = Gdx.app.getClipboard();
 		Gdx.app.setLogLevel(Application.LOG_INFO);
 		batch = new SpriteBatch();
 
@@ -148,10 +146,10 @@ public class ShaderNoise extends ApplicationAdapter {
 			bMod = Math.min(Math.max(0.0f, bMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.025f : -0.025f)), 1f);
 		else if(Gdx.input.isKeyJustPressed(C))
 			batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
-		else if(Gdx.input.isKeyJustPressed(V) && Gdx.app.getType() != Application.ApplicationType.WebGL) { // ctrl-v
-            if(Gdx.app.getClipboard().hasContents()){
-                String s = Gdx.app.getClipboard().getContents();
-                int gap = 0;
+		else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v
+            if(clipboard.hasContents()){
+                String s = clipboard.getContents();
+                int gap;
                 seed = Base.BASE10.readFloat(s, 0, gap = s.indexOf('_'));
                 rMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
                 gMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
@@ -159,29 +157,29 @@ public class ShaderNoise extends ApplicationAdapter {
                 twist = Base.BASE10.readFloat(s, gap+1, s.length());
             }
         }
-		else if(Gdx.input.isKeyJustPressed(W) && Gdx.app.getType() != Application.ApplicationType.WebGL) {
-			if (gif != null) {
-				frames.clear();
-				for (int i = 0; i < 256; i++) {
-					batch.begin();
-					shader.setUniformf("u_seed", seed);
-					shader.setUniformf("u_time", i * TrigTools.PI2 * 0x1p-7f);
-					shader.setUniformf("u_resolution", WIDTH, HEIGHT);
-					batch.setColor(rMod, gMod, bMod, twist);
-					batch.draw(pixel, 0f, 0f, WIDTH<<1, HEIGHT<<1);
-					batch.end();
-					frames.add(Pixmap.createFromFrameBuffer(0, 0, WIDTH, HEIGHT));
-				}
+		else if(Gdx.input.isKeyJustPressed(W)) {
+            Gdx.app.log("SAVE", seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist);
+            if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {
+                frames.clear();
+                for (int i = 0; i < 256; i++) {
+                    batch.begin();
+                    shader.setUniformf("u_seed", seed);
+                    shader.setUniformf("u_time", i * TrigTools.PI2 * 0x1p-7f);
+                    shader.setUniformf("u_resolution", WIDTH, HEIGHT);
+                    batch.setColor(rMod, gMod, bMod, twist);
+                    batch.draw(pixel, 0f, 0f, WIDTH << 1, HEIGHT << 1);
+                    batch.end();
+                    frames.add(Pixmap.createFromFrameBuffer(0, 0, WIDTH, HEIGHT));
+                }
 //				gif.palette.analyzeHueWise(frames);
-				gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".gif"), frames, 24);
-			}
+                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".gif"), frames, 24);
+            }
+        }
 
-		}
-
-		final float ftm = TimeUtils.timeSinceMillis(startTime) * TrigTools.PI2 * 0x1p-12f;
+		final float fTime = TimeUtils.timeSinceMillis(startTime) * TrigTools.PI2 * 0x1p-12f;
 		batch.begin();
 		shader.setUniformf("u_seed", seed);
-		shader.setUniformf("u_time", ftm);
+		shader.setUniformf("u_time", fTime);
 		shader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		batch.setColor(rMod, gMod, bMod, twist);
 		batch.draw(pixel, 0, 0, width, height);
