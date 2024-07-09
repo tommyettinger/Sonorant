@@ -24,7 +24,7 @@ public class LoafGif extends AnimatedGif {
                 if ((color & 0x80) == 0 && hasTransparent)
                     indexedPixels[i++] = 0;
                 else {
-                    int adj = ((px + y & 1) - (px & y & 1)) * (strength + (((px + y ^ px + y >>> 1) & 3)) * (1 + ((px * 5 ^ y * 3) >>> 1 & 3)));
+                    int adj = ((px + y & 1) - (px & y & 1) * 2) * (strength + (((px + y ^ px + y >>> 1) & 3)) * (1 + ((px * 5 ^ y * 3) >>> 1 & 3)));
                     int rr = Math.min(Math.max(((color >>> 24)) + adj, 0), 255);
                     int gg = Math.min(Math.max(((color >>> 16) & 0xFF) + adj, 0), 255);
                     int bb = Math.min(Math.max(((color >>> 8) & 0xFF) + adj, 0), 255);

@@ -60,7 +60,7 @@ public class ShaderNoise extends ApplicationAdapter {
 
 		if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
 			gif = new AnimatedGif();
-			gif.setDitherAlgorithm(Dithered.DitherAlgorithm.BURKES);
+			gif.setDitherAlgorithm(Dithered.DitherAlgorithm.OCEANIC);
 			gif.setDitherStrength(1f);
 //			gif = new LoafGif();
 //			gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
@@ -150,13 +150,13 @@ public class ShaderNoise extends ApplicationAdapter {
 			Gdx.app.exit();
 		}
 		else if (Gdx.input.isKeyPressed(T))
-			twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.025f : -0.025f)), 1f);
+			twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.01f : -0.01f)), 1f);
 		else if (Gdx.input.isKeyPressed(R))
-			rMod = Math.min(Math.max(0.0f, rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.025f : -0.025f)), 1f);
+			rMod = Math.min(Math.max(0.0f, rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.1f : -0.1f)), 1f);
 		else if (Gdx.input.isKeyPressed(G))
-			gMod = Math.min(Math.max(0.0f, gMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.025f : -0.025f)), 1f);
+			gMod = Math.min(Math.max(0.0f, gMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.1f : -0.1f)), 1f);
 		else if (Gdx.input.isKeyPressed(B))
-			bMod = Math.min(Math.max(0.0f, bMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.025f : -0.025f)), 1f);
+			bMod = Math.min(Math.max(0.0f, bMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.1f : -0.1f)), 1f);
 		else if(Gdx.input.isKeyJustPressed(C))
 			batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
 		else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v

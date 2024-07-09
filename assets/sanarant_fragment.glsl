@@ -68,11 +68,12 @@ void main() {
 //                  swayRandomized(-50993.5190, aTime + 2.61),
 //                  swayRandomized(-42069.1984, aTime - 2.31)) * 1.5 * (vec4(sin(i.xy), cos(i.xy)) + 1.25);
 //    vec4 con = vec4(0.0004375, 0.0005625, 0.0008125, 0.000625) + s;
-    vec4 con = vec4(0.4375, 0.5625, 0.8125, 0.625) + s;
+    vec2 angles = (v_color.gb * PI2);
+    vec4 con = vec4(0.4375, 0.5625, 0.8125, 0.625) + s + vec4(sin(angles), cos(angles)) * 4.0;
     con.x = cosmic(u_seed, con);
     con.y = cosmic(u_seed, con);
     con.z = cosmic(u_seed, con);
 
-    con.xyz = sin((con.xyz + v_color.ggg) * 3.14159265) * 0.5 + 0.5;
+    con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
     gl_FragColor = vec4(pow(con.xyz, 1.0 + 16.0 * (v_color.rrr)), 1.0);
 }
