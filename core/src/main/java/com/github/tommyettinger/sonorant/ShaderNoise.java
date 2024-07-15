@@ -80,7 +80,8 @@ public class ShaderNoise extends ApplicationAdapter {
 			Gdx.app.exit();
 			return;
 		}
-		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("ana_fragment.glsl"));
+		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("hassler_fragment.glsl"));
+//		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("ana_fragment.glsl"));
 //		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment_ridged.glsl"));
 		if (!shaderRidged.isCompiled()) {
 			Gdx.app.error("Shader", "error compiling shaderRidged:\n" + shaderRidged.getLog());
@@ -152,11 +153,11 @@ public class ShaderNoise extends ApplicationAdapter {
 		else if (Gdx.input.isKeyPressed(T))
 			twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.01f : -0.01f)), 1f);
 		else if (Gdx.input.isKeyPressed(R))
-			rMod = Math.min(Math.max(0.0f, rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.1f : -0.1f)), 1f);
+			rMod = Math.min(Math.max(0.0f, rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.03125f : -0.03125f)), 1f);
 		else if (Gdx.input.isKeyPressed(G))
-			gMod = Math.min(Math.max(0.0f, gMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.1f : -0.1f)), 1f);
+			gMod = Math.min(Math.max(0.0f, gMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.03125f : -0.03125f)), 1f);
 		else if (Gdx.input.isKeyPressed(B))
-			bMod = Math.min(Math.max(0.0f, bMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.1f : -0.1f)), 1f);
+			bMod = Math.min(Math.max(0.0f, bMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.03125f : -0.03125f)), 1f);
 		else if(Gdx.input.isKeyJustPressed(C))
 			batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
 		else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v
