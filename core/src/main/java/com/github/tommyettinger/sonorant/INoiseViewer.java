@@ -36,13 +36,15 @@ public class INoiseViewer extends ApplicationAdapter {
 //    public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
 
-    private final INoise[] noises = new INoise[]{new CyclicNoise(1234567890L, 3), new CyclicNoise(1234567890L, 4), new CyclicNoise(1234567890L, 5),
+    private final INoise[] noises = new INoise[]{
+        new CyclicNoise(1234567890L, 3), new CyclicNoise(1234567890L, 4), new CyclicNoise(1234567890L, 5),
             new SorbetNoise(1234567890L, 5), new SorbetNoise(1234567890L, 4), new SorbetNoise(1234567890L, 3),
             new FlanNoise(1234567890L, 4), new TaffyNoise(1234567890L, 4), new FoamplexNoise(1234567890L),
-            new FoamNoise(1234567890L), new HoneyNoise(1234567890L), new PerlinNoise(1234567890L), new SimplexNoise(1234567890L),
-            new SnakeNoise(1234567890L), new BadgerNoise(1234567890L), new ValueNoise(1234567890L), new CellularNoise(1234567890L)
+            new FoamNoise(1234567890L), new HoneyNoise(1234567890L), new SimplexNoise(1234567890L),
+        new PerlinNoise(1234567890L), new PerlueNoise(1234567890L), new ValueNoise(1234567890L),
+        new CellularNoise(1234567890L), new SnakeNoise(1234567890L), new BadgerNoise(1234567890L)
     };
-    private int noiseIndex = 16;
+    private int noiseIndex = 13;
     private final NoiseWrapper noise = new NoiseWrapper(noises[noiseIndex], 1234567890L, 0.0625f, 2, 1);
     private final Noise varianceNoise = new Noise(-1, 0.025f, Noise.VALUE);
     private final ObjectList<Interpolations.Interpolator> interpolators = new ObjectList<>(Interpolations.getInterpolatorArray());
