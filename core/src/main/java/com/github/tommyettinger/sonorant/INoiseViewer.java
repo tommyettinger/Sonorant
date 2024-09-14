@@ -24,14 +24,14 @@ import com.github.yellowstonegames.grid.*;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
-import static com.github.tommyettinger.digital.MathTools.floor;
 import static com.github.tommyettinger.digital.MathTools.fract;
 
 /**
  */
 public class INoiseViewer extends ApplicationAdapter {
 
-    public static final int width = 350, height = 350;
+//    public static final int width = 350, height = 350;
+    public static final int width = 1920, height = 1080;
 //    public static final int width = 512, height = 512;
 //    public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
@@ -134,7 +134,7 @@ public class INoiseViewer extends ApplicationAdapter {
             gif.setDitherAlgorithm(Dithered.DitherAlgorithm.OCEANIC);
             gif.setDitherStrength(1f);
             gif.palette = new QualityPalette();
-            gif.fastAnalysis = false;
+//            gif.fastAnalysis = false;
 //            png = new FastPNG();
 //            png.setCompression(2);
             apng = new AnimatedPNG();

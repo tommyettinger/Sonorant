@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Array;
@@ -14,6 +15,7 @@ import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.github.tommyettinger.anim8.AnimatedGif;
+import com.github.tommyettinger.anim8.AnimatedPNG;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.digital.*;
 
@@ -31,6 +33,7 @@ public class ShaderNoise extends ApplicationAdapter {
 	private ShaderProgram shaderStandard;
 	private ShaderProgram shaderRidged;
 	private AnimatedGif gif;
+	private AnimatedPNG apng;
 
 	private long startTime;
 	private float seed = 3.1337f;
@@ -38,8 +41,10 @@ public class ShaderNoise extends ApplicationAdapter {
 	private float gMod = 0f;
 	private float bMod = 0f;
 	private float twist = 0.6f;
-	public static final int WIDTH = 300, HEIGHT = 300;
+	public static final int WIDTH = 1920, HEIGHT = 1080;
 	public static int width = WIDTH, height = HEIGHT;
+//	public static final int WIDTH = 300, HEIGHT = 300;
+//	public static int width = WIDTH, height = HEIGHT;
 	private final Array<Pixmap> frames = new Array<>(256);
 	private Clipboard clipboard;
 
@@ -67,6 +72,8 @@ public class ShaderNoise extends ApplicationAdapter {
 //			gif.setDitherStrength(1f);
 			gif.fastAnalysis = false;
 //			gif.palette = new QualityPalette();
+            apng = new AnimatedPNG();
+            apng.setCompression(7);
 		}
 
 
@@ -175,7 +182,9 @@ public class ShaderNoise extends ApplicationAdapter {
             Gdx.app.log("SAVE", seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist);
             if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {
                 frames.clear();
+                FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, WIDTH, HEIGHT, false);
                 for (int i = 0; i < 256; i++) {
+                    fb.begin();
                     batch.begin();
                     shader.setUniformf("u_seed", seed);
                     shader.setUniformf("u_time", i * TrigTools.PI2 * 0x1p-7f);
@@ -184,9 +193,11 @@ public class ShaderNoise extends ApplicationAdapter {
                     batch.draw(pixel, 0f, 0f, WIDTH << 1, HEIGHT << 1);
                     batch.end();
                     frames.add(Pixmap.createFromFrameBuffer(0, 0, WIDTH, HEIGHT));
+                    fb.end();
                 }
 //				gif.palette.analyzeHueWise(frames);
-                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".gif"), frames, 24);
+//                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".gif"), frames, 24);
+                apng.write(Gdx.files.local("out/apng/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".png"), frames, 24);
             }
         }
 
