@@ -6,7 +6,7 @@ precision highp float;
 #endif
 
 const float PI2 = 6.283185307179586;
-const float SCALE = 0.875;
+const float SCALE = 1.5;
 const float POINTINESS = 11.0;
 
 varying LOWP vec4 v_color;
@@ -49,12 +49,12 @@ void main() {
   float TWISTINESS = sin(PI2 * v_color.a) * 5.0 + 6.0;
 
     // Normalized pixel coordinates (from 0 to 1)
-    vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;
+  vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;
   float c = u_time;
   float len = length(center);
   float theta = atan(center.y, center.x) * DIVISIONS + c;
   float shrunk = len * (0.375 * POINTINESS / DIVISIONS);
-  float adj = (len * PI2 * 1.5 - c) * 0.5;
+  float adj = len * PI2 * 0.75 - c;
   vec2 i = vec2(theta + len * 5., adj);
 
     vec4 v = vec4(sin(i.x) * shrunk, cos(i.x) * shrunk, sin(i.y), cos(i.y));
