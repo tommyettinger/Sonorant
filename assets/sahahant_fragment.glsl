@@ -91,7 +91,7 @@ void main() {
 
     //con.z = pow(con.z, 1.0 + 16.0 * v_color.r);
     con.z = pow(smoothstep(0., 1., sin(con.z * 6.283 + con.y) * 0.5 + 0.5), 1.0 + 16.0 * v_color.r);
-    con.y = min(1.0, 0.5 + abs(con.z * 2.0 - 1.0));
+    con.y = min(1.0, 1.5 - + abs(con.z * 2.0 - 1.0));
     con.x = fract(con.x);
     con.w = 1.0;
     gl_FragColor = hsl2rgb(con);

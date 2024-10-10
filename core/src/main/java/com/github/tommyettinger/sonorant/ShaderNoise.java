@@ -46,8 +46,8 @@ public class ShaderNoise extends ApplicationAdapter {
 //	public static int width = WIDTH, height = HEIGHT;
     public static final int WIDTH = 275, HEIGHT = 275;
     public static int width = WIDTH, height = HEIGHT;
-    public static int FRAMES = 128;
-    private final Array<Pixmap> frames = new Array<>(128);
+    public static int FRAMES = 256;
+    private final Array<Pixmap> frames = new Array<>(FRAMES);
     private Clipboard clipboard;
 
     public ShaderNoise(Clipboard clippy, long initialSeed) {
@@ -199,7 +199,7 @@ public class ShaderNoise extends ApplicationAdapter {
                     fb.end();
                 }
                 gif.palette.analyzeReductive(frames);
-                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".gif"), frames, 24);
+                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".gif"), frames, 30);
 //                apng.write(Gdx.files.local("out/apng/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".png"), frames, 24);
             }
         }
