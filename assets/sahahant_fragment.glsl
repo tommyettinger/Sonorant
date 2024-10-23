@@ -58,7 +58,7 @@ vec4 hsl2rgb(vec4 c)
 
 void main() {
   if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
-  float DIVISIONS = mod(floor(u_seed), 10.0) + 3.0;
+  float DIVISIONS = mod(floor(u_seed), 10.0) + 2.0;
   float TWISTINESS = sin(PI2 * v_color.a) * 5.0 + 6.0;
 
     // Normalized pixel coordinates (from 0 to 1)
