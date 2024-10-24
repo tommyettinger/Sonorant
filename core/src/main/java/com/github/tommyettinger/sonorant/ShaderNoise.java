@@ -178,28 +178,32 @@ public class ShaderNoise extends ApplicationAdapter {
                 rMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
                 gMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
                 bMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
-                twist = Base.BASE10.readFloat(s, gap+1, s.length());
+                twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
+                int w = Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1));
+                int h = Base.BASE10.readInt(s, gap+1, s.length());
+                if(w != width || h != height)
+                    Gdx.graphics.setWindowedMode(w, h);
             }
         }
         else if(Gdx.input.isKeyJustPressed(W)) {
-            Gdx.app.log("SAVE", seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist);
+            Gdx.app.log("SAVE", seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
             if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {
                 frames.clear();
-                FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, WIDTH, HEIGHT, false);
+                FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, width, height, false);
                 for (int i = 0; i < FRAMES; i++) {
                     fb.begin();
                     batch.begin();
                     shader.setUniformf("u_seed", seed);
                     shader.setUniformf("u_time", i * (TrigTools.PI2 / FRAMES));
-                    shader.setUniformf("u_resolution", WIDTH, HEIGHT);
+                    shader.setUniformf("u_resolution", width, height);
                     batch.setColor(rMod, gMod, bMod, twist);
-                    batch.draw(pixel, 0f, 0f, WIDTH << 1, HEIGHT << 1);
+                    batch.draw(pixel, 0f, 0f, width << 1, height << 1);
                     batch.end();
-                    frames.add(Pixmap.createFromFrameBuffer(0, 0, WIDTH, HEIGHT));
+                    frames.add(Pixmap.createFromFrameBuffer(0, 0, width, height));
                     fb.end();
                 }
                 gif.palette.analyzeReductive(frames);
-                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".gif"), frames, 30);
+                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height + ".gif"), frames, 30);
 //                apng.write(Gdx.files.local("out/apng/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".png"), frames, 24);
             }
         }
