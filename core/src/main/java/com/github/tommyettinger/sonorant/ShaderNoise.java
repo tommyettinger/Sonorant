@@ -43,8 +43,7 @@ public class ShaderNoise extends ApplicationAdapter {
     private float bMod = 0f;
     private float twist = 0.6f;
     //	public static final int WIDTH = 1920, HEIGHT = 1080;
-//	public static int width = WIDTH, height = HEIGHT;
-    public static final int WIDTH = 275, HEIGHT = 275;
+    public static final int WIDTH = 200, HEIGHT = 200;
     public static int width = WIDTH, height = HEIGHT;
     public static int FRAMES = 256;
     private final Array<Pixmap> frames = new Array<>(FRAMES);
@@ -67,12 +66,11 @@ public class ShaderNoise extends ApplicationAdapter {
 
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
-            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.OCEANIC);
-            gif.setDitherStrength(0.5f);
+            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.GOURD);
+            gif.setDitherStrength(0.65f);
 //			gif = new LoafGif();
 //			gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
 //			gif.setDitherStrength(1f);
-            gif.fastAnalysis = false;
             gif.palette = new QualityPalette();
 //            apng = new AnimatedPNG();
 //            apng.setCompression(7);
@@ -181,7 +179,7 @@ public class ShaderNoise extends ApplicationAdapter {
                 twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
                 int w = Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1));
                 int h = Base.BASE10.readInt(s, gap+1, s.length());
-                if(w != width || h != height)
+                if(w != 0 && h != 0 && (w != width || h != height))
                     Gdx.graphics.setWindowedMode(w, h);
             }
         }
@@ -189,17 +187,20 @@ public class ShaderNoise extends ApplicationAdapter {
             Gdx.app.log("SAVE", seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
             if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {
                 frames.clear();
-                FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, width, height, false);
+                FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, width<<1, height<<1, false);
                 for (int i = 0; i < FRAMES; i++) {
                     fb.begin();
                     batch.begin();
                     shader.setUniformf("u_seed", seed);
                     shader.setUniformf("u_time", i * (TrigTools.PI2 / FRAMES));
-                    shader.setUniformf("u_resolution", width, height);
+                    shader.setUniformf("u_resolution", width << 1, height << 1);
                     batch.setColor(rMod, gMod, bMod, twist);
                     batch.draw(pixel, 0f, 0f, width << 1, height << 1);
                     batch.end();
-                    frames.add(Pixmap.createFromFrameBuffer(0, 0, width, height));
+                    Pixmap tp = Pixmap.createFromFrameBuffer(0, 0, width<<1, height<<1), np = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+                    np.drawPixmap(tp, 0, 0, width<<1, height<<1, 0, 0, width, height);
+                    frames.add(np);
+                    tp.dispose();
                     fb.end();
                 }
                 gif.palette.analyzeReductive(frames);

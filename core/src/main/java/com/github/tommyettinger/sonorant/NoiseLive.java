@@ -118,7 +118,7 @@ public class NoiseLive extends ApplicationAdapter {
 //        png.setCompression(2);
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
-            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
+            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.GOURD);
             gif.setDitherStrength(0.3f);
             gif.palette = new QualityPalette();
         }

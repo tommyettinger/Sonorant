@@ -64,7 +64,7 @@ public class Sonorant extends ApplicationAdapter {
     private int steps;
 
     private AnimatedGif gif;
-    private AnimatedGif png;
+    private PNG8 png;
     private final Array<Pixmap> frames = new Array<>(256);
 
     public static float basicPrepare(float n)
@@ -148,9 +148,9 @@ public class Sonorant extends ApplicationAdapter {
         buildKernel();
 
         gif = new AnimatedGif();
-        png = new AnimatedGif();
-        gif.setDitherAlgorithm(Dithered.DitherAlgorithm.BLUE_NOISE);
-        gif.setDitherStrength(0.2f);
+        png = new PNG8();
+        gif.setDitherAlgorithm(Dithered.DitherAlgorithm.GOURD);
+        gif.setDitherStrength(0.5f);
         png.setDitherAlgorithm(Dithered.DitherAlgorithm.NONE);
         png.setDitherStrength(0f);
         // Ugh, this is ugly.

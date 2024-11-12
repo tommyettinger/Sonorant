@@ -123,7 +123,7 @@ public class INoiseBanner extends ApplicationAdapter {
 //        apng = new AnimatedPNG();
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
-            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.WREN);
+            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.GOURD);
             gif.setDitherStrength(0.25f);
             gif.palette = new QualityPalette();
             png = new FastPNG();
