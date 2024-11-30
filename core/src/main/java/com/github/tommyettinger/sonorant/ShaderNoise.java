@@ -45,7 +45,7 @@ public class ShaderNoise extends ApplicationAdapter {
     //	public static final int WIDTH = 1920, HEIGHT = 1080;
     public static final int WIDTH = 200, HEIGHT = 200;
     public static int width = WIDTH, height = HEIGHT;
-    public static int FRAMES = 256;
+    public static int FRAMES = 200;
     private final Array<Pixmap> frames = new Array<>(FRAMES);
     private Clipboard clipboard;
 
@@ -67,7 +67,7 @@ public class ShaderNoise extends ApplicationAdapter {
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
             gif.setDitherAlgorithm(Dithered.DitherAlgorithm.GOURD);
-            gif.setDitherStrength(0.65f);
+            gif.setDitherStrength(0.3f);
 //			gif = new LoafGif();
 //			gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
 //			gif.setDitherStrength(1f);
@@ -203,7 +203,7 @@ public class ShaderNoise extends ApplicationAdapter {
                     tp.dispose();
                     fb.end();
                 }
-                gif.palette.analyzeReductive(frames);
+                gif.palette.analyzeHueWise(frames, 80);
                 gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height + ".gif"), frames, 30);
 //                apng.write(Gdx.files.local("out/apng/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".png"), frames, 24);
             }
