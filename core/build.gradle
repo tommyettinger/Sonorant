@@ -10,6 +10,14 @@ dependencies {
   api "com.github.tommyettinger:jdkgdxds:$jdkgdxdsVersion"
   api "com.github.tommyettinger:juniper:$juniperVersion"
   api "com.github.tommyettinger:regexodus:$regExodusVersion"
-  api "com.github.yellowstonegames.SquidSquad:squidcore:$squidSquadVersion"
-  api "com.github.yellowstonegames.SquidSquad:squidgrid:$squidSquadVersion"
+  api("com.github.yellowstonegames.SquidSquad:squidcore:$squidSquadVersion"){
+    exclude module: 'jdkgdxds'
+    exclude module: 'juniper'
+    exclude module: 'digital'
+  }
+  api("com.github.yellowstonegames.SquidSquad:squidgrid:$squidSquadVersion"){
+    exclude module: 'jdkgdxds'
+    exclude module: 'juniper'
+    exclude module: 'digital'
+  }
 }

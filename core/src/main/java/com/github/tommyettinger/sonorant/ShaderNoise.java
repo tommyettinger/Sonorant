@@ -56,7 +56,7 @@ public class ShaderNoise extends ApplicationAdapter {
 
     @Override public void create () {
         if(clipboard == null) clipboard = Gdx.app.getClipboard();
-        Gdx.app.setLogLevel(Application.LOG_INFO);
+        Gdx.app.setLogLevel(Application.LOG_ERROR);
         batch = new SpriteBatch();
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -66,8 +66,8 @@ public class ShaderNoise extends ApplicationAdapter {
 
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
-            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.GOURD);
-            gif.setDitherStrength(0.3f);
+            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.MARTEN);
+            gif.setDitherStrength(0.7f);
 //			gif = new LoafGif();
 //			gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
 //			gif.setDitherStrength(1f);
@@ -96,7 +96,7 @@ public class ShaderNoise extends ApplicationAdapter {
             Gdx.app.exit();
             return;
         }
-        shader = shaderRidged;
+        shader = shaderStandard;
         batch.setShader(shader);
 
         // System.nanoTime() is supported by GWT 2.10.0 .

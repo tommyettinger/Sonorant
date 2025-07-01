@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.*;
 import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.IntList;
+import com.github.tommyettinger.random.GwtIncompatible;
 import com.github.tommyettinger.random.LineWobble;
 import com.github.yellowstonegames.core.ColorGradients;
 import com.github.yellowstonegames.core.DescriptiveColor;
@@ -30,6 +31,7 @@ import static com.github.tommyettinger.digital.TrigTools.sinTurns;
 
 /**
  */
+@GwtIncompatible
 public class Sonorant extends ApplicationAdapter {
 
     private final Noise noise = new Noise(24, 0.0625f);

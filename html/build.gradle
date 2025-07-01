@@ -30,8 +30,8 @@ gwt {
 }
 
 dependencies {
-  implementation "com.github.tommyettinger:gdx-backend-gwt:1.1210.1"
-  implementation "com.github.tommyettinger:gdx-backend-gwt:1.1210.1:sources"
+  implementation "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion"
+  implementation "com.badlogicgames.gdx:gdx-backend-gwt:$gdxVersion:sources"
   implementation "com.google.jsinterop:jsinterop-annotations:2.0.2:sources"
 
   implementation "com.badlogicgames.gdx:gdx:$gdxVersion:sources"
@@ -40,10 +40,19 @@ dependencies {
   implementation "com.github.tommyettinger:digital:$digitalVersion:sources"
   implementation "com.github.tommyettinger:funderby:$funderbyVersion:sources"
   implementation "com.github.tommyettinger:jdkgdxds:$jdkgdxdsVersion:sources"
+//  implementation "org.checkerframework:checker-qual:3.42.0:sources"
   implementation "com.github.tommyettinger:juniper:$juniperVersion:sources"
   implementation "com.github.tommyettinger:regexodus:$regExodusVersion:sources"
-  implementation "com.github.yellowstonegames.SquidSquad:squidcore:$squidSquadVersion:sources"
-  implementation "com.github.yellowstonegames.SquidSquad:squidgrid:$squidSquadVersion:sources"
+  implementation("com.github.yellowstonegames.SquidSquad:squidcore:$squidSquadVersion:sources"){
+        exclude module: 'jdkgdxds'
+        exclude module: 'juniper'
+        exclude module: 'digital'
+    }
+  implementation("com.github.yellowstonegames.SquidSquad:squidgrid:$squidSquadVersion:sources"){
+        exclude module: 'jdkgdxds'
+        exclude module: 'juniper'
+        exclude module: 'digital'
+    }
   implementation project(':core')
 
 }
@@ -141,7 +150,7 @@ task dist(dependsOn: [clean, compileGwt]) {
 task addSource {
   doLast {
     sourceSets.main.compileClasspath += files(project(':core').sourceSets.main.allJava.srcDirs)
-    
+
   }
 }
 

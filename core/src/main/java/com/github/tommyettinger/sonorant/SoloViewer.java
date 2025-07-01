@@ -20,6 +20,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.*;
 import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.ObjectList;
+import com.github.tommyettinger.random.GwtIncompatible;
 import com.github.yellowstonegames.grid.*;
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -28,6 +29,7 @@ import static com.github.tommyettinger.digital.MathTools.fract;
 
 /**
  */
+@GwtIncompatible
 public class SoloViewer extends ApplicationAdapter {
 
     public static final int width = 200, height = 200;

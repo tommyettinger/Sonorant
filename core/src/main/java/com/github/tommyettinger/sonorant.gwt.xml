@@ -4,6 +4,7 @@
   <source path="sonorant">
     <exclude name="INoiseViewer.java" />
     <exclude name="SoloViewer.java" />
+    <exclude name="Sonorant.java" />
     <exclude name="INoiseBanner.java" />
   </source>
 </module>

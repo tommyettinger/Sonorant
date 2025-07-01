@@ -1,0 +1,17 @@
+i:b:/ana_fragment.glsl:1687:1
+i:b:/foam_fragment.glsl:6187:1
+i:b:/foam_vertex.glsl:331:1
+i:b:/hassler_fragment.glsl:3194:1
+i:b:/northern_fragment.glsl:1656:1
+i:b:/sahahant_fragment.glsl:3432:1
+i:b:/sanarant_fragment.glsl:2916:1
+i:b:/sonorant_fragment.glsl:7104:1
+i:b:/sonorant_fragment_ridged.glsl:7241:1
+c:b:/com/badlogic/gdx/utils/lsans-15.png:10270:1
+c:b:/com/badlogic/gdx/graphics/g3d/shaders/default.vertex.glsl:9096:1
+c:b:/com/badlogic/gdx/graphics/g3d/particles/particles.fragment.glsl:820:1
+c:b:/com/badlogic/gdx/graphics/g3d/shaders/default.fragment.glsl:5874:1
+c:b:/com/badlogic/gdx/graphics/g3d/shaders/depth.vertex.glsl:2931:1
+c:b:/com/badlogic/gdx/graphics/g3d/particles/particles.vertex.glsl:2886:1
+c:b:/com/badlogic/gdx/utils/lsans-15.fnt:17711:1
+c:b:/com/badlogic/gdx/graphics/g3d/shaders/depth.fragment.glsl:869:1
