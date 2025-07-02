@@ -56,7 +56,6 @@ public class ShaderNoise extends ApplicationAdapter {
 
     @Override public void create () {
         if(clipboard == null) clipboard = Gdx.app.getClipboard();
-        Gdx.app.setLogLevel(Application.LOG_ERROR);
         batch = new SpriteBatch();
 
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
@@ -110,15 +109,7 @@ public class ShaderNoise extends ApplicationAdapter {
         height = Gdx.graphics.getHeight();
 
         if(clipboard.hasContents()) {
-            String s = clipboard.getContents();
-            if (TextTools.count(s, "_") == 4) {
-                int gap;
-                seed = Base.BASE10.readFloat(s, 0, gap = s.indexOf('_'));
-                rMod = Base.BASE10.readFloat(s, gap + 1, gap = s.indexOf('_', gap + 1));
-                gMod = Base.BASE10.readFloat(s, gap + 1, gap = s.indexOf('_', gap + 1));
-                bMod = Base.BASE10.readFloat(s, gap + 1, gap = s.indexOf('_', gap + 1));
-                twist = Base.BASE10.readFloat(s, gap + 1, s.length());
-            }
+            loadClipboard();
         }
 
     }
@@ -154,7 +145,7 @@ public class ShaderNoise extends ApplicationAdapter {
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.O)){ // start Over
             startTime = TimeUtils.millis();
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.P)){ // performance
-            Gdx.app.log("FPS", String.valueOf(Gdx.graphics.getFramesPerSecond()));
+            System.out.println("FPS = " + Gdx.graphics.getFramesPerSecond());
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){ // quit
             Gdx.app.exit();
         }
@@ -170,21 +161,12 @@ public class ShaderNoise extends ApplicationAdapter {
             batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
         else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v
             if(clipboard.hasContents()){
-                String s = clipboard.getContents();
-                int gap;
-                seed = Base.BASE10.readFloat(s, 0, gap = s.indexOf('_'));
-                rMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
-                gMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
-                bMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
-                twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
-                int w = Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1));
-                int h = Base.BASE10.readInt(s, gap+1, s.length());
-                if(w != 0 && h != 0 && (w != width || h != height))
-                    Gdx.graphics.setWindowedMode(w, h);
+                loadClipboard();
             }
         }
         else if(Gdx.input.isKeyJustPressed(W)) {
-            Gdx.app.log("SAVE", seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
+            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
+            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
             if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {
                 frames.clear();
                 FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, width<<1, height<<1, false);
@@ -217,5 +199,20 @@ public class ShaderNoise extends ApplicationAdapter {
         batch.setColor(rMod, gMod, bMod, twist);
         batch.draw(pixel, 0, 0, width, height);
         batch.end();
+    }
+
+    private void loadClipboard() {
+        String s = clipboard.getContents();
+        int gap;
+        seed = Base.BASE10.readFloat(s, 0, gap = s.indexOf('_'));
+        rMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
+        gMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
+        bMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
+        twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
+        int w = Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1));
+        int h = Base.BASE10.readInt(s, gap+1, s.length());
+        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
+            Gdx.graphics.setWindowedMode(w, h);
+
     }
 }
