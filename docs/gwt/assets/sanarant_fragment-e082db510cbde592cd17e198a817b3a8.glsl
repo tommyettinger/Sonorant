@@ -6,7 +6,7 @@ precision highp float;
 #endif
 
 const float PI2 = 6.283185307179586;
-const float SCALE = 0.875;
+const float SCALE = 1.5;
 const float POINTINESS = 11.0;
 
 varying LOWP vec4 v_color;
@@ -45,16 +45,16 @@ float cosmic(float seed, vec4 con)
 
 void main() {
   if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
-  float DIVISIONS = mod(floor(u_seed), 10.0) + 3.0;
+  float DIVISIONS = mod(floor(u_seed), 10.0) + 2.0;
   float TWISTINESS = sin(PI2 * v_color.a) * 5.0 + 6.0;
 
     // Normalized pixel coordinates (from 0 to 1)
-    vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;
+  vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;
   float c = u_time;
   float len = length(center);
   float theta = atan(center.y, center.x) * DIVISIONS + c;
   float shrunk = len * (0.375 * POINTINESS / DIVISIONS);
-  float adj = (len * PI2 * 1.5 - c) * 0.5;
+  float adj = len * PI2 * 0.75 - c;
   vec2 i = vec2(theta + len * 5., adj);
 
     vec4 v = vec4(sin(i.x) * shrunk, cos(i.x) * shrunk, sin(i.y), cos(i.y));
@@ -68,11 +68,12 @@ void main() {
 //                  swayRandomized(-50993.5190, aTime + 2.61),
 //                  swayRandomized(-42069.1984, aTime - 2.31)) * 1.5 * (vec4(sin(i.xy), cos(i.xy)) + 1.25);
 //    vec4 con = vec4(0.0004375, 0.0005625, 0.0008125, 0.000625) + s;
-    vec4 con = vec4(0.4375, 0.5625, 0.8125, 0.625) + s;
+    vec2 angles = (v_color.gb * PI2);
+    vec4 con = vec4(0.4375, 0.5625, 0.8125, 0.625) + s + vec4(sin(angles), cos(angles)) * 4.0;
     con.x = cosmic(u_seed, con);
     con.y = cosmic(u_seed, con);
     con.z = cosmic(u_seed, con);
 
-    con.xyz = sin((con.xyz + v_color.ggg) * 3.14159265) * 0.5 + 0.5;
+    con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
     gl_FragColor = vec4(pow(con.xyz, 1.0 + 16.0 * (v_color.rrr)), 1.0);
 }
