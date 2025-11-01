@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE module PUBLIC "-//Google Inc.//DTD Google Web Toolkit 2.11.0//EN" "https://www.gwtproject.org/doctype/2.11.0/gwt-module.dtd">
 <module>
-  <source path="sonorant">
-    <exclude name="INoiseViewer.java" />
-    <exclude name="SoloViewer.java" />
-    <exclude name="Sonorant.java" />
-    <exclude name="INoiseBanner.java" />
-  </source>
+    <source path="sonorant">
+        <exclude name="ApngShaderNoise.java" />
+        <exclude name="INoiseBanner.java" />
+        <exclude name="INoiseViewer.java" />
+        <exclude name="SoloViewer.java" />
+        <exclude name="Sonorant.java" />
+    </source>
 </module>
