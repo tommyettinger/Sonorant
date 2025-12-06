@@ -149,15 +149,15 @@ public class ShaderNoise extends ApplicationAdapter {
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){ // quit
             Gdx.app.exit();
         }
-        else if (Gdx.input.isKeyPressed(T))
+        else if (Gdx.input.isKeyPressed(T)) // twist
             twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.01f : -0.01f)), 1f);
-        else if (Gdx.input.isKeyPressed(R))
-            rMod = Math.min(Math.max(0.0f, rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.03125f : -0.03125f)), 1f);
-        else if (Gdx.input.isKeyPressed(G))
+        else if (Gdx.input.isKeyPressed(H)) // hue rotation
+            rMod = MathTools.fract(rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.125f : -0.125f));
+        else if (Gdx.input.isKeyPressed(G)) // color fidget
             gMod = Math.min(Math.max(0.0f, gMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.03125f : -0.03125f)), 1f);
-        else if (Gdx.input.isKeyPressed(B))
+        else if (Gdx.input.isKeyPressed(B)) // color fidget
             bMod = Math.min(Math.max(0.0f, bMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.03125f : -0.03125f)), 1f);
-        else if(Gdx.input.isKeyJustPressed(C))
+        else if(Gdx.input.isKeyJustPressed(C)) // change shader
             batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
         else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v
             if(clipboard.hasContents()){

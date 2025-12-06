@@ -17,6 +17,17 @@ uniform float u_seed;
 uniform float u_time;
 uniform vec2 u_resolution;
 
+// Credit for HLSL version of applyHue() goes to Andrey-Postelzhuk,
+// https://forum.unity.com/threads/hue-saturation-brightness-contrast-shader.260649/
+vec3 applyHue(vec3 rgb, float hue)
+{
+    float h = fract(hue) * PI2;
+    vec3 k = vec3(0.57735);
+    float c = cos(h);
+    //Rodrigues' rotation formula
+    return rgb * c + cross(k, rgb) * sin(h) + k * dot(k, rgb) * (1.0 - c);
+}
+
 float swayRandomized(float seed, float value)
 {
     float f = floor(value);
@@ -75,5 +86,5 @@ void main() {
     con.z = cosmic(u_seed, con);
 
     con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
-    gl_FragColor = vec4(pow(con.xyz, 1.0 + 16.0 * (v_color.rrr)), 1.0);
+    gl_FragColor = vec4(applyHue(con.xyz, v_color.r), 1.0);
 }
