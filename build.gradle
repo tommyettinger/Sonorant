@@ -1,15 +1,11 @@
 buildscript {
   repositories {
     mavenCentral()
-    maven { url 'https://s01.oss.sonatype.org' }
     mavenLocal()
     google()
     gradlePluginPortal()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
   }
   dependencies {
-    classpath "org.docstr:gwt-gradle-plugin:$gwtPluginVersion"
     classpath 'com.guardsquare:proguard-gradle:7.3.2'
   }
 }
@@ -21,7 +17,7 @@ allprojects {
 
 configure(subprojects) {
   apply plugin: 'java-library'
-  sourceCompatibility = 11
+  java.sourceCompatibility = 11
   compileJava {
     options.incremental = true
   }
@@ -32,11 +28,8 @@ subprojects {
   ext.appName = 'Sonorant'
   repositories {
     mavenCentral()
-    maven { url 'https://s01.oss.sonatype.org' }
-//    mavenLocal()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url 'https://s01.oss.sonatype.org/content/repositories/snapshots/' }
-    maven { url 'https://jitpack.io' }
+    mavenLocal()
+    maven { url = 'https://jitpack.io' }
   }
 }
 

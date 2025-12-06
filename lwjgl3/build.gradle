@@ -17,9 +17,9 @@ apply plugin: 'org.beryx.runtime'
 
 
 sourceSets.main.resources.srcDirs += [ rootProject.file('assets').path ]
-mainClassName = 'com.github.tommyettinger.lwjgl3.Lwjgl3Launcher'
+application.mainClass = 'com.github.tommyettinger.lwjgl3.Lwjgl3Launcher'
 eclipse.project.name = appName + '-lwjgl3'
-sourceCompatibility = 11
+java.sourceCompatibility = "11"
 
 dependencies {
   implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
@@ -50,7 +50,7 @@ jar {
 // using 'lib' instead of the default 'libs' appears to be needed by jpackageimage.
   destinationDirectory = file("$buildDirectory/lib")
 // the duplicatesStrategy matters starting in Gradle 7.0; this setting works.
-  duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   dependsOn configurations.runtimeClasspath
   from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 // these "exclude" lines remove some unnecessary duplicate files in the output JAR.
@@ -60,7 +60,7 @@ jar {
   }
 // setting the manifest makes the JAR runnable.
   manifest {
-    attributes 'Main-Class': project.mainClassName
+    attributes 'Main-Class': application.mainClass, 'Enable-Native-Access': 'ALL-UNNAMED'
   }
 // this last step may help on some OSes that need extra instruction to make runnable JARs.
   doLast {
@@ -70,7 +70,7 @@ jar {
 
 tasks.register('proguard', ProGuardTask) {
   outputs.upToDateWhen { false }
-  configuration 'proguard-rules.pro'
+  configuration('proguard-rules.pro')
   //printmapping 'build/lib/out.map'
   var buildDirectory = project.layout.buildDirectory.asFile.get().absolutePath
 
@@ -85,7 +85,6 @@ tasks.register('proguard', ProGuardTask) {
 }
 
 proguard.dependsOn jar
-
 
 if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
   tasks.jpackageImage.doNotTrackState("This task reads and writes to the build folder.")

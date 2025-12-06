@@ -8,7 +8,6 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 //import static com.github.tommyettinger.sonorant.INoiseViewer.height;
 
 //import com.github.tommyettinger.sonorant.ApngShaderNoise;
-import com.github.tommyettinger.sonorant.ApngShaderNoise;
 import com.github.tommyettinger.sonorant.ShaderNoise;
 import static com.github.tommyettinger.sonorant.ShaderNoise.width;
 import static com.github.tommyettinger.sonorant.ShaderNoise.height;
@@ -23,8 +22,8 @@ public class Lwjgl3Launcher {
         // Needed for macOS support, but also Windows with non-ASCII usernames.
         if (StartupHelper.startNewJvmIfRequired()) return;
 
-        new Lwjgl3Application(new ApngShaderNoise(null, 1L), getDefaultConfiguration());
-//        new Lwjgl3Application(new ShaderNoise(null, 1L), getDefaultConfiguration());
+//        new Lwjgl3Application(new ApngShaderNoise(null, 1L), getDefaultConfiguration());
+        new Lwjgl3Application(new ShaderNoise(null, 1L), getDefaultConfiguration());
 //        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
 //        new Lwjgl3Application(new SoloViewer(null), getDefaultConfiguration());
     }
@@ -36,6 +35,7 @@ public class Lwjgl3Launcher {
 //        configuration.useVsync(false);
 //        configuration.setForegroundFPS(0);
         configuration.useVsync(true);
+        configuration.disableAudio(true);
         configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate);
         configuration.setWindowedMode(width, height);
 //        configuration.setWindowedMode(width>>>2, height>>>2);

@@ -24,8 +24,10 @@ public class TeaVMBuilder {
         // Register any classes or packages that require reflection here:
         // TeaReflectionSupplier.addReflectionClass("com.github.tommyettinger.reflect");
 
-        TeaVMTool tool = TeaBuilder.config(teaBuildConfiguration);
-        tool.setTargetType(TeaVMTargetType.WEBASSEMBLY_GC);
+        teaBuildConfiguration.targetType = TeaVMTargetType.WEBASSEMBLY_GC;
+        TeaBuilder.config(teaBuildConfiguration);
+        TeaVMTool tool = new TeaVMTool();
+
         tool.setMainClass(TeaVMLauncher.class.getName());
         // For many (or most) applications, using the highest optimization won't add much to build time.
         // If your builds take too long, and runtime performance doesn't matter, you can change ADVANCED to SIMPLE .
