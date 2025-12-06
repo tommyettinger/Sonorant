@@ -89,10 +89,9 @@ void main() {
 
     //con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
 
-    //con.z = pow(con.z, 1.0 + 16.0 * v_color.r);
-    con.z = pow(smoothstep(0., 1., sin(con.z * 6.283 + con.y) * 0.5 + 0.5), 1.0 + 16.0 * v_color.r);
-    con.y = min(1.0, 1.5 - + abs(con.z * 2.0 - 1.0));
-    con.x = fract(con.x);
+    con.z = smoothstep(0., 1., sin(con.z * 6.283 + con.y) * 0.25 + 0.5);
+    con.y = min(1.0, 1.0 - abs(con.z * 2.0 - 1.0));
+    con.x = fract(con.x + v_color.r);
     con.w = 1.0;
     gl_FragColor = hsl2rgb(con);
 }
