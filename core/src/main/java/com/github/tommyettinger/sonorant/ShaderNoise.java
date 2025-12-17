@@ -131,15 +131,14 @@ public class ShaderNoise extends ApplicationAdapter {
                 Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
             }
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.S)){ // seed
-            seed += UIUtils.shift() ? 0.001f : -0.001f;
+            seed += UIUtils.shift() ? 0.0009765625f : -0.0009765625f;
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.D)){ // divisions
             seed += UIUtils.shift() ? 1f : -1f;
-        } else if(Gdx.input.isKeyJustPressed(SLASH)){ // seed
-            long state = BitConversion.doubleToLongBits(System.nanoTime() * MathTools.fract(seed)) + 0xD1B54A32D192ED03L;
-            reseed(state);
+        } else if(Gdx.input.isKeyJustPressed(SLASH)){ // seed, but jumps out of alignment (or back into it)
+            seed += UIUtils.shift() ? 0.005f : -0.005f;
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.O)){ // start Over
             startTime = TimeUtils.millis();
-        } else if(Gdx.input.isKeyJustPressed(Input.Keys.P)){ // performance
+        } else if(Gdx.input.isKeyJustPressed(Input.Keys.F)){ // FPS log
             System.out.println("FPS = " + Gdx.graphics.getFramesPerSecond());
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){ // quit
             Gdx.app.exit();
@@ -152,14 +151,14 @@ public class ShaderNoise extends ApplicationAdapter {
             gMod = Math.min(Math.max(0.0f, gMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.03125f : -0.03125f)), 1f);
         else if (Gdx.input.isKeyPressed(B)) // color fidget
             bMod = Math.min(Math.max(0.0f, bMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.03125f : -0.03125f)), 1f);
-        else if(Gdx.input.isKeyJustPressed(C)) // change shader
+        else if(Gdx.input.isKeyJustPressed(A)) // alternate shader
             batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
         else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v
             if(clipboard.hasContents()){
                 loadClipboard();
             }
         }
-        else if(Gdx.input.isKeyJustPressed(W)) {
+        else if(Gdx.input.isKeyJustPressed(C)) { // ctrl-c
             System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
             clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
             if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {

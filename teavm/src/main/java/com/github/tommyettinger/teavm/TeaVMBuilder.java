@@ -24,8 +24,8 @@ public class TeaVMBuilder {
         // Register any classes or packages that require reflection here:
         // TeaReflectionSupplier.addReflectionClass("com.github.tommyettinger.reflect");
 
-        teaBuildConfiguration.targetType = TeaVMTargetType.WEBASSEMBLY_GC;
-//        teaBuildConfiguration.targetType = TeaVMTargetType.JAVASCRIPT;
+//        teaBuildConfiguration.targetType = TeaVMTargetType.WEBASSEMBLY_GC;
+        teaBuildConfiguration.targetType = TeaVMTargetType.JAVASCRIPT;
         TeaBuilder.config(teaBuildConfiguration);
         TeaVMTool tool = new TeaVMTool();
 
