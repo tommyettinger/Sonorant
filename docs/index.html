@@ -16,7 +16,7 @@
 <ul>
     <li><a href="tea/index.html" target="_blank">TeaVM, WASM</a> (won't always work on mobile browsers)</li>
     <li><a href="tea-js/index.html" target="_blank">TeaVM, JavaScript</a> (should work everywhere)</li>
-    <li><a href="gwt/index.html" target="_blank">Google Web Toolkit</a> (should work everywhere)</li>
+    <li><a href="gwt/index.html" target="_blank">Google Web Toolkit</a> (should work everywhere, but can't share the state)</li>
 </ul>
 <h2>
   Controls for all implementations:
@@ -32,8 +32,7 @@
     <li>'a' changes the shader between one of two alternate styles.</li>
     <li>'o' starts the animation over, from its initial form (at time 0).</li>
     <li>'f' prints the current frames per second (higher means better performance) to the log.</li>
-    <li>'c' writes to the clipboard and may (on TeaVM) reload the page with the address set to load the current state.</li>
-    <li>'v' pastes the clipboard contents, allowing copied state to be loaded (including on GWT).</li>
+    <li>'c' writes to the clipboard and (on TeaVM) reloads the page with the address set to load the current state.</li>
     <li>On desktop only, Alt-Enter or Alt-F11 will toggle fullscreen mode.</li>
     <li>On desktop only, 'Q' or 'Escape' will quit.</li>
 </ul>
