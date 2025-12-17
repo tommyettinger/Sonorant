@@ -24,7 +24,8 @@ public class TeaVMBuilder {
         // Register any classes or packages that require reflection here:
         // TeaReflectionSupplier.addReflectionClass("com.github.tommyettinger.reflect");
 
-        teaBuildConfiguration.targetType = TeaVMTargetType.WEBASSEMBLY_GC;
+//        teaBuildConfiguration.targetType = TeaVMTargetType.WEBASSEMBLY_GC;
+        teaBuildConfiguration.targetType = TeaVMTargetType.JAVASCRIPT;
         TeaBuilder.config(teaBuildConfiguration);
         TeaVMTool tool = new TeaVMTool();
 
@@ -32,7 +33,7 @@ public class TeaVMBuilder {
         // For many (or most) applications, using the highest optimization won't add much to build time.
         // If your builds take too long, and runtime performance doesn't matter, you can change ADVANCED to SIMPLE .
         tool.setOptimizationLevel(TeaVMOptimizationLevel.ADVANCED);
-        tool.setObfuscated(false);
+        tool.setObfuscated(true);
         TeaBuilder.build(tool);
     }
 }

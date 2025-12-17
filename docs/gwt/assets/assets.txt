@@ -4,8 +4,8 @@ t:foam_fragment.glsl:foam_fragment-5fe038056f5ac4275912131fdbd3c55c.glsl:6187:ap
 t:foam_vertex.glsl:foam_vertex-860b19dc6214e3739579aee41746550b.glsl:331:application/unknown:1
 t:hassler_fragment.glsl:hassler_fragment-3f2e79c7a386eb0f90f348d11e131c08.glsl:3194:application/unknown:1
 t:northern_fragment.glsl:northern_fragment-834a87412a1f020a19283908d647a66d.glsl:1656:application/unknown:1
-t:sahahant_fragment.glsl:sahahant_fragment-034a18ac5ec52f8ccae9b21a94de8fd4.glsl:3432:application/unknown:1
-t:sanarant_fragment.glsl:sanarant_fragment-e082db510cbde592cd17e198a817b3a8.glsl:2916:application/unknown:1
+t:sahahant_fragment.glsl:sahahant_fragment-841f56d662b1897cda230d6f138f0f82.glsl:3364:application/unknown:1
+t:sanarant_fragment.glsl:sanarant_fragment-acc724aa766e5a56108e887b6ddfcb10.glsl:3288:application/unknown:1
 t:sonorant_fragment.glsl:sonorant_fragment-5b6f7135b2a66c81db4f5038b75e3f47.glsl:7104:application/unknown:1
 t:sonorant_fragment_ridged.glsl:sonorant_fragment_ridged-646b4dda111833db17ce18ce36d6307a.glsl:7241:application/unknown:1
 t:com/badlogic/gdx/graphics/g3d/particles/particles.fragment.glsl:particles.fragment-b90524761fdf09b0a836056d590c30b8.glsl:820:application/unknown:1
