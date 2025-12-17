@@ -17,7 +17,10 @@ import com.badlogic.gdx.utils.TimeUtils;
 import com.github.tommyettinger.anim8.AnimatedGif;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.QualityPalette;
-import com.github.tommyettinger.digital.*;
+import com.github.tommyettinger.digital.Base;
+import com.github.tommyettinger.digital.BitConversion;
+import com.github.tommyettinger.digital.MathTools;
+import com.github.tommyettinger.digital.TrigTools;
 
 import static com.badlogic.gdx.Input.Keys.*;
 
@@ -121,8 +124,7 @@ public class ShaderNoise extends ApplicationAdapter {
 
     @Override public void render () {
         ScreenUtils.clear(0f, 0f, 0f, 0f);
-        if((Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.F11)) && UIUtils.alt())
-        {
+        if((Gdx.input.isKeyJustPressed(Input.Keys.ENTER) || Gdx.input.isKeyJustPressed(Input.Keys.F11)) && UIUtils.alt()) {
             if(Gdx.graphics.isFullscreen()) {
                 Gdx.graphics.setWindowedMode(WIDTH, HEIGHT);
             } else {

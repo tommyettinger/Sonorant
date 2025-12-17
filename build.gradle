@@ -22,6 +22,7 @@ configure(subprojects) {
     options.incremental = true
   }
 }
+idea.module.excludeDirs += [file("docs/")]
 
 subprojects {
   version = '1.0.0'

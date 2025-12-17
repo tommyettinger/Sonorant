@@ -6,12 +6,6 @@
   <inherits name="com.github.tommyettinger.sonorant" />
   <inherits name="com.github.tommyettinger.anim8" />
   <inherits name="com.github.tommyettinger.digital" />
-  <inherits name="com.github.tommyettinger.funderby" />
-  <inherits name="com.github.tommyettinger.jdkgdxds" />
-  <inherits name="com.github.tommyettinger.juniper" />
-  <inherits name="com.github.yellowstonegames.squidcore" />
-  <inherits name="com.github.yellowstonegames.squidgrid" />
-  <inherits name="regexodus.regexodus" />
   <entry-point class="com.github.tommyettinger.gwt.GwtLauncher" />
   <set-configuration-property name="gdx.assetpath" value="../assets" />
   <set-configuration-property name="xsiframe.failIfScriptTag" value="FALSE"/>
