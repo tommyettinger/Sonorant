@@ -20,7 +20,23 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 import com.github.tommyettinger.anim8.*;
 import com.github.tommyettinger.digital.*;
 import com.github.tommyettinger.ds.ObjectList;
-import com.github.yellowstonegames.grid.*;
+import com.github.tommyettinger.random.GwtIncompatible;
+import com.github.yellowstonegames.grid.BadgerNoise;
+import com.github.yellowstonegames.grid.CellularNoise;
+import com.github.yellowstonegames.grid.CyclicNoise;
+import com.github.yellowstonegames.grid.FlanNoise;
+import com.github.yellowstonegames.grid.FoamNoise;
+import com.github.yellowstonegames.grid.FoamplexNoise;
+import com.github.yellowstonegames.grid.HoneyNoise;
+import com.github.yellowstonegames.grid.INoise;
+import com.github.yellowstonegames.grid.Noise;
+import com.github.yellowstonegames.grid.NoiseWrapper;
+import com.github.yellowstonegames.grid.PerlinNoise;
+import com.github.yellowstonegames.grid.SimplexNoise;
+import com.github.yellowstonegames.grid.SnakeNoise;
+import com.github.yellowstonegames.grid.SorbetNoise;
+import com.github.yellowstonegames.grid.TaffyNoise;
+import com.github.yellowstonegames.grid.ValueNoise;
 
 import static com.badlogic.gdx.Input.Keys.*;
 import static com.badlogic.gdx.graphics.GL20.GL_POINTS;
@@ -28,43 +44,40 @@ import static com.github.tommyettinger.digital.MathTools.fract;
 
 /**
  */
-public class INoiseViewer extends ApplicationAdapter {
+@GwtIncompatible
+public class SoloViewer extends ApplicationAdapter {
 
-//    public static final int width = 350, height = 350;
-    public static final int width = 1920, height = 1080;
+    public static final int width = 200, height = 200;
 //    public static final int width = 512, height = 512;
 //    public static final int width = 256, height = 256;
 //    public static final int width = 64, height = 64;
 
-    private final INoise[] noises = new INoise[]{
-        new CyclicNoise(1234567890L, 3), new CyclicNoise(1234567890L, 4), new CyclicNoise(1234567890L, 5),
+    private final INoise[] noises = new INoise[]{new CyclicNoise(1234567890L, 3), new CyclicNoise(1234567890L, 4), new CyclicNoise(1234567890L, 5),
             new SorbetNoise(1234567890L, 5), new SorbetNoise(1234567890L, 4), new SorbetNoise(1234567890L, 3),
             new FlanNoise(1234567890L, 4), new TaffyNoise(1234567890L, 4), new FoamplexNoise(1234567890L),
-            new FoamNoise(1234567890L), new HoneyNoise(1234567890L), new SimplexNoise(1234567890L),
-        new PerlinNoise(1234567890L), new PerlueNoise(1234567890L), new ValueNoise(1234567890L),
-        new CellularNoise(1234567890L), new SnakeNoise(1234567890L), new BadgerNoise(1234567890L)
+            new FoamNoise(1234567890L), new HoneyNoise(1234567890L), new PerlinNoise(1234567890L), new SimplexNoise(1234567890L),
+            new SnakeNoise(1234567890L), new BadgerNoise(1234567890L), new ValueNoise(1234567890L), new CellularNoise(1234567890L)
     };
-    private int noiseIndex = 13;
+    private int noiseIndex = 16;
     private final NoiseWrapper noise = new NoiseWrapper(noises[noiseIndex], 1234567890L, 0.0625f, 2, 1);
     private final Noise varianceNoise = new Noise(-1, 0.025f, Noise.VALUE);
     private final ObjectList<Interpolations.Interpolator> interpolators = new ObjectList<>(Interpolations.getInterpolatorArray());
     private int interpolatorIndex = 58;
     private Interpolations.Interpolator interpolator = interpolators.get(interpolatorIndex);
-    private float hue = 0;
+    private float hue = 0.65f;
     private float variance = 1f;
     private float hard = 0f;
     private float saturation = 1f;
     private int divisions = 2;
     private int octaves = 0;
-    private float freq = 0.125f;
+    private float cycling = 0f;
     private float a = 1f;
     private float b = 1f;
     private boolean paused;
-    private boolean hueCycle = false;
 
     private final ObjectList<Vector2> centers =
-//            ObjectList.with(new Vector2((width-1) * 0.5f, (height-1) * 0.5f));
-            ObjectList.with(new Vector2((width-1) / 3f, (height-1) * 0.5f), new Vector2((width-1) * 2f / 3f, (height-1) * 0.5f));
+            ObjectList.with(new Vector2((width-1) * 0.5f, (height-1) * 0.5f));
+//            ObjectList.with(new Vector2((width-1) / 3f, (height-1) * 0.5f), new Vector2((width-1) * 2f / 3f, (height-1) * 0.5f));
 
     private ImmediateModeRenderer20 renderer;
 
@@ -105,7 +118,7 @@ public class INoiseViewer extends ApplicationAdapter {
     public static int hsl2rgb(final float h, final float s, final float l, final float a) {
         // note: the spline is used here to change hue distribution so there's more orange, less cyan.
 //        final float hue = (float) Math.pow((h - MathUtils.floor(h)) * 0.8f + 0.225f, 2f) - 0.050625f;
-        final float hue = MathTools.barronSpline(h - MathUtils.floor(h), 1.7f, 0.9f);
+        final float hue = (h - MathUtils.floor(h));
         float x = Math.min(Math.max(Math.abs(hue * 6f - 3f) - 1f, 0f), 1f);
         float y = hue + (2f / 3f);
         float z = hue + (1f / 3f);
@@ -118,7 +131,7 @@ public class INoiseViewer extends ApplicationAdapter {
         return rgba8888(v * MathUtils.lerp(1f, x, d), v * MathUtils.lerp(1f, y, d), v * MathUtils.lerp(1f, z, d), a);
     }
 
-    public INoiseViewer(Clipboard clippy) {
+    public SoloViewer(Clipboard clippy) {
         clipboard = clippy;
     }
 
@@ -134,7 +147,7 @@ public class INoiseViewer extends ApplicationAdapter {
             gif.setDitherAlgorithm(Dithered.DitherAlgorithm.GOURD);
             gif.setDitherStrength(1f);
             gif.palette = new QualityPalette();
-//            gif.fastAnalysis = false;
+            gif.fastAnalysis = false;
 //            png = new FastPNG();
 //            png.setCompression(2);
             apng = new AnimatedPNG();
@@ -185,12 +198,14 @@ public class INoiseViewer extends ApplicationAdapter {
                         "vec4 hsl2rgb(vec4 c)\n" +
                         "{\n" +
                         "    const vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);\n" +
-                        "    vec3 p = abs(fract(barronSpline(c.x) + K.xyz) * 6.0 - K.www);\n" +
+                        "    vec3 p = abs(fract(c.x + K.xyz) * 6.0 - K.www);\n" +
                         "    float v = (c.z + c.y * min(c.z, 1.0 - c.z));\n" +
                         "    return vec4(v * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), 2.0 * (1.0 - c.z / (v + 1e-10))), c.w);\n" +
                         "}" +
                         "void main() {\n" +
-                        "   gl_FragColor = hsl2rgb(v_col);\n" +
+                        "   vec4 color = v_col;\n" +
+//                        "   color.x = sin(color.x * 6.28) * 0.05 + 0.65;\n" +
+                        "   gl_FragColor = hsl2rgb(color);\n" +
                         "}");
         if(!hslShader.isCompiled())
             System.out.println("HSL Shader compilation failed: " + hslShader.getLog());
@@ -251,9 +266,6 @@ public class INoiseViewer extends ApplicationAdapter {
                         break;
                     case BACKSLASH: // fractal spiral mode, I don't know if there is a mnemonic
                         noise.setFractalSpiral(!noise.isFractalSpiral());
-                        break;
-                    case Y:
-                        hueCycle = !hueCycle;
                         break;
                     case P: { // paste
                         if (clipboard.hasContents()) {
@@ -324,16 +336,18 @@ public class INoiseViewer extends ApplicationAdapter {
         System.out.println("Gradient Variance: " + variance);
         System.out.println("Gradient Hardness: " + hard);
         System.out.println("Kumaraswamy a: " + a + ", b: " + b);
-        System.out.println("Data for Copy/Paste: " + noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + hard + "~"  + saturation + "~" + System.currentTimeMillis());
+        System.out.println("Data for Copy/Paste: " + noiseIndex + "~" + noise.stringSerialize() + "~" + divisions + "~" + interpolator.tag + "~" + hue + "~" + variance + "~" + a + "~" + b + "~" + hard + "~" + saturation + "~"  + cycling + "~" + System.currentTimeMillis());
     }
 
     public void putMap() {
         if (Gdx.input.isKeyPressed(C))
-            hue = (hue + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
+            hue = (hue + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         if (Gdx.input.isKeyPressed(V))
             variance = Math.max(0.001f, variance + 0.25f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()));
         if (Gdx.input.isKeyPressed(A))
             hard = Math.min(Math.max(hard + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()), 0f), 1f);
+        if (Gdx.input.isKeyPressed(Y))
+            cycling = Math.min(Math.max(cycling + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()), 0f), 1f);
         if (Gdx.input.isKeyPressed(Z))
             saturation = Math.min(Math.max(saturation + 0.125f * (UIUtils.shift() ? -Gdx.graphics.getDeltaTime() : Gdx.graphics.getDeltaTime()), 0f), 1f);
         if (Gdx.input.isKeyPressed(NUM_0))
@@ -344,8 +358,7 @@ public class INoiseViewer extends ApplicationAdapter {
         float bright, nf = noise.getFrequency(), counter = (paused ? startTime
                 : TimeUtils.timeSinceMillis(startTime)) * 0x1p-10f / nf,
                 c = counter * (1 + (divisions & 1));
-        float hc = hue;
-        if(hueCycle) hc = counter * 0x1p-8f;
+        float hc = cycling;
 
         double aa = 1.0/a, bb = 1.0/b;
 
@@ -405,11 +418,11 @@ public class INoiseViewer extends ApplicationAdapter {
 
                 renderer.color(
 //                        BitConversion.reversedIntBitsToFloat(hsl2rgb(
-                                fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
-                                TrigTools.sin(1 + bright * 1.375f) * saturation,
-                                TrigTools.sin(bright * 1.5f),
-                                1f
-//                        ))
+                        TrigTools.sinSmootherTurns(fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc)) * 0.05f + hue,
+                        TrigTools.sin(1 + bright * 1.375f) * saturation,
+                        TrigTools.sin(bright * 1.5f),
+                        1f
+//                    ))
                 );
 //                renderer.color(colorFloats[(int) (bright * 255.99f)]);
                 renderer.vertex(x, y, 0);
@@ -419,8 +432,8 @@ public class INoiseViewer extends ApplicationAdapter {
             if (Gdx.files.isLocalStorageAvailable()) {
                 for (int ctr = 0; ctr < 256; ctr++) {
                     int ct = ctr * (1 + (divisions & 1));
-                    if(hueCycle) hc = ctr * 0x1p-8f;
-                    else hc = hue;
+                    hc = cycling;
+
                     Pixmap p = new Pixmap(width, height, Pixmap.Format.RGBA8888);
 
                     if(cenSize == 1) {
@@ -478,7 +491,7 @@ public class INoiseViewer extends ApplicationAdapter {
 
                             p.setColor(
                                     hsl2rgb(//DescriptiveColor.toRGBA8888(DescriptiveColor.oklabByHCL(
-                                            fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc),
+                                            TrigTools.sinSmootherTurns(fract((n / (hard * Math.abs(n) + (1f - hard))) * variance + hc)) * 0.05f + hue,
                                             TrigTools.sin(1 + bright * 1.375f) * saturation,
                                             TrigTools.sin(bright * 1.5f),
                                             1f))
@@ -505,7 +518,6 @@ public class INoiseViewer extends ApplicationAdapter {
                 prettyPrint();
                 if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
                     if (gif != null) {
-//                        gif.palette.analyze(frames);
                         gif.write(Gdx.files.local("out/gif/" + ser + ".gif"), frames, 24);
                     }
                     if (png != null) {
@@ -513,7 +525,6 @@ public class INoiseViewer extends ApplicationAdapter {
                             png.write(Gdx.files.local("out/png/" + ser + "/frame_" + i + ".png"), frames.get(i));
                         }
                     }
-
                     if (apng != null) {
 //                    for (int i = 0; i < frames.size; i++) {
 //                        Pixmap frame = frames.get(i);

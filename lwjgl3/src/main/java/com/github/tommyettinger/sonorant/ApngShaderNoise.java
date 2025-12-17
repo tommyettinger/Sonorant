@@ -22,6 +22,7 @@ import com.github.tommyettinger.digital.Base;
 import com.github.tommyettinger.digital.BitConversion;
 import com.github.tommyettinger.digital.MathTools;
 import com.github.tommyettinger.digital.TrigTools;
+import com.github.tommyettinger.random.GwtIncompatible;
 
 import static com.badlogic.gdx.Input.Keys.*;
 
@@ -29,6 +30,7 @@ import static com.badlogic.gdx.Input.Keys.*;
  * Credit for the shader adaptation goes to angelickite , a very helpful user on the libGDX Discord.
  * The Discord can be found at <a href="https://discord.gg/crTrDEK">this link</a>.
  */
+@GwtIncompatible
 public class ApngShaderNoise extends ApplicationAdapter {
 
     private SpriteBatch batch;

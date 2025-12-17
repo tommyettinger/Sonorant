@@ -15,7 +15,6 @@ import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
 import com.github.tommyettinger.anim8.AnimatedGif;
-import com.github.tommyettinger.anim8.AnimatedPNG;
 import com.github.tommyettinger.anim8.Dithered;
 import com.github.tommyettinger.anim8.QualityPalette;
 import com.github.tommyettinger.digital.*;
@@ -34,7 +33,6 @@ public class ShaderNoise extends ApplicationAdapter {
     private ShaderProgram shaderStandard;
     private ShaderProgram shaderRidged;
     private AnimatedGif gif;
-//	private AnimatedPNG apng;
 
     private long startTime;
     private float seed = 3.1337f;
@@ -67,12 +65,7 @@ public class ShaderNoise extends ApplicationAdapter {
             gif = new AnimatedGif();
             gif.setDitherAlgorithm(Dithered.DitherAlgorithm.MARTEN);
             gif.setDitherStrength(0.7f);
-//			gif = new LoafGif();
-//			gif.setDitherAlgorithm(Dithered.DitherAlgorithm.LOAF);
-//			gif.setDitherStrength(1f);
             gif.palette = new QualityPalette();
-//            apng = new AnimatedPNG();
-//            apng.setCompression(7);
         }
 
 
@@ -187,7 +180,6 @@ public class ShaderNoise extends ApplicationAdapter {
                 }
                 gif.palette.analyzeHueWise(frames, 80);
                 gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height + ".gif"), frames, 30);
-//                apng.write(Gdx.files.local("out/apng/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + ".png"), frames, 24);
             }
         }
 

@@ -25,6 +25,22 @@ dependencies {
   implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
   implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
 
+  api "com.github.tommyettinger:crux:0.1.3"
+  api "com.github.tommyettinger:funderby:$funderbyVersion"
+  api "com.github.tommyettinger:jdkgdxds:$jdkgdxdsVersion"
+  api "com.github.tommyettinger:juniper:$juniperVersion"
+  api "com.github.tommyettinger:regexodus:$regExodusVersion"
+  api("com.squidpony:squidcore:$squidSquadVersion"){
+    exclude module: 'jdkgdxds'
+    exclude module: 'juniper'
+    exclude module: 'digital'
+  }
+  api("com.squidpony:squidgrid:$squidSquadVersion"){
+    exclude module: 'jdkgdxds'
+    exclude module: 'juniper'
+    exclude module: 'digital'
+  }
+
   implementation project(':core')
 }
 
