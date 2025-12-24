@@ -16,8 +16,6 @@
 
 package com.github.tommyettinger.gwt;
 
-import com.badlogic.gdx.backends.gwt.GwtApplication;
-import com.badlogic.gdx.backends.gwt.GwtPermissions;
 import com.badlogic.gdx.utils.Clipboard;
 import com.google.gwt.http.client.URL;
 import com.google.gwt.user.client.History;
@@ -28,59 +26,33 @@ import com.google.gwt.user.client.History;
  * If the clipboard tries to read in pasted text, it gets it from the URL, after any {@code #} .
  */
 public class ReadWriteClipboard implements Clipboard {
-	private boolean requestedWritePermissions = false;
-	private boolean hasWritePermissions = true;
-
-	private final ClipboardWriteHandler writeHandler = new ClipboardWriteHandler();
-
-	private String content = "";
-
 	public ReadWriteClipboard() {
 	}
 
 	@Override
 	public boolean hasContents () {
-		return !History.getToken().isEmpty();
+		return hasContentsJSNI();
 	}
+
+    private native boolean hasContentsJSNI () /*-{
+        return $wnd.location.search.length > 1;
+    }-*/;
 
 	@Override
 	public String getContents () {
-		return URL.decodeQueryString(History.getToken());
+		return getContentsJSNI();
 	}
+
+    private native String getContentsJSNI () /*-{
+        return decodeURIComponent($wnd.location.search.substr(1));
+    }-*/;
 
 	@Override
 	public void setContents (String content) {
-		this.content = content;
-		if (requestedWritePermissions || GwtApplication.agentInfo().isFirefox()) {
-			if (hasWritePermissions) setContentJSNI(content);
-		} else {
-			GwtPermissions.queryPermission("clipboard-write", writeHandler);
-			requestedWritePermissions = true;
-		}
+        setContentsJSNI(content);
 	}
 
-	private native void setContentJSNI (String content) /*-{
-		if ("clipboard" in $wnd.navigator) {
-			$wnd.navigator.clipboard.writeText(content);
-		}
+	private native void setContentsJSNI(String content) /*-{
+		$wnd.location.search = content;
 	}-*/;
-
-	private class ClipboardWriteHandler implements GwtPermissions.GwtPermissionResult {
-		@Override
-		public void granted () {
-			hasWritePermissions = true;
-			setContentJSNI(content);
-		}
-
-		@Override
-		public void denied () {
-			hasWritePermissions = false;
-		}
-
-		@Override
-		public void prompt () {
-			hasWritePermissions = true;
-			setContentJSNI(content);
-		}
-	}
 }

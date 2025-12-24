@@ -14,9 +14,9 @@
     Choose Your Implementation:
 </h2>
 <ul>
+    <li><a href="tea-js/index.html" target="_blank">TeaVM, JavaScript</a> (should work everywhere; preferred)</li>
     <li><a href="tea/index.html" target="_blank">TeaVM, WASM</a> (won't always work on mobile browsers)</li>
-    <li><a href="tea-js/index.html" target="_blank">TeaVM, JavaScript</a> (should work everywhere)</li>
-    <li><a href="gwt/index.html" target="_blank">Google Web Toolkit</a> (should work everywhere, but can't share the state)</li>
+    <li><a href="gwt/index.html" target="_blank">Google Web Toolkit</a> (should work everywhere)</li>
 </ul>
 <h2>
   Controls for all implementations:
@@ -29,10 +29,11 @@
     <li>'d' decreases the number of divisions, or raises it if shift is held.</li>
     <li>'s' moves the seed down by 1/1024, or up by 1/1024 if shift is held.</li>
     <li>'/' moves the seed down by 1/200, or up by 1/200 if shift is held.</li>
+    <li>'1' forces the seed to 1, regardless of its prior value.</li>
     <li>'a' changes the shader between one of two alternate styles.</li>
     <li>'o' starts the animation over, from its initial form (at time 0).</li>
     <li>'f' prints the current frames per second (higher means better performance) to the log.</li>
-    <li>'c' writes to the clipboard and (on TeaVM) reloads the page with the address set to load the current state.</li>
+    <li>'c' writes to the clipboard and reloads the page with the address set to load the current state.</li>
     <li>On desktop only, Alt-Enter or Alt-F11 will toggle fullscreen mode.</li>
     <li>On desktop only, 'Q' or 'Escape' will quit.</li>
 </ul>

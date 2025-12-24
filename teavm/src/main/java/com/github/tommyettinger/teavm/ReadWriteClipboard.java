@@ -44,9 +44,9 @@ public class ReadWriteClipboard implements Clipboard {
 
 	@Override
 	public void setContents (String content) {
-		setContentJSNI(content);
+		setContentsNATIVE(content);
 	}
 
     @JSBody(params = { "content" }, script = "window.location.search = content;")
-	private static native void setContentJSNI (String content);
+	private static native void setContentsNATIVE(String content);
 }
