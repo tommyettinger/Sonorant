@@ -8,6 +8,7 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 //import static com.github.tommyettinger.sonorant.INoiseViewer.height;
 
 //import com.github.tommyettinger.sonorant.ApngShaderNoise;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 import com.github.tommyettinger.sonorant.ShaderNoise;
 import static com.github.tommyettinger.sonorant.ShaderNoise.width;
 import static com.github.tommyettinger.sonorant.ShaderNoise.height;
@@ -23,7 +24,7 @@ public class Lwjgl3Launcher {
         if (StartupHelper.startNewJvmIfRequired()) return;
 
 //        new Lwjgl3Application(new ApngShaderNoise(null, 1L), getDefaultConfiguration());
-        new Lwjgl3Application(new ShaderNoise(null, System.currentTimeMillis()), getDefaultConfiguration());
+        new Lwjgl3Application(new ShaderNoise(new Lwjgl3Clipboard(), System.currentTimeMillis()), getDefaultConfiguration());
 //        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
 //        new Lwjgl3Application(new SoloViewer(null), getDefaultConfiguration());
     }
