@@ -18,6 +18,6 @@ public class TeaVMLauncher {
         // change these to both 0 to use all available space, or both -1 for the canvas size.
         config.width = 0;
         config.height = 0;
-        new TeaApplication(new ShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis() * 0x123456789ABCDL), config);
+        new TeaApplication(new ShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis()), config);
     }
 }

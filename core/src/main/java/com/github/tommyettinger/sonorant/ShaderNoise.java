@@ -136,6 +136,8 @@ public class ShaderNoise extends ApplicationAdapter {
             seed += UIUtils.shift() ? 1f : -1f;
         } else if(Gdx.input.isKeyJustPressed(SLASH)){ // seed, but jumps out of alignment (or back into it)
             seed += UIUtils.shift() ? 0.005f : -0.005f;
+        } else if(Gdx.input.isKeyJustPressed(NUM_1) || Gdx.input.isKeyJustPressed(NUMPAD_1)){ // set seed to 1
+            reseed(1L);
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.O)){ // start Over
             startTime = TimeUtils.millis();
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.F)){ // FPS log

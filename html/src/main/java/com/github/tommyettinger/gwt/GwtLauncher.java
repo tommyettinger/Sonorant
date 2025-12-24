@@ -21,6 +21,6 @@ public class GwtLauncher extends GwtApplication {
 
         @Override
         public ApplicationListener createApplicationListener () {
-            return new ShaderNoise(new ReadWriteClipboard(), System.nanoTime());
+            return new ShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis());
         }
 }

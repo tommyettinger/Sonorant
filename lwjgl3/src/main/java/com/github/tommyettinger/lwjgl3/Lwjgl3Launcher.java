@@ -23,7 +23,7 @@ public class Lwjgl3Launcher {
         if (StartupHelper.startNewJvmIfRequired()) return;
 
 //        new Lwjgl3Application(new ApngShaderNoise(null, 1L), getDefaultConfiguration());
-        new Lwjgl3Application(new ShaderNoise(null, 1L), getDefaultConfiguration());
+        new Lwjgl3Application(new ShaderNoise(null, System.currentTimeMillis()), getDefaultConfiguration());
 //        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
 //        new Lwjgl3Application(new SoloViewer(null), getDefaultConfiguration());
     }
