@@ -34,8 +34,6 @@ public class EndlessShaderNoise extends ApplicationAdapter {
     private SpriteBatch batch;
     private Texture pixel;
     private ShaderProgram shader;
-    private ShaderProgram shaderStandard;
-    private AnimatedGif gif;
 
     private long startTime;
     private float seed = 3.1337f;
@@ -46,8 +44,6 @@ public class EndlessShaderNoise extends ApplicationAdapter {
     //	public static final int WIDTH = 1920, HEIGHT = 1080;
     public static final int WIDTH = 200, HEIGHT = 200;
     public static int width = WIDTH, height = HEIGHT;
-    public static int FRAMES = 200;
-    private final Array<Pixmap> frames = new Array<>(FRAMES);
     private Clipboard clipboard;
 
     public EndlessShaderNoise(Clipboard clippy, long initialSeed) {
@@ -64,25 +60,13 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         pixel = new Texture(pixmap);
         startTime = TimeUtils.millis();
 
-        if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
-            gif = new AnimatedGif();
-            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.MARTEN);
-            gif.setDitherStrength(0.7f);
-            gif.palette = new QualityPalette();
-        }
-
-
         ShaderProgram.pedantic = true;
-//		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("northern_fragment.glsl"));
-//		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment.glsl"));
-        shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaradj_fragment.glsl"));
-//		shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("foam_fragment.glsl"));
-        if (!shaderStandard.isCompiled()) {
-            Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shaderStandard.getLog());
+        shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaradj_fragment.glsl"));
+        if (!shader.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shader.getLog());
             Gdx.app.exit();
             return;
         }
-        shader = shaderStandard;
         batch.setShader(shader);
 
         // System.nanoTime() is supported by GWT 2.10.0 .
@@ -146,27 +130,6 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         else if(Gdx.input.isKeyJustPressed(C)) { // ctrl-c
             System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
             clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
-            if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {
-                frames.clear();
-                FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, width<<1, height<<1, false);
-                for (int i = 0; i < FRAMES; i++) {
-                    fb.begin();
-                    batch.begin();
-                    shader.setUniformf("u_seed", seed);
-                    shader.setUniformf("u_time", i * (TrigTools.PI2 / FRAMES));
-                    shader.setUniformf("u_resolution", width << 1, height << 1);
-                    batch.setColor(rMod, gMod, bMod, twist);
-                    batch.draw(pixel, 0f, 0f, width << 1, height << 1);
-                    batch.end();
-                    Pixmap tp = Pixmap.createFromFrameBuffer(0, 0, width<<1, height<<1), np = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-                    np.drawPixmap(tp, 0, 0, width<<1, height<<1, 0, 0, width, height);
-                    frames.add(np);
-                    tp.dispose();
-                    fb.end();
-                }
-                gif.palette.analyzeHueWise(frames, 80);
-                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height + ".gif"), frames, 30);
-            }
         }
 
         final float fTime = TimeUtils.timeSinceMillis(startTime) * TrigTools.PI2 * 0x1p-13f;

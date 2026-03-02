@@ -1,6 +1,6 @@
 package com.github.tommyettinger.teavm;
 
-import com.github.tommyettinger.sonorant.ShaderNoise;
+import com.github.tommyettinger.sonorant.EndlessShaderNoise;
 import com.github.xpenatan.gdx.backends.teavm.TeaApplicationConfiguration;
 import com.github.xpenatan.gdx.backends.teavm.TeaApplication;
 
@@ -18,6 +18,6 @@ public class TeaVMLauncher {
         // change these to both 0 to use all available space, or both -1 for the canvas size.
         config.width = 0;
         config.height = 0;
-        new TeaApplication(new ShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis()), config);
+        new TeaApplication(new EndlessShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis()), config);
     }
 }
