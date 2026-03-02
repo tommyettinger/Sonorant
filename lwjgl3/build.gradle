@@ -28,7 +28,6 @@ dependencies {
   api "com.github.tommyettinger:crux:0.1.3"
   api "com.github.tommyettinger:funderby:$funderbyVersion"
   api "com.github.tommyettinger:jdkgdxds:$jdkgdxdsVersion"
-  api "com.github.tommyettinger:juniper:$juniperVersion"
   api "com.github.tommyettinger:regexodus:$regExodusVersion"
   api("com.squidpony:squidcore:$squidSquadVersion"){
     exclude module: 'jdkgdxds'
