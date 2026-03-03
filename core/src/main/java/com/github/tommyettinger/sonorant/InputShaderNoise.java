@@ -12,11 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
 import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
-import com.github.tommyettinger.digital.Base;
-import com.github.tommyettinger.digital.BitConversion;
-import com.github.tommyettinger.digital.MathTools;
-import com.github.tommyettinger.digital.TrigTools;
-import com.github.tommyettinger.random.LineWobble;
+import com.github.tommyettinger.digital.*;
 
 import static com.badlogic.gdx.Input.Keys.*;
 
@@ -35,6 +31,9 @@ public class InputShaderNoise extends ApplicationAdapter {
     private float rMod = 0f;
     private float gMod = 0f;
     private float bMod = 0f;
+    private float lastX = 0f;
+    private float lastY = 0f;
+    private long inputMillis;
     private float twist = 0.6f;
     //	public static final int WIDTH = 1920, HEIGHT = 1080;
     public static final int WIDTH = 600, HEIGHT = 600;
@@ -54,6 +53,7 @@ public class InputShaderNoise extends ApplicationAdapter {
         pixmap.drawPixel(0, 0, 0xFFFFFFFF);
         pixel = new Texture(pixmap);
         startTime = TimeUtils.millis();
+        inputMillis = startTime;
 
         ShaderProgram.pedantic = true;
         shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaradj_fragment.glsl"));
@@ -81,21 +81,23 @@ public class InputShaderNoise extends ApplicationAdapter {
             @Override
             public boolean touchDown(int screenX, int screenY, int pointer, int button) {
                 if(pointer == 0 && button == Input.Buttons.LEFT) {
-                    gMod = screenX * 0.3f / Gdx.graphics.getWidth();
-                    bMod = screenY * 0.3f / Gdx.graphics.getHeight();
+                    lastX = screenX * 0.3f / Gdx.graphics.getWidth();
+                    lastY = screenY * 0.3f / Gdx.graphics.getHeight();
+                    inputMillis = TimeUtils.millis();
                 } else {
                     seed += 1 - (pointer & 2);
                 }
-                return true;
+                return false;
             }
 
             @Override
             public boolean touchDragged(int screenX, int screenY, int pointer) {
                 if(pointer == 0 && !Gdx.input.isButtonPressed(Input.Buttons.RIGHT)) {
-                    gMod = screenX * 0.3f / Gdx.graphics.getWidth();
-                    bMod = screenY * 0.3f / Gdx.graphics.getHeight();
+                    lastX = gMod = screenX * 0.3f / Gdx.graphics.getWidth();
+                    lastY = bMod = screenY * 0.3f / Gdx.graphics.getHeight();
+                    inputMillis = TimeUtils.millis();
                 }
-                return true;
+                return false;
             }
         });
     }
@@ -147,6 +149,12 @@ public class InputShaderNoise extends ApplicationAdapter {
             clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
         }
 
+        long since = TimeUtils.timeSinceMillis(inputMillis);
+        if(since < 500L){
+            float alpha = since * 0.002f;
+            gMod = Interpolations.smooth.apply(gMod, lastX, alpha);
+            bMod = Interpolations.smooth.apply(bMod, lastY, alpha);
+        }
         final float fTime = TimeUtils.timeSinceMillis(startTime) * TrigTools.PI2 * 0x1p-13f;
         batch.begin();
         shader.setUniformf("u_seed", seed);
