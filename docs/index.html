@@ -11,15 +11,19 @@
   Twirly Swirly Colorful Noise Viewer
 </h1>
 <h2>
-    Choose Your Implementation:
+    Choose Your (Looping) Implementation:
 </h2>
 <ul>
     <li><a href="tea-js/index.html" target="_blank">TeaVM, JavaScript</a> (should work everywhere; preferred)</li>
     <li><a href="tea/index.html" target="_blank">TeaVM, WASM</a> (won't always work on mobile browsers)</li>
     <li><a href="gwt/index.html" target="_blank">Google Web Toolkit</a> (should work everywhere)</li>
 </ul>
+<p>
+There's also the new <em>Endless Mode</em>, which won't loop and will change continually, just about forever.
+<a href="tea-js/index.html" target="_blank">Endless, TeaVM, JavaScript</a> (should work everywhere)
+</p>
 <h2>
-  Controls for all implementations:
+  Controls for all Looping implementations:
 </h2>
 <ul>
     <li>'h' decreases the hue rotation (with Shift, it increases the rotation). This can be held down, and wraps.</li>
@@ -37,5 +41,10 @@
     <li>On desktop only, Alt-Enter or Alt-F11 will toggle fullscreen mode.</li>
     <li>On desktop only, 'Q' or 'Escape' will quit.</li>
 </ul>
+<p>
+    In Endless Mode, the 'h', 'g', and 'b' keys don't do anything, because they're constantly being adjusted. The 'a'
+    key doesn't do anything there, either. You can still change the time, seed and divisions. Copy and paste, via 'c'
+    and copying the address, both work.
+</p>
 </body>
 </html>
