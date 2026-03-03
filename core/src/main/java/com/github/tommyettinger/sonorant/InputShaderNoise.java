@@ -139,6 +139,8 @@ public class InputShaderNoise extends ApplicationAdapter {
         }
         else if (Gdx.input.isKeyPressed(T)) // twist
             twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.001f : -0.001f)), 1f);
+        else if (Gdx.input.isKeyPressed(H)) // hue rotation
+            rMod = MathTools.fract(rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.125f : -0.125f));
         else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v
             if(clipboard.hasContents()){
                 loadClipboard();
