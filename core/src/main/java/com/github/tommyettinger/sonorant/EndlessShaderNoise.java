@@ -42,7 +42,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
     private float bMod = 0f;
     private float twist = 0.6f;
     //	public static final int WIDTH = 1920, HEIGHT = 1080;
-    public static final int WIDTH = 200, HEIGHT = 200;
+    public static final int WIDTH = 600, HEIGHT = 600;
     public static int width = WIDTH, height = HEIGHT;
     private Clipboard clipboard;
 
@@ -75,7 +75,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         // Sarong's DiverRNG.randomize()
         reseed(state);
         // changes the start time (in milliseconds) by up to 65535 ms, based on state (which uses nanoseconds).
-        startTime -= (state ^ state >>> 11) & 0xFFFFL;
+//        startTime -= (state ^ state >>> 11) & 0xFFFFL;
         width = Gdx.graphics.getWidth();
         height = Gdx.graphics.getHeight();
 
@@ -156,8 +156,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         int w = Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1));
         int h = Base.BASE10.readInt(s, gap+1, s.length());
-        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
-            Gdx.graphics.setWindowedMode(w, h);
-
+//        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
+//            Gdx.graphics.setWindowedMode(w, h);
     }
 }

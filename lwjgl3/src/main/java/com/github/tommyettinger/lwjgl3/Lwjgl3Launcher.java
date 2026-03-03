@@ -11,8 +11,8 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 import com.github.tommyettinger.sonorant.EndlessShaderNoise;
 import com.github.tommyettinger.sonorant.ShaderNoise;
-import static com.github.tommyettinger.sonorant.ShaderNoise.width;
-import static com.github.tommyettinger.sonorant.ShaderNoise.height;
+import static com.github.tommyettinger.sonorant.EndlessShaderNoise.width;
+import static com.github.tommyettinger.sonorant.EndlessShaderNoise.height;
 
 //import com.github.tommyettinger.sonorant.SoloViewer;
 //import static com.github.tommyettinger.sonorant.SoloViewer.width;
