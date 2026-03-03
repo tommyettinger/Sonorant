@@ -177,8 +177,8 @@ public class InputShaderNoise extends ApplicationAdapter {
         gMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         bMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
-        int w = Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1));
-        int h = Base.BASE10.readInt(s, gap+1, s.length());
+//        int w = Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1));
+//        int h = Base.BASE10.readInt(s, gap+1, s.length());
 //        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
 //            Gdx.graphics.setWindowedMode(w, h);
     }
