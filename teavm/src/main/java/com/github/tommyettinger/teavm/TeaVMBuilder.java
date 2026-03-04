@@ -1,39 +1,43 @@
 package com.github.tommyettinger.teavm;
 
-import com.github.xpenatan.gdx.backends.teavm.config.AssetFileHandle;
-import com.github.xpenatan.gdx.backends.teavm.config.TeaBuildConfiguration;
-import com.github.xpenatan.gdx.backends.teavm.config.TeaBuilder;
-import com.github.xpenatan.gdx.backends.teavm.config.plugins.TeaReflectionSupplier;
+import com.github.xpenatan.gdx.teavm.backends.shared.config.AssetFileHandle;
+import com.github.xpenatan.gdx.teavm.backends.shared.config.compiler.TeaCompiler;
+import com.github.xpenatan.gdx.teavm.backends.web.config.backend.WebBackend;
 import java.io.File;
-import java.io.IOException;
-
-import org.teavm.tooling.TeaVMTargetType;
-import org.teavm.tooling.TeaVMTool;
+import org.teavm.tooling.TeaVMSourceFilePolicy;
+import org.teavm.tooling.sources.DirectorySourceFileProvider;
 import org.teavm.vm.TeaVMOptimizationLevel;
 
 /** Builds the TeaVM/HTML application. */
 public class TeaVMBuilder {
-    public static void main(String[] args) throws IOException {
-        TeaBuildConfiguration teaBuildConfiguration = new TeaBuildConfiguration();
-        teaBuildConfiguration.assetsPath.add(new AssetFileHandle("../assets"));
-        teaBuildConfiguration.webappPath = new File("build/dist").getCanonicalPath();
-
-        // Register any extra classpath assets here:
-        // teaBuildConfiguration.additionalAssetsClasspathFiles.add("com/github/tommyettinger/asset.extension");
-
-        // Register any classes or packages that require reflection here:
-        // TeaReflectionSupplier.addReflectionClass("com.github.tommyettinger.reflect");
-
-//        teaBuildConfiguration.targetType = TeaVMTargetType.WEBASSEMBLY_GC;
-        teaBuildConfiguration.targetType = TeaVMTargetType.JAVASCRIPT;
-        TeaBuilder.config(teaBuildConfiguration);
-        TeaVMTool tool = new TeaVMTool();
-
-        tool.setMainClass(TeaVMLauncher.class.getName());
-        // For many (or most) applications, using the highest optimization won't add much to build time.
-        // If your builds take too long, and runtime performance doesn't matter, you can change ADVANCED to SIMPLE .
-        tool.setOptimizationLevel(TeaVMOptimizationLevel.ADVANCED);
-        tool.setObfuscated(true);
-        TeaBuilder.build(tool);
+    public static void main(String[] args) {
+        // Typically set by the Gradle task, but can also be set here or with the command-line arg "debug"
+        boolean debug = false;
+        // Typically set by the Gradle task, but can also be set here or with the command-line arg "run"
+        boolean startJetty = false;
+        for (String arg : args) {
+            if ("debug".equals(arg)) debug = true;
+            else if ("run".equals(arg)) startJetty = true;
+        }
+        new TeaCompiler(
+            new WebBackend()
+                .setHtmlWidth(800) // Change this to fit your game's requirements.
+                .setHtmlHeight(600) // Change this to fit your game's requirements.
+                .setHtmlTitle("Tea152Test")
+//                .setWebAssembly(true) // Uncomment this line to use WASM output instead of JavaScript output.
+                .setStartJettyAfterBuild(startJetty)
+                .setJettyPort(8080)
+        )
+            .addAssets(new AssetFileHandle("../assets"))
+            .setOptimizationLevel(debug ? TeaVMOptimizationLevel.SIMPLE : TeaVMOptimizationLevel.ADVANCED)
+            .setMainClass(TeaVMLauncher.class.getName())
+            .setObfuscated(!debug)
+            .setDebugInformationGenerated(debug)
+            .setSourceMapsFileGenerated(debug)
+            .setSourceFilePolicy(TeaVMSourceFilePolicy.COPY)
+            .addSourceFileProvider(new DirectorySourceFileProvider(new File("../core/src/main/java/")))
+            // You can also register any classes or packages that require reflection here:
+            //.addReflectionClass("com.libgdx.liftoff.reflect")
+            .build(new File("build/dist"));
     }
 }

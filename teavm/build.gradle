@@ -1,11 +1,5 @@
 plugins {
   id 'java'
-  id 'org.gretty' version '3.1.8'
-}
-
-gretty {
-  contextPath = '/'
-  extraResourceBase 'build/dist/webapp'
 }
 
 sourceSets.main.resources.srcDirs += [ rootProject.file('assets').path ]
@@ -18,19 +12,43 @@ java.targetCompatibility = "11"
 java.sourceCompatibility = "11"
 
 dependencies {
-  implementation "com.github.xpenatan.gdx-teavm:backend-teavm:$gdxTeaVMVersion"
+  implementation "com.github.xpenatan.gdx-teavm:backend-web:$gdxTeaVMVersion"
   implementation project(':core')
 }
 
-tasks.register('buildJavaScript', JavaExec) {
-  dependsOn classes
-  setDescription("Transpile bytecode to JavaScript via TeaVM")
+tasks.register("runRelease", JavaExec) {
+  description = "Run the TeaVM application hosted via a local Jetty server at http://localhost:8080/"
+  group("application")
+  dependsOn(classes)
+  mainClass.set(project.mainClassName)
+  setClasspath(sourceSets.main.runtimeClasspath)
+  args += ["run"]
+}
+
+tasks.register("runDebug", JavaExec) {
+  description = "Run the TeaVM application with debug enabled hosted via a local Jetty server at http://localhost:8080/"
+  group("application")
+  dependsOn(classes)
+  mainClass.set(project.mainClassName)
+  setClasspath(sourceSets.main.runtimeClasspath)
+  args += ["debug", "run"]
+}
+
+tasks.register("buildRelease", JavaExec) {
+  description = "Build the TeaVM application; doesn't run directly"
+  group("build")
+  dependsOn(classes)
   mainClass.set(project.mainClassName)
   setClasspath(sourceSets.main.runtimeClasspath)
 }
-build.dependsOn buildJavaScript
 
-tasks.register("run") {
-  description = "Run the JavaScript application hosted via a local Jetty server at http://localhost:8080/"
-  dependsOn(buildJavaScript, tasks.named("jettyRun"))
+tasks.register("buildDebug", JavaExec) {
+  description = "Build the TeaVM application with debug enabled; doesn't run directly"
+  group("build")
+  dependsOn(classes)
+  mainClass.set(project.mainClassName)
+  setClasspath(sourceSets.main.runtimeClasspath)
+  args += ["debug"]
 }
+
+build.dependsOn buildRelease

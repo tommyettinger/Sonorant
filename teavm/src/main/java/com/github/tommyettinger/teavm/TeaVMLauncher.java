@@ -1,8 +1,8 @@
 package com.github.tommyettinger.teavm;
 
 import com.github.tommyettinger.sonorant.InputShaderNoise;
-import com.github.xpenatan.gdx.backends.teavm.TeaApplicationConfiguration;
-import com.github.xpenatan.gdx.backends.teavm.TeaApplication;
+import com.github.xpenatan.gdx.teavm.backends.web.WebApplicationConfiguration;
+import com.github.xpenatan.gdx.teavm.backends.web.WebApplication;
 
 /**
  * Launches the TeaVM/HTML application.
@@ -14,10 +14,10 @@ import com.github.xpenatan.gdx.backends.teavm.TeaApplication;
  */
 public class TeaVMLauncher {
     public static void main(String[] args) {
-        TeaApplicationConfiguration config = new TeaApplicationConfiguration("canvas");
+        WebApplicationConfiguration config = new WebApplicationConfiguration("canvas");
         // change these to both 0 to use all available space, or both -1 for the canvas size.
         config.width = 0;
         config.height = 0;
-        new TeaApplication(new InputShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis()), config);
+        new WebApplication(new InputShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis()), config);
     }
 }
