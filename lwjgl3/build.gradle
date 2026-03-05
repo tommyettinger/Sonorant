@@ -24,6 +24,8 @@ java.sourceCompatibility = "11"
 dependencies {
   implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
   implementation "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
+  implementation "games.rednblack.miniaudio:miniaudio:$miniAudioVersion"
+  implementation "games.rednblack.miniaudio:gdx-miniaudio-platform:$miniAudioVersion:natives-desktop"
 
   api "com.github.tommyettinger:crux:0.1.3"
   api "com.github.tommyettinger:funderby:$funderbyVersion"
