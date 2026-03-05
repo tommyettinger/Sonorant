@@ -222,6 +222,23 @@ public class MusicVisualizerNoise extends ApplicationAdapter {
     }
 
 
+    @Override
+    public void dispose() {
+        //Always dispose everything! First all sounds and then the engine
+        backgroundMusic.dispose();
+        miniAudio.dispose();
+    }
+
+    @Override
+    public void pause() {
+        miniAudio.stopEngine();
+    }
+
+    @Override
+    public void resume() {
+        miniAudio.startEngine();
+    }
+    
     public static void main(String[] args) {
         // Needed for macOS support, but also Windows with non-ASCII usernames.
         if (StartupHelper.startNewJvmIfRequired()) return;
