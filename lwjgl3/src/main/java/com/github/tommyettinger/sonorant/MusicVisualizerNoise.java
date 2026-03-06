@@ -23,18 +23,16 @@ import com.github.tommyettinger.lwjgl3.StartupHelper;
 import com.github.tommyettinger.random.LineWobble;
 import games.rednblack.miniaudio.MAAudioBuffer;
 import games.rednblack.miniaudio.MASound;
-import games.rednblack.miniaudio.MAVisualizerListener;
 import games.rednblack.miniaudio.MiniAudio;
 import games.rednblack.miniaudio.config.MAContextConfiguration;
 import games.rednblack.miniaudio.config.MAEngineConfiguration;
 import games.rednblack.miniaudio.config.MAiOSSessionCategory;
 import games.rednblack.miniaudio.effect.MACompressorNode;
-import games.rednblack.miniaudio.mix.MASplitter;
 import games.rednblack.miniaudio.mix.MAVisualizerNode;
 
+import java.util.Arrays;
+
 import static com.badlogic.gdx.Input.Keys.*;
-import static com.github.tommyettinger.sonorant.InputShaderNoise.height;
-import static com.github.tommyettinger.sonorant.InputShaderNoise.width;
 
 /**
  * Credit for the shader adaptation goes to angelickite , a very helpful user on the libGDX Discord.
@@ -60,7 +58,7 @@ public class MusicVisualizerNoise extends ApplicationAdapter {
     private MiniAudio miniAudio;
     private MASound backgroundMusic;
     private final float[] data = new float[16];
-    private final float[] visualizerData = new float[8192];
+    private final float[] visualizerData = new float[8192], visualizerImag = new float[8192];
     private volatile int visualizerSamples;
     private volatile int visualizerChannels;
 
@@ -87,21 +85,16 @@ public class MusicVisualizerNoise extends ApplicationAdapter {
         miniAudio.initEngine(engineConfiguration);
 
         MAVisualizerNode maVisualizerNode = new MAVisualizerNode(miniAudio);
-        maVisualizerNode.setListener(new MAVisualizerListener() {
-            @Override
-            public void onVisualizerData(float[] pcmData, int len, int channels) {
-                for (int i = 0; i < len; i++) {
-                    data[(i << 4) / len] += pcmData[i];
-                }
-                float averagingFactor = 16f / len;
-                for (int i = 0; i < 16; i++) {
-                    data[i] *= averagingFactor;
-                }
-                visualizerChannels = channels;
-                visualizerSamples = len;
-            }
+        maVisualizerNode.setListener((pcmData, totalSamples, channels) -> {
+            int len = Math.min(totalSamples, visualizerData.length);
+            System.arraycopy(pcmData, 0, visualizerData, 0, len);
+            Arrays.fill(visualizerImag, 0f);
+            Fft.transform(visualizerData, visualizerImag);
+            Fft.getHistogram(visualizerData, visualizerImag);
+            System.arraycopy(Fft.histogram, 0, data, 0, 16);
+            visualizerChannels = channels;
+            visualizerSamples = len;
         });
-
 
         FileHandle file = Gdx.files.classpath("Komiku - Helice Awesome Dance Adventure !! - 26 Road 4 Fight.ogg");
         byte[] data = file.readBytes(); //any supported bytes (e.g. mp3, wav, etc.)
@@ -119,7 +112,6 @@ public class MusicVisualizerNoise extends ApplicationAdapter {
 
         miniAudio.attachToEngineOutput(maVisualizerNode, 0);
         backgroundMusic.loop();
-
 
         ShaderProgram.pedantic = true;
         shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaviz_fragment.glsl"));
