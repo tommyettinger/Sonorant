@@ -14,6 +14,7 @@ varying vec2 v_texCoords;
 uniform sampler2D u_texture;
 
 uniform float u_seed;
+uniform float u_time;
 uniform mat4 u_music;
 uniform vec2 u_resolution;
 uniform vec4 u_adj;
@@ -63,14 +64,13 @@ void main() {
     // Normalized pixel coordinates (from 0 to 1)
   vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;
   float len = length(center);
-  float c = u_music[int(fract(len) * 4.0)][int(fract(len * 4.0) * 4.0)];
+  float c = u_time;
   float theta = atan(center.y, center.x) * DIVISIONS + c;
   float shrunk = len * (0.375 * POINTINESS / DIVISIONS);
   float adj = len * PI2 * 0.75 - c;
   vec2 i = vec2(theta + len * 5., adj);
-
-    vec4 v = vec4(sin(i.x) * shrunk, cos(i.x) * shrunk, sin(i.y), cos(i.y));
-    vec4 s = vec4(sin(v.x - 1.11 + TWISTINESS * cos(v.x - 5.3157)),
+  vec4 v = vec4(sin(i.x) * shrunk, cos(i.x) * shrunk, sin(i.y), cos(i.y));
+  vec4 s = vec4(sin(v.x - 1.11 + TWISTINESS * cos(v.x - 5.3157)),
                   sin(v.y + 1.41 + TWISTINESS * cos(v.y + 4.8142)),
                   sin(v.z + 2.61 + TWISTINESS * cos(v.z - 3.5190)),
                   sin(v.w - 2.31 + TWISTINESS * cos(v.w + 9.1984))) * 1.5;
@@ -82,6 +82,11 @@ void main() {
 //    vec4 con = vec4(0.0004375, 0.0005625, 0.0008125, 0.000625) + s;
     vec2 angles = (u_adj.gb * PI2);
     vec4 con = vec4(0.4375, 0.5625, 0.8125, 0.625) + s + vec4(sin(angles), cos(angles)) * 4.0;
+    mat4 mus = u_music;
+    con.x = cosmic(u_seed, con + mus[0]);
+    con.y = cosmic(u_seed, con + mus[1]);
+    con.z = cosmic(u_seed, con + mus[2]);
+    con.w = cosmic(u_seed, con + mus[3]);
     con.x = cosmic(u_seed, con);
     con.y = cosmic(u_seed, con);
     con.z = cosmic(u_seed, con);

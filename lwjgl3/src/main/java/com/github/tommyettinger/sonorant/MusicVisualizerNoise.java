@@ -196,6 +196,7 @@ public class MusicVisualizerNoise extends ApplicationAdapter {
         final float fTime = TimeUtils.timeSinceMillis(startTime) * TrigTools.PI2 * 0x1p-13f;
         batch.begin();
         shader.setUniformf("u_seed", seed);
+        shader.setUniformf("u_time", fTime);
         shader.setUniformMatrix4fv("u_music", data, 0, 16);
         shader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         shader.setUniformf("u_adj",
