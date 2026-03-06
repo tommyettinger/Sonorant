@@ -109,7 +109,7 @@ public class MusicVisualizerNoise extends ApplicationAdapter {
         backgroundMusic = miniAudio.createSound(decodedBuffer);
         backgroundMusic.setLinkedAudioBuffer(decodedBuffer); //Important!
         MACompressorNode compressorNode = new MACompressorNode(miniAudio);
-        compressorNode.setRatio(24);
+        compressorNode.setRatio(4f);
         compressorNode.setThreshold(-50);
         compressorNode.setRelease(200);
 
@@ -215,12 +215,7 @@ public class MusicVisualizerNoise extends ApplicationAdapter {
         gMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         bMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
-        int w = Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1));
-        int h = Base.BASE10.readInt(s, gap+1, s.length());
-//        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
-//            Gdx.graphics.setWindowedMode(w, h);
     }
-
 
     @Override
     public void dispose() {
@@ -238,7 +233,7 @@ public class MusicVisualizerNoise extends ApplicationAdapter {
     public void resume() {
         miniAudio.startEngine();
     }
-    
+
     public static void main(String[] args) {
         // Needed for macOS support, but also Windows with non-ASCII usernames.
         if (StartupHelper.startNewJvmIfRequired()) return;
@@ -250,7 +245,6 @@ public class MusicVisualizerNoise extends ApplicationAdapter {
 //        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
 //        new Lwjgl3Application(new SoloViewer(null), getDefaultConfiguration());
     }
-
 
     private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
         Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();

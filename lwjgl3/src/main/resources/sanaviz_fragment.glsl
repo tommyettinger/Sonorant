@@ -63,7 +63,7 @@ void main() {
     // Normalized pixel coordinates (from 0 to 1)
   vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;
   float len = length(center);
-  float c = u_music[int(fract(len) * 4)][int(fract(len * 4.0) * 4)];
+  float c = u_music[int(fract(len) * 4.0)][int(fract(len * 4.0) * 4.0)];
   float theta = atan(center.y, center.x) * DIVISIONS + c;
   float shrunk = len * (0.375 * POINTINESS / DIVISIONS);
   float adj = len * PI2 * 0.75 - c;

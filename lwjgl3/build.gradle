@@ -3,23 +3,28 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
-      classpath "org.beryx:badass-runtime-plugin:1.13.0"
-    }
+    classpath "io.github.fourlastor:construo:2.1.0"
     if(enableGraalNative == 'true') {
       classpath "org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin:0.9.28"
     }
   }
 }
-import proguard.gradle.ProGuardTask
+plugins {
+  id "application"
+}
+apply plugin: 'io.github.fourlastor.construo'
 
-apply plugin: 'org.beryx.runtime'
 
+import io.github.fourlastor.construo.Target
 
 sourceSets.main.resources.srcDirs += [ rootProject.file('assets').path ]
 application.mainClass = 'com.github.tommyettinger.lwjgl3.Lwjgl3Launcher'
 eclipse.project.name = appName + '-lwjgl3'
-java.sourceCompatibility = "11"
+java.sourceCompatibility = 11
+java.targetCompatibility = 11
+if (JavaVersion.current().isJava9Compatible()) {
+  compileJava.options.release.set(11)
+}
 
 dependencies {
   implementation "com.badlogicgames.gdx:gdx-backend-lwjgl3:$gdxVersion"
@@ -27,16 +32,16 @@ dependencies {
   implementation "games.rednblack.miniaudio:miniaudio:$miniAudioVersion"
   implementation "games.rednblack.miniaudio:gdx-miniaudio-platform:$miniAudioVersion:natives-desktop"
 
-  api "com.github.tommyettinger:crux:0.1.3"
-  api "com.github.tommyettinger:funderby:$funderbyVersion"
-  api "com.github.tommyettinger:jdkgdxds:$jdkgdxdsVersion"
-  api "com.github.tommyettinger:regexodus:$regExodusVersion"
-  api("com.squidpony:squidcore:$squidSquadVersion"){
+  implementation "com.github.tommyettinger:crux:0.1.3"
+  implementation "com.github.tommyettinger:funderby:$funderbyVersion"
+  implementation "com.github.tommyettinger:jdkgdxds:$jdkgdxdsVersion"
+  implementation "com.github.tommyettinger:regexodus:$regExodusVersion"
+  implementation("com.squidpony:squidcore:$squidSquadVersion"){
     exclude module: 'jdkgdxds'
     exclude module: 'juniper'
     exclude module: 'digital'
   }
-  api("com.squidpony:squidgrid:$squidSquadVersion"){
+  implementation("com.squidpony:squidgrid:$squidSquadVersion"){
     exclude module: 'jdkgdxds'
     exclude module: 'juniper'
     exclude module: 'digital'
@@ -45,27 +50,16 @@ dependencies {
   implementation project(':core')
 }
 
-def os = System.properties['os.name'].toLowerCase()
+def os = System.properties['os.name'].toLowerCase(Locale.ROOT)
 
 run {
-  workingDir = rootProject.file(".").path
-  doNotTrackState("no changey changey")
-}
-
-if(enableDebug == 'true') {
-  tasks.withType(JavaCompile).configureEach {
-    options.debug = true
-    options.compilerArgs += ["-g"]
-  }
+  workingDir = rootProject.file('assets').path
+  if (os.contains('mac')) jvmArgs += "-XstartOnFirstThread"
 }
 
 jar {
-// sets the name of the .jar file this produces to the name of the game or app.
-  archiveFileName.set("${appName}-${version}.jar")
-  var buildDirectory = project.layout.buildDirectory.asFile.get().absolutePath
-
-// using 'lib' instead of the default 'libs' appears to be needed by jpackageimage.
-  destinationDirectory = file("$buildDirectory/lib")
+// sets the name of the .jar file this produces to the name of the game or app, with the version after.
+  archiveFileName.set("${appName}-${projectVersion}.jar")
 // the duplicatesStrategy matters starting in Gradle 7.0; this setting works.
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   dependsOn configurations.runtimeClasspath
@@ -76,8 +70,9 @@ jar {
     exclude('META-INF/INDEX.LIST', 'META-INF/maven/**')
   }
 // setting the manifest makes the JAR runnable.
+// enabling native access helps avoid a warning when Java 24 or later runs the JAR.
   manifest {
-    attributes 'Main-Class': application.mainClass, 'Enable-Native-Access': 'ALL-UNNAMED'
+    attributes 'Main-Class': application.mainClass, 'Enable-Native-Access': 'ALL-UNNAMED', 'Multi-Release': 'true'
   }
 // this last step may help on some OSes that need extra instruction to make runnable JARs.
   doLast {
@@ -85,60 +80,113 @@ jar {
   }
 }
 
-tasks.register('proguard', ProGuardTask) {
-  outputs.upToDateWhen { false }
-  configuration('proguard-rules.pro')
-  //printmapping 'build/lib/out.map'
-  var buildDirectory = project.layout.buildDirectory.asFile.get().absolutePath
-
-  if (System.getProperty('java.version').startsWith('1.')) {
-    libraryjars "${System.getProperty('java.home')}/lib/rt.jar"
-  } else {
-    libraryjars "${System.getProperty('java.home')}/jmods/java.base.jmod", jarfilter: '!**.jar', filter: '!module-info.class'
+// Builds a JAR that only includes the files needed to run on macOS, not Windows or Linux.
+// The file size for a Mac-only JAR is about 7MB smaller than a cross-platform JAR.
+tasks.register("jarMac") {
+  dependsOn("jar")
+  group("build")
+  jar.archiveFileName.set("${appName}-${projectVersion}-mac.jar")
+  jar.exclude("windows/x86/**", "windows/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**", "**/*.dll", "**/*.so",
+    'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+  dependencies {
+    jar.exclude("windows/x86/**", "windows/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**",
+      'META-INF/INDEX.LIST', 'META-INF/maven/**')
   }
-  injars(file("${buildDirectory}/lib/${appName}-${version}.jar"))
-
-  outjars "${buildDirectory}/lib/${appName}.jar"
 }
 
-proguard.dependsOn jar
+// Builds a JAR that only includes the files needed to run on Linux, not Windows or macOS.
+// The file size for a Linux-only JAR is about 5MB smaller than a cross-platform JAR.
+tasks.register("jarLinux") {
+  dependsOn("jar")
+  group("build")
+  jar.archiveFileName.set("${appName}-${projectVersion}-linux.jar")
+  jar.exclude("windows/x86/**", "windows/x64/**", "macos/arm64/**", "macos/x64/**", "**/*.dll", "**/*.dylib",
+    'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+  dependencies {
+    jar.exclude("windows/x86/**", "windows/x64/**", "macos/arm64/**", "macos/x64/**",
+      'META-INF/INDEX.LIST', 'META-INF/maven/**')
+  }
+}
 
-if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_14)) {
-  tasks.jpackageImage.doNotTrackState("This task reads and writes to the build folder.")
-  runtime {
-    options.set(['--strip-debug',
-           '--compress', '2',
-           '--no-header-files',
-           '--no-man-pages',
-           '--strip-native-commands',
-           '--vm', 'server'])
-// you could very easily need more modules than this one.
-// use the lwjgl3:suggestModules task to see which modules may be needed.
-    modules.set([
-        'jdk.unsupported'
-    ])
-    distDir.set(file(project.layout.buildDirectory))
-    jpackage {
-      imageName = appName
-// you can set this to false if you want to build an installer, or keep it as true to build just an app.
-      skipInstaller = true
-// this may need to be set to a different path if your JAVA_HOME points to a low JDK version.
-      jpackageHome = javaHome.getOrElse("")
-      mainJar = jar.archiveFileName.get()
-      if (os.contains('win')) {
-        imageOptions = ["--icon", "icons/logo.ico"]
-      } else if (os.contains('nix') || os.contains('nux') || os.contains('bsd')) {
-        imageOptions = ["--icon", "icons/logo.png"]
-      } else if (os.contains('mac')) {
-        imageOptions = ["--icon", "icons/logo.icns", "--java-options", "\"-XstartOnFirstThread\""]
-      }
+// Builds a JAR that only includes the files needed to run on Windows, not Linux or macOS.
+// The file size for a Windows-only JAR is about 6MB smaller than a cross-platform JAR.
+tasks.register("jarWin") {
+  dependsOn("jar")
+  group("build")
+  jar.archiveFileName.set("${appName}-${projectVersion}-win.jar")
+  jar.exclude("macos/arm64/**", "macos/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**", "**/*.dylib", "**/*.so",
+    'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+  dependencies {
+    jar.exclude("macos/arm64/**", "macos/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**",
+      'META-INF/INDEX.LIST', 'META-INF/maven/**')
+  }
+}
+
+construo {
+  // name of the executable
+  name.set(appName)
+  // human-readable name, used for example in the `.app` name for macOS
+  humanName.set(appName)
+  jlink {
+    guessModulesFromJar.set(false)
+    // You may need to add more modules, as needed.
+    modules.addAll("java.base", "java.management", "java.desktop", "jdk.unsupported")
+  }
+
+  targets.configure {
+    register("linuxX64", Target.Linux) {
+      architecture.set(Target.Architecture.X86_64)
+      jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_linux_hotspot_21.0.10_7.tar.gz")
+      // Linux does not currently have a way to set the icon on the executable
+    }
+    register("macM1", Target.MacOs) {
+      architecture.set(Target.Architecture.AARCH64)
+      jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_aarch64_mac_hotspot_21.0.10_7.tar.gz")
+      // macOS needs an identifier
+      identifier.set("com.libgdx.liftoff." + appName)
+      // Optional: icon for macOS, as an ICNS file
+      macIcon.set(project.file("icons/logo.icns"))
+    }
+    register("macX64", Target.MacOs) {
+      architecture.set(Target.Architecture.X86_64)
+      jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_mac_hotspot_21.0.10_7.tar.gz")
+      // macOS needs an identifier
+      identifier.set("com.libgdx.liftoff." + appName)
+      // Optional: icon for macOS, as an ICNS file
+      macIcon.set(project.file("icons/logo.icns"))
+    }
+    register("winX64", Target.Windows) {
+      architecture.set(Target.Architecture.X86_64)
+      // Optional: icon for Windows, as a PNG
+      icon.set(project.file("icons/logo.png"))
+      jdkUrl.set("https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.10%2B7/OpenJDK21U-jdk_x64_windows_hotspot_21.0.10_7.zip")
+      // Uncomment the next line to show a console when the game runs, to print messages.
+      //useConsole.set(true)
     }
   }
 }
 
 // Equivalent to the jar task; here for compatibility with gdx-setup.
-task dist(dependsOn: [jar]) {
+tasks.register('dist') {
+  dependsOn 'jar'
 }
+
+distributions {
+  main {
+    contents {
+      into('libs') {
+        project.configurations.runtimeClasspath.files.findAll { file ->
+          file.getName() != project.tasks.jar.outputs.files.singleFile.name
+        }.each { file ->
+          exclude file.name
+        }
+      }
+    }
+  }
+}
+
+startScripts.dependsOn(':lwjgl3:jar')
+startScripts.classpath = project.tasks.jar.outputs.files
 
 if(enableGraalNative == 'true') {
   apply from: file("nativeimage.gradle")
