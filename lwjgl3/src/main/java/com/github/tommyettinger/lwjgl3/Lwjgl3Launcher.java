@@ -13,13 +13,13 @@ import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
 //import static com.github.tommyettinger.sonorant.ShaderNoise.width;
 //import static com.github.tommyettinger.sonorant.ShaderNoise.height;
 
-//import com.github.tommyettinger.sonorant.EndlessShaderNoise;
-//import static com.github.tommyettinger.sonorant.EndlessShaderNoise.width;
-//import static com.github.tommyettinger.sonorant.EndlessShaderNoise.height;
+import com.github.tommyettinger.sonorant.EndlessShaderNoise;
+import static com.github.tommyettinger.sonorant.EndlessShaderNoise.width;
+import static com.github.tommyettinger.sonorant.EndlessShaderNoise.height;
 
-import com.github.tommyettinger.sonorant.InputShaderNoise;
-import static com.github.tommyettinger.sonorant.InputShaderNoise.width;
-import static com.github.tommyettinger.sonorant.InputShaderNoise.height;
+//import com.github.tommyettinger.sonorant.InputShaderNoise;
+//import static com.github.tommyettinger.sonorant.InputShaderNoise.width;
+//import static com.github.tommyettinger.sonorant.InputShaderNoise.height;
 
 //import com.github.tommyettinger.sonorant.SoloViewer;
 //import static com.github.tommyettinger.sonorant.SoloViewer.width;
@@ -33,8 +33,8 @@ public class Lwjgl3Launcher {
 
 //        new Lwjgl3Application(new ApngShaderNoise(null, 1L), getDefaultConfiguration());
 //        new Lwjgl3Application(new ShaderNoise(new Lwjgl3Clipboard(), System.currentTimeMillis()), getDefaultConfiguration());
-//        new Lwjgl3Application(new EndlessShaderNoise(new Lwjgl3Clipboard(), System.currentTimeMillis()), getDefaultConfiguration());
-        new Lwjgl3Application(new InputShaderNoise(new Lwjgl3Clipboard(), System.currentTimeMillis()), getDefaultConfiguration());
+        new Lwjgl3Application(new EndlessShaderNoise(new Lwjgl3Clipboard(), System.currentTimeMillis()), getDefaultConfiguration());
+//        new Lwjgl3Application(new InputShaderNoise(new Lwjgl3Clipboard(), System.currentTimeMillis()), getDefaultConfiguration());
 //        new Lwjgl3Application(new INoiseViewer(null), getDefaultConfiguration());
 //        new Lwjgl3Application(new SoloViewer(null), getDefaultConfiguration());
     }

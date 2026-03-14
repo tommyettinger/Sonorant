@@ -61,7 +61,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         startTime = TimeUtils.millis();
 
         ShaderProgram.pedantic = true;
-        shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaradj_fragment.glsl"));
+        shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("insaneradj_fragment.glsl"));
         if (!shader.isCompiled()) {
             Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shader.getLog());
             Gdx.app.exit();
