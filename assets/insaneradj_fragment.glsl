@@ -39,10 +39,10 @@ vec4 swayRandomized(vec4 seed, vec4 value)
 
 vec4 cosmic(vec4 seed, vec4 con)
 {
-    con.wxyz =       swayRandomized(seed, con);
-    con.wxyz = con + swayRandomized(seed, con);
-    con.wxyz = con + swayRandomized(seed, con);
-    con.wxyz = con + swayRandomized(seed, con);
+    con.wxyz =       swayRandomized(seed, con.xyzw - con.zwxy);
+    con.wxyz = con + swayRandomized(seed, con.yzwx - con.wxyz);
+    con.wxyz = con + swayRandomized(seed, con.zwxy - con.xyzw);
+    con.wxyz = con + swayRandomized(seed, con.wxyz - con.yzwx);
 //    sum = sum + swayRandomized(seed, con.z + con.y + sum);
 //    sum = sum + swayRandomized(seed, con.x + con.z + sum);
 //    sum = sum + swayRandomized(seed, con.y + con.w + sum);
