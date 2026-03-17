@@ -80,7 +80,7 @@ public class ShaderNoise extends ApplicationAdapter {
             Gdx.app.exit();
             return;
         }
-        shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sahahadj_fragment.glsl"));
+        shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("insaneradj_fragment.glsl"));
         if (!shaderRidged.isCompiled()) {
             Gdx.app.error("Shader", "error compiling shaderRidged:\n" + shaderRidged.getLog());
             Gdx.app.exit();
@@ -156,8 +156,8 @@ public class ShaderNoise extends ApplicationAdapter {
             }
         }
         else if(Gdx.input.isKeyJustPressed(C)) { // ctrl-c
-            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
-            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
+            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + (shader == shaderStandard ? 0 : 1) + "_" + 1);
+            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + (shader == shaderStandard ? 0 : 1) + "_" + 1);
             if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {
                 frames.clear();
                 FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, width<<1, height<<1, false);
@@ -182,7 +182,7 @@ public class ShaderNoise extends ApplicationAdapter {
                     fb.end();
                 }
                 gif.palette.analyzeHueWise(frames, 80);
-                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height + ".gif"), frames, 30);
+                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + (shader == shaderStandard ? 0 : 1) + "_" + 1 + ".gif"), frames, 30);
             }
         }
 
@@ -209,7 +209,9 @@ public class ShaderNoise extends ApplicationAdapter {
         gMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         bMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
-//        int w = Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1));
+        int sh = (Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1)) & 1);
+        if(sh == 0) batch.setShader(shaderStandard);
+        else batch.setShader(shaderRidged);
 //        int h = Base.BASE10.readInt(s, gap+1, s.length());
 //        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
 //            Gdx.graphics.setWindowedMode(w, h);
