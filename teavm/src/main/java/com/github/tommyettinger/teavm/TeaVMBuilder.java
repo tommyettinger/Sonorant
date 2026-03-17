@@ -15,6 +15,8 @@ public class TeaVMBuilder {
         boolean debug = false;
         // Typically set by the Gradle task, but can also be set here or with the command-line arg "run"
         boolean startJetty = false;
+        // Just set here; if true, WASM will be used instead of JS as a target.
+        boolean useWASM = true;
         for (String arg : args) {
             if ("debug".equals(arg)) debug = true;
             else if ("run".equals(arg)) startJetty = true;
@@ -23,8 +25,8 @@ public class TeaVMBuilder {
             new WebBackend()
                 .setHtmlWidth(800) // Change this to fit your game's requirements.
                 .setHtmlHeight(600) // Change this to fit your game's requirements.
-                .setHtmlTitle("Tea152Test")
-//                .setWebAssembly(true) // Uncomment this line to use WASM output instead of JavaScript output.
+                .setHtmlTitle("Noise!")
+                .setWebAssembly(useWASM)
                 .setStartJettyAfterBuild(startJetty)
                 .setJettyPort(8080)
         )
@@ -38,6 +40,6 @@ public class TeaVMBuilder {
             .addSourceFileProvider(new DirectorySourceFileProvider(new File("../core/src/main/java/")))
             // You can also register any classes or packages that require reflection here:
             //.addReflectionClass("com.libgdx.liftoff.reflect")
-            .build(new File("build/dist"));
+            .build(new File("build/dist/tea-" + (useWASM ? "wasm" : "js")));
     }
 }
