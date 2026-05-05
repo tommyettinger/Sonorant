@@ -47,31 +47,33 @@ vec4 floohash42(vec2 p2)
 // The triffid hashes work on int or ivec input and return one 32-bit int, all bits of which should be random.
 // They don't use any bit math or unsigned ints, so should be compatible with GLSL ES 2.0.
 // The hex constants are the top 32 bits of the constants for the R4 sequence by Martin Roberts.
+// The ivec of constants has the same bits as uvec4(0xDB4F0B91u, 0xBBE05633u, 0xA0F2EC75u, 0x89E18285u), which may
+// be more useful when uvec4 is available.
 
 int triffidhash1(int p)
 {
-    ivec4 v = p * p + (ivec4(0xDB4F0B91, 0xBBE05633, 0xA0F2EC75, 0x89E18285));
+    ivec4 v = p * p + (ivec4(-615576687, -1142925773, -1594692491, -1981709691));
     v = (v * v + v) / ivec4(5, 3, 2, 1);
     return v.x + v.y + v.z + v.w;
 }
 
 int triffidhash2(ivec2 p)
 {
-    ivec4 v = p.xxyy * p.yxxy + (p.xyyx * ivec4(0xDB4F0B91, 0xBBE05633, 0xA0F2EC75, 0x89E18285));
+    ivec4 v = p.xxyy * p.yxxy + (p.xyyx * ivec4(-615576687, -1142925773, -1594692491, -1981709691));
     v = (v * v + v) / ivec4(5, 3, 2, 1);
     return v.x + v.y + v.z + v.w;
 }
 
 int triffidhash3(ivec3 p)
 {
-    ivec4 v = p.xyzz * p.yzxy + (p.zxyx * ivec4(0xDB4F0B91, 0xBBE05633, 0xA0F2EC75, 0x89E18285));
+    ivec4 v = p.xyzz * p.yzxy + (p.zxyx * ivec4(-615576687, -1142925773, -1594692491, -1981709691));
     v = (v * v + v) / ivec4(5, 3, 2, 1);
     return v.x + v.y + v.z + v.w;
 }
 
 int triffidhash4(ivec4 p)
 {
-    ivec4 v = p.xyzw * p.yzwx + (p.zwxy * ivec4(0xDB4F0B91, 0xBBE05633, 0xA0F2EC75, 0x89E18285));
+    ivec4 v = p.xyzw * p.yzwx + (p.zwxy * ivec4(-615576687, -1142925773, -1594692491, -1981709691));
     v = (v * v + v) / ivec4(5, 3, 2, 1);
     return v.x + v.y + v.z + v.w;
 }
