@@ -107,13 +107,17 @@ public class EndlessShaderNoise extends ApplicationAdapter {
                 Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
             }
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.S)){ // seed
-            seed += UIUtils.shift() ? 0.0009765625f : -0.0009765625f;
+            seed = MathTools.floor(seed) + MathTools.fract(seed + (UIUtils.shift() ? 0.0009765625f : -0.0009765625f));
+            startTime = TimeUtils.millis();
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.D)){ // divisions
             seed += UIUtils.shift() ? 1f : -1f;
+            startTime = TimeUtils.millis();
         } else if(Gdx.input.isKeyJustPressed(SLASH)){ // seed, but jumps out of alignment (or back into it)
-            seed += UIUtils.shift() ? 0.005f : -0.005f;
+            seed = MathTools.floor(seed) + MathTools.fract(seed + (UIUtils.shift() ? 0.005f : -0.005f));
+            startTime = TimeUtils.millis();
         } else if(Gdx.input.isKeyJustPressed(NUM_1) || Gdx.input.isKeyJustPressed(NUMPAD_1)){ // set seed to 1
             reseed(1L);
+            startTime = TimeUtils.millis();
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.O)){ // start Over
             startTime = TimeUtils.millis();
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.F)){ // FPS log
