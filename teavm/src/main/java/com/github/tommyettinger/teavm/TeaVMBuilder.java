@@ -16,7 +16,7 @@ public class TeaVMBuilder {
         // Typically set by the Gradle task, but can also be set here or with the command-line arg "run"
         boolean startJetty = false;
         // Just set here; if true, WASM will be used instead of JS as a target.
-        boolean useWASM = true;
+        boolean useWASM = false;
         for (String arg : args) {
             if ("debug".equals(arg)) debug = true;
             else if ("run".equals(arg)) startJetty = true;
@@ -40,6 +40,6 @@ public class TeaVMBuilder {
             .addSourceFileProvider(new DirectorySourceFileProvider(new File("../core/src/main/java/")))
             // You can also register any classes or packages that require reflection here:
             //.addReflectionClass("com.libgdx.liftoff.reflect")
-            .build(new File("build/dist/tea-" + (useWASM ? "wasm" : "js")));
+            .build(new File("build/dist/endless-" + (useWASM ? "wasm" : "js")));
     }
 }

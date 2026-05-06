@@ -44,12 +44,20 @@
     <li>'f' prints the current frames per second (higher means better performance) to the log.</li>
     <li>'c' writes to the clipboard and reloads the page with the address set to load the current state.</li>
     <li>On desktop only, Alt-Enter or Alt-F11 will toggle fullscreen mode.</li>
-    <li>On desktop only, 'Q' or 'Escape' will quit.</li>
+    <li>On desktop only, 'q' or 'Escape' will quit.</li>
 </ul>
 <p>
     In Endless Mode, the 'h', 'g', and 'b' keys don't do anything, because they're constantly being adjusted. The 'a'
-    key doesn't do anything there, either. You can still change the time, seed and divisions. Copy and paste, via 'c'
-    and copying the address, both work.
+    key doesn't do anything there, either. You can still change the time, seed and divisions. You can slow down or speed
+    up the rate of change by pressing 'r' or Shift-'R', respectively. Copy and paste, via 'c' then copying/pasting the
+    address, both work. Because changes to seed and division count are abrupt changes, they will restart the endless
+    animation here, to allow showing the same starting point anyone else with the link will see. For mobile users, you
+    can change the seed by changing the first number after the `?` in the address bar. The rate can be changed by taking
+    the last number before the underscore and zero at the end, which is usually like `0.0_0`, and change `0.0` to any
+    value between -600 and 3000 (so, the end would look like `-600_0` or `3000_0`). -600 will freeze the animation, -300
+    will make it run at half speed, 300 will make it run 50% faster, 600 will make it run at double speed, and so on.
+    There isn't a hard measurement for the rate, but 0 or 0.0 is a normal, somewhat slow speed, negative numbers are
+    slower, and numbers over 200 or so are noticeably faster. The last `_0` is a placeholder for future features.
 </p>
 <p>
     In Input Mode, the 'g', and 'b' keys don't do anything, because they're controlled by click/touch position. The 'a'
