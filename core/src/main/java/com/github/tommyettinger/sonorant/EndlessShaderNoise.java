@@ -41,6 +41,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
     private float gMod = 0f;
     private float bMod = 0f;
     private float twist = 0.6f;
+    private float speed = 1f;
     //	public static final int WIDTH = 1920, HEIGHT = 1080;
     public static final int WIDTH = 600, HEIGHT = 600;
     public static int width = WIDTH, height = HEIGHT;
@@ -122,17 +123,19 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         }
         else if (Gdx.input.isKeyPressed(T)) // twist
             twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.001f : -0.001f)), 1f);
+        else if(Gdx.input.isKeyPressed(R)) // rate
+            speed = Math.min(Math.max(0.0f, speed + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.1f : -0.1f)), 5f);
         else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v
             if(clipboard.hasContents()){
                 loadClipboard();
             }
         }
         else if(Gdx.input.isKeyJustPressed(C)) { // ctrl-c
-            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
-            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + width + "_" + height);
+            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_0");
+            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_0");
         }
 
-        final float fTime = TimeUtils.timeSinceMillis(startTime) * TrigTools.PI2 * 0x1p-13f;
+        final float fTime = TimeUtils.timeSinceMillis(startTime) * 0x1p-11f * speed;
         batch.begin();
         shader.setUniformf("u_seed", seed);
         shader.setUniformf("u_time", fTime);
@@ -154,8 +157,8 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         gMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         bMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
-        int w = Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1));
-        int h = Base.BASE10.readInt(s, gap+1, s.length());
+        speed = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1)) / 600f + 1f;
+//        int h = Base.BASE10.readInt(s, gap+1, s.length());
 //        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
 //            Gdx.graphics.setWindowedMode(w, h);
     }
