@@ -40,6 +40,6 @@ public class TeaVMBuilder {
             .addSourceFileProvider(new DirectorySourceFileProvider(new File("../core/src/main/java/")))
             // You can also register any classes or packages that require reflection here:
             //.addReflectionClass("com.libgdx.liftoff.reflect")
-            .build(new File("build/dist/endless-" + (useWASM ? "wasm" : "js")));
+            .build(new File("build/dist/tea-" + (useWASM ? "wasm" : "js")));
     }
 }
