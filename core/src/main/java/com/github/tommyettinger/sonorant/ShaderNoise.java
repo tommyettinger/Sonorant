@@ -44,6 +44,7 @@ public class ShaderNoise extends ApplicationAdapter {
     private float gMod = 0f;
     private float bMod = 0f;
     private float twist = 0.6f;
+    private float speed = 1f;
     //	public static final int WIDTH = 1920, HEIGHT = 1080;
     public static final int WIDTH = 200, HEIGHT = 200;
     public static int width = WIDTH, height = HEIGHT;
@@ -142,6 +143,8 @@ public class ShaderNoise extends ApplicationAdapter {
         }
         else if (Gdx.input.isKeyPressed(T)) // twist
             twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.01f : -0.01f)), 1f);
+        else if(Gdx.input.isKeyPressed(R)) // rate
+            speed = Math.min(Math.max(0.0f, speed + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.5f : -0.5f)), 5f);
         else if (Gdx.input.isKeyPressed(H)) // hue rotation
             rMod = MathTools.fract(rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.125f : -0.125f));
         else if (Gdx.input.isKeyPressed(G)) // color fidget
@@ -156,8 +159,8 @@ public class ShaderNoise extends ApplicationAdapter {
             }
         }
         else if(Gdx.input.isKeyJustPressed(C)) { // ctrl-c
-            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + (shader == shaderStandard ? 0 : 1) + "_" + 1);
-            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + (shader == shaderStandard ? 0 : 1) + "_" + 1);
+            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + (shader == shaderStandard ? 0 : 1) + "_" + ((speed - 1) * 600));
+            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + (shader == shaderStandard ? 0 : 1) + "_" + ((speed - 1) * 600));
             if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {
                 frames.clear();
                 FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, width<<1, height<<1, false);
@@ -186,7 +189,7 @@ public class ShaderNoise extends ApplicationAdapter {
             }
         }
 
-        final float fTime = TimeUtils.timeSinceMillis(startTime) * TrigTools.PI2 * 0x1p-13f;
+        final float fTime = TimeUtils.timeSinceMillis(startTime) * 0x1p-11f * speed;
         batch.begin();
         shader.setUniformf("u_seed", seed);
         shader.setUniformf("u_time", fTime);
@@ -212,7 +215,7 @@ public class ShaderNoise extends ApplicationAdapter {
         int sh = (Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1)) & 1);
         if(sh == 0) batch.setShader(shaderStandard);
         else batch.setShader(shaderRidged);
-//        int h = Base.BASE10.readInt(s, gap+1, s.length());
+        speed = Base.BASE10.readFloat(s, gap+1, s.length()) / 600f + 1f;
 //        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
 //            Gdx.graphics.setWindowedMode(w, h);
 
