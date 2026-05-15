@@ -42,16 +42,16 @@ float noise(float seed, vec3 x) {
 
     vec3 u = f * f * (3.0 - 2.0 * f);
     return mix(mix(mix( hash(seed, n                              ), hash(seed, n + dot(step, vec3(1., 0., 0.))), u.x),
-    mix( hash(seed, n + dot(step, vec3(0., 1., 0.))), hash(seed, n + dot(step, vec3(1., 1., 0.))), u.x), u.y),
-    mix(mix( hash(seed, n + dot(step, vec3(0., 0., 1.))), hash(seed, n + dot(step, vec3(1., 0., 1.))), u.x),
-    mix( hash(seed, n + dot(step, vec3(0., 1., 1.))), hash(seed, n + dot(step, vec3(1., 1., 1.))), u.x), u.y), u.z);
+                   mix( hash(seed, n + dot(step, vec3(0., 1., 0.))), hash(seed, n + dot(step, vec3(1., 1., 0.))), u.x), u.y),
+               mix(mix( hash(seed, n + dot(step, vec3(0., 0., 1.))), hash(seed, n + dot(step, vec3(1., 0., 1.))), u.x),
+                   mix( hash(seed, n + dot(step, vec3(0., 1., 1.))), hash(seed, n + dot(step, vec3(1., 1., 1.))), u.x), u.y), u.z);
 }
 
 float foam(float seed, vec3 x) {
     vec4 p = vec4(x.x,
-    dot(x.xy, vec2(-0.333, 0.942)),
-    dot(x, vec3(-0.333, -0.471,  0.816)),
-    dot(x, vec3(-0.333, -0.471, -0.816)));
+                 dot(x.xy, vec2(-0.333, 0.942)),
+                 dot(x,    vec3(-0.333, -0.471,  0.816)),
+                 dot(x,    vec3(-0.333, -0.471, -0.816)));
     float a = noise(seed, p.yzw);
     float b = noise(seed + 42.1, p.xzw + a * H3.x);
     float c = noise(seed + 84.2, p.xyw + b * H3.y);
