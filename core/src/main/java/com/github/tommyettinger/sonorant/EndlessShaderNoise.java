@@ -1,26 +1,19 @@
 package com.github.tommyettinger.sonorant;
 
-import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.FrameBuffer;
 import com.badlogic.gdx.graphics.glutils.ShaderProgram;
 import com.badlogic.gdx.scenes.scene2d.utils.UIUtils;
-import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.Clipboard;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
-import com.github.tommyettinger.anim8.AnimatedGif;
-import com.github.tommyettinger.anim8.Dithered;
-import com.github.tommyettinger.anim8.QualityPalette;
 import com.github.tommyettinger.digital.Base;
 import com.github.tommyettinger.digital.BitConversion;
 import com.github.tommyettinger.digital.MathTools;
-import com.github.tommyettinger.digital.TrigTools;
 import com.github.tommyettinger.random.LineWobble;
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -33,7 +26,11 @@ public class EndlessShaderNoise extends ApplicationAdapter {
 
     private SpriteBatch batch;
     private Texture pixel;
-    private ShaderProgram shader;
+    private ShaderProgram shaderInsanerAdj;
+    private ShaderProgram shaderSahahAdj;
+    private ShaderProgram shaderSanarAdj;
+    private int shaderIndex = 0;
+    private ShaderProgram[] shaders = new ShaderProgram[3];
 
     private long startTime;
     private float seed = 3.1337f;
@@ -62,13 +59,26 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         startTime = TimeUtils.millis();
 
         ShaderProgram.pedantic = true;
-        shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("insaneradj_fragment.glsl"));
-        if (!shader.isCompiled()) {
-            Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shader.getLog());
+        shaders[0] = shaderInsanerAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("insaneradj_fragment.glsl"));
+        if (!shaderInsanerAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderInsanerAdj:\n" + shaderInsanerAdj.getLog());
             Gdx.app.exit();
             return;
         }
-        batch.setShader(shader);
+        shaders[1] =shaderSahahAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sahahadj_fragment.glsl"));
+        if (!shaderSahahAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderSahahAdj:\n" + shaderSahahAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+        shaders[2] =shaderSanarAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaradj_fragment.glsl"));
+        if (!shaderSanarAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderSanarAdj:\n" + shaderSanarAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        batch.setShader(shaders[shaderIndex]);
 
         // System.nanoTime() is supported by GWT 2.10.0 .
 //		long state = System.nanoTime() + startTime;//-1234567890L;
@@ -129,22 +139,24 @@ public class EndlessShaderNoise extends ApplicationAdapter {
             twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.001f : -0.001f)), 1f);
         else if(Gdx.input.isKeyPressed(R)) // rate
             speed = Math.min(Math.max(0.0f, speed + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.1f : -0.1f)), 5f);
+        else if(Gdx.input.isKeyJustPressed(A)) // alternate
+            batch.setShader(shaders[shaderIndex = (shaderIndex + (UIUtils.shift() ? 1 : shaders.length - 1)) % shaders.length]);
         else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v
             if(clipboard.hasContents()){
                 loadClipboard();
             }
         }
         else if(Gdx.input.isKeyJustPressed(C)) { // ctrl-c
-            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_0");
-            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_0");
+            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_" + shaderIndex);
+            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_" + shaderIndex);
         }
 
         final float fTime = TimeUtils.timeSinceMillis(startTime) * 0x1p-11f * speed;
         batch.begin();
-        shader.setUniformf("u_seed", seed);
-        shader.setUniformf("u_time", fTime);
-        shader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        shader.setUniformf("u_adj",
+        shaderInsanerAdj.setUniformf("u_seed", seed);
+        shaderInsanerAdj.setUniformf("u_time", fTime);
+        shaderInsanerAdj.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        shaderInsanerAdj.setUniformf("u_adj",
             LineWobble.bicubicWobble(1234, fTime * 0.031f) * 0.5f + 0.5f,
             LineWobble.bicubicWobble(6789, fTime * 0.033f) * 0.5f + 0.5f,
             LineWobble.bicubicWobble(-987, fTime * 0.035f) * 0.5f + 0.5f,
@@ -162,7 +174,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         bMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         speed = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1)) / 600f + 1f;
-//        int h = Base.BASE10.readInt(s, gap+1, s.length());
+        shaderIndex = (Base.BASE10.readInt(s, gap+1, s.length()) % shaders.length + shaders.length) % shaders.length;
 //        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
 //            Gdx.graphics.setWindowedMode(w, h);
     }
