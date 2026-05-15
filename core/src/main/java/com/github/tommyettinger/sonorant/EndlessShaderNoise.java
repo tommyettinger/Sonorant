@@ -27,7 +27,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
     private SpriteBatch batch;
     private Texture pixel;
     private int shaderIndex = 0;
-    private final ShaderProgram[] shaders = new ShaderProgram[4];
+    private final ShaderProgram[] shaders = new ShaderProgram[5];
 
     private long startTime;
     private float seed = 3.1337f;
@@ -81,6 +81,14 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         shaders[3] = shaderNorthAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("northadj_fragment.glsl"));
         if (!shaderNorthAdj.isCompiled()) {
             Gdx.app.error("Shader", "error compiling shaderNorthAdj:\n" + shaderNorthAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        ShaderProgram shaderFoamAdj;
+        shaders[4] = shaderFoamAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("foamadj_fragment.glsl"));
+        if (!shaderFoamAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderFoamAdj:\n" + shaderFoamAdj.getLog());
             Gdx.app.exit();
             return;
         }
