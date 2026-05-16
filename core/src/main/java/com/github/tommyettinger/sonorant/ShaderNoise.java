@@ -33,9 +33,8 @@ public class ShaderNoise extends ApplicationAdapter {
 
     private SpriteBatch batch;
     private Texture pixel;
-    private ShaderProgram shader;
-    private ShaderProgram shaderStandard;
-    private ShaderProgram shaderRidged;
+    private int shaderIndex = 0;
+    private final ShaderProgram[] shaders = new ShaderProgram[7];
     private AnimatedGif gif;
 
     private long startTime;
@@ -75,28 +74,66 @@ public class ShaderNoise extends ApplicationAdapter {
 
 
         ShaderProgram.pedantic = true;
-        shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaradj_fragment.glsl"));
-        if (!shaderStandard.isCompiled()) {
-            Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shaderStandard.getLog());
+        ShaderProgram shaderInsanerAdj;
+        shaders[0] = shaderInsanerAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("insaneradj_fragment.glsl"));
+        if (!shaderInsanerAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderInsanerAdj:\n" + shaderInsanerAdj.getLog());
             Gdx.app.exit();
             return;
         }
-        shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("insaneradj_fragment.glsl"));
-        if (!shaderRidged.isCompiled()) {
-            Gdx.app.error("Shader", "error compiling shaderRidged:\n" + shaderRidged.getLog());
+        ShaderProgram shaderSahahAdj;
+        shaders[1] = shaderSahahAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sahahadj_fragment.glsl"));
+        if (!shaderSahahAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderSahahAdj:\n" + shaderSahahAdj.getLog());
             Gdx.app.exit();
             return;
         }
-        shader = shaderStandard;
-        batch.setShader(shader);
+        ShaderProgram shaderSanarAdj;
+        shaders[2] = shaderSanarAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaradj_fragment.glsl"));
+        if (!shaderSanarAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderSanarAdj:\n" + shaderSanarAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+        ShaderProgram shaderNorthAdj;
+        shaders[3] = shaderNorthAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("northadj_fragment.glsl"));
+        if (!shaderNorthAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderNorthAdj:\n" + shaderNorthAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        ShaderProgram shaderFoamAdj;
+        shaders[4] = shaderFoamAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("foamadj_fragment.glsl"));
+        if (!shaderFoamAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderFoamAdj:\n" + shaderFoamAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        ShaderProgram shaderGummiAdj;
+        shaders[5] = shaderGummiAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("gummiadj_fragment.glsl"));
+        if (!shaderGummiAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderGummiAdj:\n" + shaderGummiAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        ShaderProgram shaderMeltAdj;
+        shaders[6] = shaderMeltAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("meltadj_fragment.glsl"));
+        if (!shaderMeltAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderMeltAdj:\n" + shaderMeltAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        batch.setShader(shaders[shaderIndex]);
 
         // System.nanoTime() is supported by GWT 2.10.0 .
 //		long state = System.nanoTime() + startTime;//-1234567890L;
         long state = BitConversion.doubleToLongBits(seed * 1234567890.0987654321);
         // Sarong's DiverRNG.randomize()
         reseed(state);
-        // changes the start time (in milliseconds) by up to 65535 ms, based on state (which uses nanoseconds).
-        startTime -= (state ^ state >>> 11) & 0xFFFFL;
         width = Gdx.graphics.getWidth();
         height = Gdx.graphics.getHeight();
 
@@ -152,7 +189,7 @@ public class ShaderNoise extends ApplicationAdapter {
         else if (Gdx.input.isKeyPressed(B)) // color fidget
             bMod = Math.min(Math.max(0.0f, bMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.03125f : -0.03125f)), 1f);
         else if(Gdx.input.isKeyJustPressed(A)) // alternate shader
-            batch.setShader(shader = (shader == shaderStandard) ? shaderRidged : shaderStandard);
+            batch.setShader(shaders[shaderIndex = (shaderIndex + (UIUtils.shift() ? 1 : shaders.length - 1)) % shaders.length]);
         else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v
             if(clipboard.hasContents()){
                 loadClipboard();
@@ -167,10 +204,10 @@ public class ShaderNoise extends ApplicationAdapter {
                 for (int i = 0; i < FRAMES; i++) {
                     fb.begin();
                     batch.begin();
-                    shader.setUniformf("u_seed", seed);
-                    shader.setUniformf("u_time", i * (TrigTools.PI2 / FRAMES));
-                    shader.setUniformf("u_resolution", width << 1, height << 1);
-                    shader.setUniformf("u_adj",
+                    batch.getShader().setUniformf("u_seed", seed);
+                    batch.getShader().setUniformf("u_time", i * (TrigTools.PI2 / FRAMES));
+                    batch.getShader().setUniformf("u_resolution", width << 1, height << 1);
+                    batch.getShader().setUniformf("u_adj",
                         rMod,
                         gMod,
                         bMod,
@@ -191,10 +228,10 @@ public class ShaderNoise extends ApplicationAdapter {
 
         final float fTime = TimeUtils.timeSinceMillis(startTime) * 0x1p-11f * speed;
         batch.begin();
-        shader.setUniformf("u_seed", seed);
-        shader.setUniformf("u_time", fTime);
-        shader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        shader.setUniformf("u_adj",
+        batch.getShader().setUniformf("u_seed", seed);
+        batch.getShader().setUniformf("u_time", fTime);
+        batch.getShader().setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.getShader().setUniformf("u_adj",
             rMod,
             gMod,
             bMod,

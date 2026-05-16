@@ -206,7 +206,5 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         speed = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1)) / 600f + 1f;
         batch.setShader(shaders[shaderIndex = (Base.BASE10.readInt(s, gap+1, s.length()) % shaders.length + shaders.length) % shaders.length]);
-//        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
-//            Gdx.graphics.setWindowedMode(w, h);
     }
 }
