@@ -34,6 +34,7 @@ float cosmic(float seed, vec3 con)
 
 void main() {
     if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
+    vec4 adj = u_adj * 11.0;
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = gl_FragCoord.xy/u_resolution;
     float aTime = u_time * 0.2;
@@ -43,10 +44,10 @@ void main() {
     vec3 c = vec3(swayRandomized(-10527.92407, aTime - 1.11),
                   swayRandomized(-61557.6687, aTime + 1.41),
                   swayRandomized(-43527.8990, aTime + 2.61)) * 5.;
-    vec3 con = vec3(0.0004375, 0.0005625, 0.0008125) * aTime + u_adj.rgb + c * uv.x + s * uv.y;
+    vec3 con = vec3(0.0004375, 0.0005625, 0.0008125) * aTime + adj.rgb + c * uv.x + s * uv.y;
     con.x = cosmic(u_seed, con);
-    con.y = cosmic(u_seed + u_adj.a, con);
-    con.z = cosmic(u_seed - u_adj.a, con);
+    con.y = cosmic(u_seed + adj.a, con);
+    con.z = cosmic(u_seed - adj.a, con);
 
     gl_FragColor = vec4(sin(con * 3.14159265) * 0.5 + 0.5, 1.0) * v_color;
 }
