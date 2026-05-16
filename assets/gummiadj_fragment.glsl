@@ -38,7 +38,7 @@ void main() {
     vec2 uv = gl_FragCoord.xy/u_resolution.y * 24.0 + swayRandomized(COEFFS.zxy, (u_time * 0.1875) * COEFFS.yzx + u_adj.a).xy * 8.0;
     // aTime, s, and c could be uniforms in some engines.
     float aTime = u_time * 0.0625;
-    vec3 adj = u_adj.xyz;
+    vec3 adj = u_adj.xyz * 3.0;
     vec3 s = (swayRandomized(vec3(34.0, 76.0, 59.0), aTime + adj));
     vec3 c = (swayRandomized(vec3(27.0, 67.0, 45.0), aTime - adj));
     vec3 con = vec3(0.0004375, 0.0005625, 0.0008125) * adj * aTime + c * uv.x + s * uv.y;
