@@ -40,7 +40,7 @@
     <li>'s' moves the seed down by 1/1024, or up by 1/1024 if shift is held.</li>
     <li>'/' moves the seed down by 1/200, or up by 1/200 if shift is held.</li>
     <li>'1' forces the seed to 1, regardless of its prior value.</li>
-    <li>'a' changes the shader between one of two alternate styles.</li>
+    <li>'a' changes the shader between one of seven (or more) alternate styles. Only some are rotationally symmetrical.</li>
     <li>'o' starts the animation over, from its initial form (at time 0).</li>
     <li>'f' prints the current frames per second (higher means better performance) to the log.</li>
     <li>'c' writes to the clipboard and reloads the page with the address set to load the current state.</li>
@@ -49,29 +49,34 @@
 </ul>
 <p>
     In Endless Mode, the 'h', 'g', and 'b' keys don't do anything, because they're constantly being adjusted. The 'a'
-    key doesn't do anything there, either. You can still change the time, seed and divisions.
+    key still switches between several different shaders. You can still change the time, seed and divisions.
     Copy and paste, via 'c' then copying/pasting the
     address, both work. Because changes to seed and division count are abrupt changes, they will restart the endless
     animation here, to allow showing the same starting point anyone else with the link will see.
 </p>
 <p>
     In Input Mode, the 'g', and 'b' keys don't do anything, because they're controlled by click/touch position. The 'a'
-    key doesn't do anything there, either. You can still change the time, hue, seed and divisions.
+    key still switches between several different shaders. You can still change the time, hue, seed and divisions.
     Copy and paste, via 'c' and copying/pasting
     the address, both work. Because changes to seed and division count are abrupt changes, they will restart the
     animation here, to allow showing the same starting point anyone else with the link will see.
 </p>
 <p>
     For mobile users on any demo, you can change the seed by changing the first number after the `?` in the address bar.
-    In endless and input demos, the rate can be changed by taking
+    The rate can be changed by taking
     the last number before the underscore and zero at the end, which is usually like `0.0_0`, and change `0.0` to any
     value between -600 and 3000 (so, the end would look like `-600_0` or `3000_0`). -600 will freeze the animation, -300
     will make it run at half speed, 300 will make it run 50% faster, 600 will make it run at double speed, and so on.
     There isn't a hard measurement for the rate, but 0 or 0.0 is a normal, somewhat slow speed, negative numbers are
-    slower, and numbers over 200 or so are noticeably faster. In endless and input modes, the last `_0` is a placeholder
-    for future features. In the looping demo, the last _0 number <em>after</em> the underscore is the rate, because the
-    number before it is already used to indicate if the alternate shader is enabled. In that case, just delete the last
-    number after the underscore and replace it with a number between -600 and 3000.
+    slower, and numbers over 200 or so are noticeably faster. The last `_0` indicates the shader to use. 0, 1, and 2 are
+    all rotationally symmetrical, and treat the divisions as you would expect. Other shaders aren't symmetrical at all,
+    and treat divisions like any other change to the seed. There are currently seven shaders, numbered 0 through 6.
+    They all will handle endless mode by changing endlessly. They all will handle mouse/touch input in input mode.
+</p>
+<p>
+    Existing seeds may be broken or mean different things if they were linked with `c` and copying the address before
+    May 16, 2026. Since that date, all seeds should mean about the same thing for the standard, input, and endless
+    modes, but each mode handles changes after the start differently.
 </p>
 </body>
 </html>
