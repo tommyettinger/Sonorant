@@ -1,9 +1,13 @@
 i:b:/ana_fragment.glsl:1687:1
+i:b:/foamadj_fragment.glsl:2744:1
 i:b:/foam_fragment.glsl:6187:1
 i:b:/foam_vertex.glsl:331:1
+i:b:/gummiadj_fragment.glsl:1632:1
 i:b:/hashes.glsl:2975:1
 i:b:/hassler_fragment.glsl:3194:1
 i:b:/insaneradj_fragment.glsl:3451:1
+i:b:/meltadj_fragment.glsl:2452:1
+i:b:/northadj_fragment.glsl:1703:1
 i:b:/northern_fragment.glsl:1656:1
 i:b:/sahahadj_fragment.glsl:3388:1
 i:b:/sahahant_fragment.glsl:3364:1
