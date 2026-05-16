@@ -196,8 +196,8 @@ public class ShaderNoise extends ApplicationAdapter {
             }
         }
         else if(Gdx.input.isKeyJustPressed(C)) { // ctrl-c
-            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + (shader == shaderStandard ? 0 : 1) + "_" + ((speed - 1) * 600));
-            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + (shader == shaderStandard ? 0 : 1) + "_" + ((speed - 1) * 600));
+            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_" + shaderIndex);
+            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_" + shaderIndex);
             if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {
                 frames.clear();
                 FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, width<<1, height<<1, false);
@@ -222,7 +222,9 @@ public class ShaderNoise extends ApplicationAdapter {
                     fb.end();
                 }
                 gif.palette.analyzeHueWise(frames, 80);
-                gif.write(Gdx.files.local("out/gif/" + seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + (shader == shaderStandard ? 0 : 1) + "_" + 1 + ".gif"), frames, 30);
+                gif.write(Gdx.files.local("out/gif/" +
+                    (seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + 0 + "_" + shaderIndex)
+                    + ".gif"), frames, 30);
             }
         }
 
@@ -249,12 +251,7 @@ public class ShaderNoise extends ApplicationAdapter {
         gMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         bMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
-        int sh = (Base.BASE10.readInt(s, gap+1, gap = s.indexOf('_', gap+1)) & 1);
-        if(sh == 0) batch.setShader(shaderStandard);
-        else batch.setShader(shaderRidged);
-        speed = Base.BASE10.readFloat(s, gap+1, s.length()) / 600f + 1f;
-//        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
-//            Gdx.graphics.setWindowedMode(w, h);
-
+        speed = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1)) / 600f + 1f;
+        batch.setShader(shaders[shaderIndex = (Base.BASE10.readInt(s, gap+1, s.length()) % shaders.length + shaders.length) % shaders.length]);
     }
 }
