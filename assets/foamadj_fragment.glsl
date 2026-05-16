@@ -61,9 +61,11 @@ float foam(float seed, vec3 x) {
 
 void main() {
     if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
-    vec3 i = vec3((gl_FragCoord.xy - u_resolution * 0.5) * 0.03125 + 3.0, u_time) + u_adj.a;
-    gl_FragColor.r = foam(4.0   + u_seed, i + u_adj.r);
-    gl_FragColor.g = foam(61.0  + u_seed, i + u_adj.g);
-    gl_FragColor.b = foam(257.0 + u_seed, i + u_adj.b);
+    vec4 adj = u_adj * 11.0;
+    adj.a = adj.a + u_seed;
+    vec3 i = vec3((gl_FragCoord.xy - u_resolution * 0.5) * 0.03125 + 3.0, u_time) + adj.rgb;
+    gl_FragColor.r = foam(4.0   + adj.a, i);
+    gl_FragColor.g = foam(61.0  + adj.a, i);
+    gl_FragColor.b = foam(257.0 + adj.a, i);
     gl_FragColor.a = v_color.a;
 }
