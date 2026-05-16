@@ -24,7 +24,8 @@ public class InputShaderNoise extends ApplicationAdapter {
 
     private SpriteBatch batch;
     private Texture pixel;
-    private ShaderProgram shader;
+    private int shaderIndex = 0;
+    private final ShaderProgram[] shaders = new ShaderProgram[7];
 
     private long startTime;
     private float seed = 3.1337f;
@@ -57,21 +58,66 @@ public class InputShaderNoise extends ApplicationAdapter {
         inputMillis = startTime;
 
         ShaderProgram.pedantic = true;
-        shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaradj_fragment.glsl"));
-        if (!shader.isCompiled()) {
-            Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shader.getLog());
+        ShaderProgram shaderInsanerAdj;
+        shaders[0] = shaderInsanerAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("insaneradj_fragment.glsl"));
+        if (!shaderInsanerAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderInsanerAdj:\n" + shaderInsanerAdj.getLog());
             Gdx.app.exit();
             return;
         }
-        batch.setShader(shader);
+        ShaderProgram shaderSahahAdj;
+        shaders[1] = shaderSahahAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sahahadj_fragment.glsl"));
+        if (!shaderSahahAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderSahahAdj:\n" + shaderSahahAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+        ShaderProgram shaderSanarAdj;
+        shaders[2] = shaderSanarAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaradj_fragment.glsl"));
+        if (!shaderSanarAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderSanarAdj:\n" + shaderSanarAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+        ShaderProgram shaderNorthAdj;
+        shaders[3] = shaderNorthAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("northadj_fragment.glsl"));
+        if (!shaderNorthAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderNorthAdj:\n" + shaderNorthAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        ShaderProgram shaderFoamAdj;
+        shaders[4] = shaderFoamAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("foamadj_fragment.glsl"));
+        if (!shaderFoamAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderFoamAdj:\n" + shaderFoamAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        ShaderProgram shaderGummiAdj;
+        shaders[5] = shaderGummiAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("gummiadj_fragment.glsl"));
+        if (!shaderGummiAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderGummiAdj:\n" + shaderGummiAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        ShaderProgram shaderMeltAdj;
+        shaders[6] = shaderMeltAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("meltadj_fragment.glsl"));
+        if (!shaderMeltAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderMeltAdj:\n" + shaderMeltAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        batch.setShader(shaders[shaderIndex]);
 
         // System.nanoTime() is supported by GWT 2.10.0 .
 //		long state = System.nanoTime() + startTime;//-1234567890L;
         long state = BitConversion.doubleToLongBits(seed * 1234567890.0987654321);
         // Sarong's DiverRNG.randomize()
         reseed(state);
-        // changes the start time (in milliseconds) by up to 65535 ms, based on state (which uses nanoseconds).
-//        startTime -= (state ^ state >>> 11) & 0xFFFFL;
         width = Gdx.graphics.getWidth();
         height = Gdx.graphics.getHeight();
 
@@ -148,14 +194,16 @@ public class InputShaderNoise extends ApplicationAdapter {
             speed = Math.min(Math.max(0.0f, speed + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.1f : -0.1f)), 5f);
         else if (Gdx.input.isKeyPressed(H)) // hue rotation
             rMod = MathTools.fract(rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.125f : -0.125f));
+        else if(Gdx.input.isKeyJustPressed(A)) // alternate
+            batch.setShader(shaders[shaderIndex = (shaderIndex + (UIUtils.shift() ? 1 : shaders.length - 1)) % shaders.length]);
         else if(Gdx.input.isKeyJustPressed(V)) { // ctrl-v
             if(clipboard.hasContents()){
                 loadClipboard();
             }
         }
         else if(Gdx.input.isKeyJustPressed(C)) { // ctrl-c
-            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_0");
-            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_0");
+            System.out.println(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_" + shaderIndex);
+            clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_" + shaderIndex);
         }
 
         long since = TimeUtils.timeSinceMillis(inputMillis);
@@ -166,10 +214,10 @@ public class InputShaderNoise extends ApplicationAdapter {
         }
         final float fTime = TimeUtils.timeSinceMillis(startTime) * 0x1p-11f * speed;
         batch.begin();
-        shader.setUniformf("u_seed", seed);
-        shader.setUniformf("u_time", fTime);
-        shader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        shader.setUniformf("u_adj",
+        batch.getShader().setUniformf("u_seed", seed);
+        batch.getShader().setUniformf("u_time", fTime);
+        batch.getShader().setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        batch.getShader().setUniformf("u_adj",
             rMod,
             gMod,
             bMod,
@@ -187,8 +235,6 @@ public class InputShaderNoise extends ApplicationAdapter {
         bMod = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         twist = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1));
         speed = Base.BASE10.readFloat(s, gap+1, gap = s.indexOf('_', gap+1)) / 600f + 1f;
-//        int h = Base.BASE10.readInt(s, gap+1, s.length());
-//        if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
-//            Gdx.graphics.setWindowedMode(w, h);
+        batch.setShader(shaders[shaderIndex = (Base.BASE10.readInt(s, gap+1, s.length()) % shaders.length + shaders.length) % shaders.length]);
     }
 }

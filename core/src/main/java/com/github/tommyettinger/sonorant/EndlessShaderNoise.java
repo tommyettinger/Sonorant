@@ -116,8 +116,6 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         long state = BitConversion.doubleToLongBits(seed * 1234567890.0987654321);
         // Sarong's DiverRNG.randomize()
         reseed(state);
-        // changes the start time (in milliseconds) by up to 65535 ms, based on state (which uses nanoseconds).
-//        startTime -= (state ^ state >>> 11) & 0xFFFFL;
         width = Gdx.graphics.getWidth();
         height = Gdx.graphics.getHeight();
 
