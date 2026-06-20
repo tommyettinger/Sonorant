@@ -205,7 +205,7 @@ public class ShaderNoise extends ApplicationAdapter {
                     fb.begin();
                     batch.begin();
                     batch.getShader().setUniformf("u_seed", seed);
-                    batch.getShader().setUniformf("u_time", i * (TrigTools.PI2 / FRAMES));
+                    batch.getShader().setUniformf("u_time", i * (TrigTools.PI2 / FRAMES) + 5.25f);
                     batch.getShader().setUniformf("u_resolution", width << 1, height << 1);
                     batch.getShader().setUniformf("u_adj",
                         rMod,
