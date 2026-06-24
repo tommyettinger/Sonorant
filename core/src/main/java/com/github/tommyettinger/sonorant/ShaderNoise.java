@@ -224,7 +224,7 @@ public class ShaderNoise extends ApplicationAdapter {
                 gif.palette.analyzeHueWise(frames, 80);
                 gif.write(Gdx.files.local("out/gif/" +
                     (seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + 0 + "_" + shaderIndex)
-                    + ".gif"), frames, 30);
+                    + ".gif"), frames, 20);
             }
         }
 
