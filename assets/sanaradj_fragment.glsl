@@ -18,6 +18,7 @@ uniform float u_time;
 uniform vec2 u_resolution;
 uniform vec4 u_adj;
 
+// A hue rotation on a vec3 representing RGB colors, returning an RGB vec3.
 // Credit for HLSL version of applyHue() goes to Andrey-Postelzhuk,
 // https://forum.unity.com/threads/hue-saturation-brightness-contrast-shader.260649/
 vec3 applyHue(vec3 rgb, float hue)
@@ -29,6 +30,9 @@ vec3 applyHue(vec3 rgb, float hue)
     return rgb * c + cross(k, rgb) * sin(h) + k * dot(k, rgb) * (1.0 - c);
 }
 
+// 1D noise, ranging from -1.0 to 1.0.
+// Changes to seed will change abruptly.
+// Changes to value will change smoothly, but unpredictably, if those changes are smooth.
 float swayRandomized(float seed, float value)
 {
     float f = floor(value);
@@ -56,8 +60,11 @@ float cosmic(float seed, vec4 con)
 //}
 
 void main() {
+    // Only needed so v_texCoords and u_texture don't get eliminated for lack of use.
     if (texture2D(u_texture, v_texCoords).a <= 0.) discard;
+    // The seed uniform includes the number of divisions, stored as the first digit, and made betweeen 2 and 12.
     float DIVISIONS = mod(floor(u_seed), 10.0) + 2.0;
+    // This goes up and down with the a uniform, between 1 and 11.
     float TWISTINESS = sin(PI2 * u_adj.a) * 5.0 + 6.0;
 
     // Normalized pixel coordinates (from SCALE times -0.5 to 0.5 on y, typically less on x)
