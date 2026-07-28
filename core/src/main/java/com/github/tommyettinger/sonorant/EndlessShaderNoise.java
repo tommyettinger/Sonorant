@@ -26,7 +26,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
 
     private SpriteBatch batch;
     private Texture pixel;
-    private int shaderIndex = 7;
+    private int shaderIndex = 0;
     private final ShaderProgram[] shaders = new ShaderProgram[8];
 
     private long startTime;
@@ -108,6 +108,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
             Gdx.app.exit();
             return;
         }
+
         ShaderProgram shaderBwAdj;
         shaders[7] = shaderBwAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("bwadj_fragment.glsl"));
         if (!shaderBwAdj.isCompiled()) {
