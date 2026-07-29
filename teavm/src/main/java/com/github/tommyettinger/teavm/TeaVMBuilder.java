@@ -23,8 +23,8 @@ public class TeaVMBuilder {
         }
         new TeaCompiler(
             new WebBackend()
-                .setHtmlWidth(800) // Change this to fit your game's requirements.
-                .setHtmlHeight(600) // Change this to fit your game's requirements.
+                .setHtmlWidth(750) // Change this to fit your game's requirements.
+                .setHtmlHeight(1000) // Change this to fit your game's requirements.
                 .setHtmlTitle("Noise!")
                 .setWebAssembly(useWASM)
                 .setStartJettyAfterBuild(startJetty)
