@@ -37,7 +37,7 @@ public class EndlessChanger extends ApplicationAdapter {
     private float twist = 0.6f;
     private float speed = 1f;
     //	public static final int WIDTH = 1920, HEIGHT = 1080;
-    public static final int WIDTH = 600, HEIGHT = 600;
+    public static final int WIDTH = 750, HEIGHT = 1000;
     public static int width = WIDTH, height = HEIGHT;
     private Clipboard clipboard;
 
