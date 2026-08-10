@@ -94,6 +94,11 @@ void main() {
     con.y = cosmic(u_seed, con);
     con.z = cosmic(u_seed, con);
 
+    // Makes mid-range values (near 0.5) produce max results (near 1.0).
+    // Makes extreme values (near 0.0 or 1.0) produce min results (near 0.0).
+    // This line changes the appearance from dull grayish colors to pastel ones.
+    con.xyz = sin((con.xyz) * 3.14159265);
+
     // Hue-rotates by the r uniform, if non-0, and sets alpha to 1, then tints by u_color.
     gl_FragColor = vec4(applyHue(con.xyz, u_adj.r), 1.0) * v_color;
 }
