@@ -50,25 +50,12 @@ float cosmic(float seed, vec4 con)
     return sum * 0.125 + 0.5;
 }
 
-// 1D noise, range is -1.0 to 1.0
-//float swayRandomized(float seed, float value)
-//{
-//    float f = floor(value);
-//    float start = sin((cos(f + seed) * 12.973 + seed) * 31.413);
-//    float end   = sin((cos(f + 1.0 + seed) * 12.973 + seed) * 31.413);
-//    return mix(start, end, smoothstep(0.0, 1.0, value - f));
-//}
-
-
 const float b_adj = 31.0 / 32.0;
 const float rb_adj = 32.0 / 1023.0;
-const vec3 xBumps = vec3(-1., 0., 3.);
-const vec3 yBumps = vec3(-3., 1., 0.);
-const mat4 bayer =(mat4(0.,  8.,  2.,  10.,
-        12., 4.,  14., 6.,
-        3.,  11., 1.,  9.,
-        15., 7.,  13., 5.) - 7.5) * (0.0625 * 0.15);
-
+const vec3 bumps = vec3(0.0, 0.382, 0.618);
+vec3 triangleWave(vec3 theta){
+    return abs(theta - floor(theta + 0.5)) * 4. - 1.;
+}
 void main() {
     // Only needed so v_texCoords and u_texture don't get eliminated for lack of use.
     if (texture2D(u_texture, v_texCoords).a <= 0.) discard;
@@ -107,15 +94,13 @@ void main() {
     // noise transformation on it (making low or high inputs produce low results, and mid-range inputs produce high).
     float ridged = 1. - abs(1. - 0.5 * (con.x + con.y + con.z + u_adj.r));
 
-    // Bayer matrix dither
-    int x = int(mod(gl_FragCoord.x, 4.));
-    int y = int(mod(gl_FragCoord.y, 4.));
-    vec3 adj = (bayer[y][x] + (fract((xBumps + gl_FragCoord.x) * 0.75488 + (yBumps + gl_FragCoord.y) * 0.56984) - 0.5)) * 0.6444;
+    // Marten dither
+    vec3 adj = triangleWave(fract(gl_FragCoord.x * 0.75488 + gl_FragCoord.y * 0.56984) + bumps) * 0.48;
     vec3 tgt = vec3(ridged);
     tgt.rgb = clamp(sqrt(tgt.rgb) + adj, 0.0, 1.0);
     tgt.rgb *= tgt.rgb;
     // sRGB lightness; weights red as medium, green as very bright, and blue as barely bright at all.
-    vec3 used = vec3(step(0.6, dot(tgt.rgb, vec3(0.2126, 0.7152, 0.0722))));
+    vec3 used = vec3(step(0.75, dot(tgt.rgb, vec3(0.2126, 0.7152, 0.0722))));
     gl_FragColor.rgb = v_color.rgb * used.rgb;
     gl_FragColor.a = v_color.a;
 }
