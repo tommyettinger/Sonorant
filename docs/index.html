@@ -10,14 +10,8 @@
 <h1>
   Twirly Swirly Colorful Noise Viewer
 </h1>
-<h2>
-    Choose Your (Looping) Implementation:
-</h2>
-<ul>
+    <em>Looping Mode</em>! This will loop after several seconds, but you can change the parameters and copy the link!
     <li><a href="tea-js/index.html" target="_blank">TeaVM, JavaScript</a> (should work everywhere; preferred)</li>
-    <li><a href="tea/index.html" target="_blank">TeaVM, WASM</a> (won't always work on mobile browsers)</li>
-    <li><a href="gwt/index.html" target="_blank">Google Web Toolkit</a> (should work everywhere)</li>
-</ul>
 <p>
     There's also the new <em>Endless Mode</em>, which won't loop and will change continually, just about forever.
     <a href="endless-js/index.html" target="_blank">Endless, TeaVM, JavaScript</a> (should work everywhere).
@@ -68,9 +62,9 @@
     value between -600 and 3000 (so, the end would look like `-600_0` or `3000_0`). -600 will freeze the animation, -300
     will make it run at half speed, 300 will make it run 50% faster, 600 will make it run at double speed, and so on.
     There isn't a hard measurement for the rate, but 0 or 0.0 is a normal, somewhat slow speed, negative numbers are
-    slower, and numbers over 200 or so are noticeably faster. The last `_0` indicates the shader to use. 0, 1, and 2 are
+    slower, and numbers over 200 or so are noticeably faster. The last `_0` indicates the shader to use. Some are
     all rotationally symmetrical, and treat the divisions as you would expect. Other shaders aren't symmetrical at all,
-    and treat divisions like any other change to the seed. There are currently seven shaders, numbered 0 through 6.
+    and treat divisions like any other change to the seed. There are currently eleven shaders, numbered 0 through 10.
     They all will handle endless mode by changing endlessly. They all will handle mouse/touch input in input mode.
 </p>
 <p>

@@ -41,7 +41,6 @@ float swayRandomized(float seed, float value)
     return mix(start, end, smoothstep(0., 1., value - f));
 }
 
-// Range is -0.5 to 1.5, because it looks brighter.
 float cosmic(float seed, vec4 con)
 {
     float sum = swayRandomized(seed, con.w + con.x);
@@ -97,5 +96,5 @@ void main() {
     // Gets con into a 0-1 range.
     con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
     // Hue-rotates by the r uniform, if non-0, and sets alpha to 1, then tints by u_color.
-    gl_FragColor = vec4(applyHue(con.xyz, u_adj.r), 1.0) * v_color;
+    gl_FragColor = vec4(vec3(step(3.0, (con.x + con.y + con.z + u_adj.r))), 1.0) * v_color;
 }

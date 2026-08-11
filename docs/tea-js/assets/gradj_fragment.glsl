@@ -41,14 +41,13 @@ float swayRandomized(float seed, float value)
     return mix(start, end, smoothstep(0., 1., value - f));
 }
 
-// Range is -0.5 to 1.5, because it looks brighter.
 float cosmic(float seed, vec4 con)
 {
     float sum = swayRandomized(seed, con.w + con.x);
     sum = sum + swayRandomized(seed, con.z + con.y + sum);
     sum = sum + swayRandomized(seed, con.x + con.z + sum);
     sum = sum + swayRandomized(seed, con.y + con.w + sum);
-    return sum * 0.25 + 0.5;
+    return sum * 0.125 + 0.5;
 }
 
 // 1D noise, range is -1.0 to 1.0
@@ -94,8 +93,10 @@ void main() {
     con.y = cosmic(u_seed, con);
     con.z = cosmic(u_seed, con);
 
-    // Gets con into a 0-1 range.
-    con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
+    // Averages the three components of con we changed, with the red channel of the adjustment, and does a ridged
+    // noise transformation on it (making low or high inputs produce low results, and mid-range inputs produce high).
+    float ridged = 1. - abs(1. - 0.5 * (con.x + con.y + con.z + u_adj.r));
+
     // Hue-rotates by the r uniform, if non-0, and sets alpha to 1, then tints by u_color.
-    gl_FragColor = vec4(applyHue(con.xyz, u_adj.r), 1.0) * v_color;
+    gl_FragColor = vec4(vec3(ridged), 1.0) * v_color;
 }

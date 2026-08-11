@@ -1,9 +1,6 @@
 package com.github.tommyettinger.teavm;
 
-import com.github.tommyettinger.sonorant.EndlessChanger;
 import com.github.tommyettinger.sonorant.EndlessShaderNoise;
-import com.github.tommyettinger.sonorant.InputShaderNoise;
-import com.github.tommyettinger.sonorant.ShaderNoise;
 import com.github.xpenatan.gdx.teavm.backends.web.WebApplicationConfiguration;
 import com.github.xpenatan.gdx.teavm.backends.web.WebApplication;
 
@@ -24,6 +21,6 @@ public class TeaVMLauncher {
 //        new WebApplication(new ShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis()), config);
         config.width = 750;
         config.height = 1000;
-        new WebApplication(new EndlessChanger(new ReadWriteClipboard(), System.currentTimeMillis()), config);
+        new WebApplication(new com.github.tommyettinger.sonorant.InputShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis()), config);
     }
 }
