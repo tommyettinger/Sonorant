@@ -96,5 +96,5 @@ void main() {
     // Gets con into a 0-1 range.
     con.xyz = sin((con.xyz) * 3.14159265);
     // Forces each component of con.xyz to 0 or 1, sets alpha to 1, then tints by u_color.
-    gl_FragColor = vec4(step(vec3(1.0), (con.xyz + u_adj.r)), 1.0) * v_color;
+    gl_FragColor = vec4(step(vec3(1.25), (con.xyz + u_adj.r + 0.5)), 1.0) * v_color;
 }

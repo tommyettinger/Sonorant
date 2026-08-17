@@ -34,7 +34,7 @@ public class ShaderNoise extends ApplicationAdapter {
     private SpriteBatch batch;
     private Texture pixel;
     private int shaderIndex = 0;
-    private final ShaderProgram[] shaders = new ShaderProgram[11];
+    private final ShaderProgram[] shaders = new ShaderProgram[12];
     private AnimatedGif gif;
 
     private long startTime;
@@ -159,6 +159,14 @@ public class ShaderNoise extends ApplicationAdapter {
             return;
         }
 
+        ShaderProgram shaderHardAdj;
+        shaders[11] = shaderHardAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("hardadj_fragment.glsl"));
+        if (!shaderHardAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderHardAdj:\n" + shaderHardAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
         batch.setShader(shaders[shaderIndex]);
 
         // System.nanoTime() is supported by GWT 2.10.0 .
@@ -196,11 +204,11 @@ public class ShaderNoise extends ApplicationAdapter {
                 Gdx.graphics.setFullscreenMode(Gdx.graphics.getDisplayMode());
             }
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.S)){ // seed
-            seed += UIUtils.shift() ? 0.0009765625f : -0.0009765625f;
+            seed = MathTools.floor(seed) + MathTools.fract(seed + (UIUtils.shift() ? 0.0009765625f : -0.0009765625f));
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.D)){ // divisions
             seed += UIUtils.shift() ? 1f : -1f;
         } else if(Gdx.input.isKeyJustPressed(SLASH)){ // seed, but jumps out of alignment (or back into it)
-            seed += UIUtils.shift() ? 0.005f : -0.005f;
+            seed = MathTools.floor(seed) + MathTools.fract(seed + (UIUtils.shift() ? 0.005f : -0.005f));
         } else if(Gdx.input.isKeyJustPressed(NUM_1) || Gdx.input.isKeyJustPressed(NUMPAD_1)){ // set seed to 1
             reseed(1L);
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.O)){ // start Over
@@ -211,9 +219,9 @@ public class ShaderNoise extends ApplicationAdapter {
             Gdx.app.exit();
         }
         else if (Gdx.input.isKeyPressed(T)) // twist
-            twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.01f : -0.01f)), 1f);
+            twist = Math.min(Math.max(0.0f, twist + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.001f : -0.001f)), 1f);
         else if(Gdx.input.isKeyPressed(R)) // rate
-            speed = Math.min(Math.max(0.0f, speed + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.5f : -0.5f)), 5f);
+            speed = Math.min(Math.max(0.0f, speed + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.1f : -0.1f)), 5f);
         else if (Gdx.input.isKeyPressed(H)) // hue rotation
             rMod = MathTools.fract(rMod + Gdx.graphics.getDeltaTime() * (UIUtils.shift() ? 0.125f : -0.125f));
         else if (Gdx.input.isKeyPressed(G)) // color fidget

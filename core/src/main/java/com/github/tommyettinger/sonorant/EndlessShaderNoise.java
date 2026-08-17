@@ -142,7 +142,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         }
 
         ShaderProgram shaderHardAdj;
-        shaders[11] = shaderHardAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("hardAdj_fragment.glsl"));
+        shaders[11] = shaderHardAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("hardadj_fragment.glsl"));
         if (!shaderHardAdj.isCompiled()) {
             Gdx.app.error("Shader", "error compiling shaderHardAdj:\n" + shaderHardAdj.getLog());
             Gdx.app.exit();
