@@ -41,6 +41,9 @@ float swayRandomized(float seed, float value)
     return mix(start, end, smoothstep(0., 1., value - f));
 }
 
+// 1D smooth output from 4D input and a seed.
+// Changes to seed will change abruptly.
+// Changes to con will change smoothly, but unpredictably, if those changes are smooth.
 float cosmic(float seed, vec4 con)
 {
     float sum = swayRandomized(seed, con.w + con.x);
@@ -95,6 +98,6 @@ void main() {
 
     // Gets con into a 0-1 range.
     con.xyz = sin((con.xyz) * 3.14159265);
-    // Forces each component of con.xyz to 0 or 1, sets alpha to 1, then tints by u_color.
-    gl_FragColor = vec4(step(vec3(1.25), (con.xyz + u_adj.r + 0.5)), 1.0) * v_color;
+    // Forces each component of con.xyz to 0 or 1, hue rotates by the r uniform, sets alpha to 1, then tints by u_color.
+    gl_FragColor = vec4(applyHue(step(vec3(0.5), (con.xyz)), u_adj.r), 1.0) * v_color;
 }
