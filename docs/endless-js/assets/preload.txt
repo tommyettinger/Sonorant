@@ -7,6 +7,7 @@ i:b:/foam_fragment.glsl:6187:1
 i:b:/foam_vertex.glsl:331:1
 i:b:/gradj_fragment.glsl:4646:1
 i:b:/gummiadj_fragment.glsl:1638:1
+i:b:/hardadj_fragment.glsl:4652:1
 i:b:/hashes.glsl:2975:1
 i:b:/hassler_fragment.glsl:3194:1
 i:b:/huechange_fragment.glsl:2209:1

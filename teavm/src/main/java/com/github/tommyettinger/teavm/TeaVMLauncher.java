@@ -20,6 +20,6 @@ public class TeaVMLauncher {
 //        new WebApplication(new ShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis()), config);
 //        config.width = 750;
 //        config.height = 1000;
-        new WebApplication(new com.github.tommyettinger.sonorant.InputShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis()), config);
+        new WebApplication(new com.github.tommyettinger.sonorant.EndlessShaderNoise(new ReadWriteClipboard(), System.currentTimeMillis()), config);
     }
 }
