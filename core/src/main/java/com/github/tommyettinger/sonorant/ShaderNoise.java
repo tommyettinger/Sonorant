@@ -68,7 +68,7 @@ public class ShaderNoise extends ApplicationAdapter {
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
             gif.setDitherAlgorithm(Dithered.DitherAlgorithm.MARTEN);
-            gif.setDitherStrength(0.7f);
+            gif.setDitherStrength(0.4f);
             gif.palette = new QualityPalette();
         }
 
@@ -261,7 +261,7 @@ public class ShaderNoise extends ApplicationAdapter {
                     tp.dispose();
                     fb.end();
                 }
-                gif.palette.analyzeHueWise(frames, 80);
+                gif.palette.analyze(frames, 80);
                 gif.write(Gdx.files.local("out/gif/" +
                     (seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + 0 + "_" + shaderIndex)
                     + ".gif"), frames, 20);
