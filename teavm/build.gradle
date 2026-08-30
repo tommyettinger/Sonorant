@@ -1,54 +1,54 @@
+import org.teavm.gradle.api.OptimizationLevel
+
 plugins {
   id 'java'
+  id("com.github.xpenatan.gdx-teavm") version "1.6.2"
 }
+eclipse.project.name = appName + "-teavm"
 
-sourceSets.main.resources.srcDirs += [ rootProject.file('assets').path ]
-project.ext.mainClassName = 'com.github.tommyettinger.teavm.TeaVMBuilder'
-eclipse.project.name = appName + '-teavm'
-
-// This must be at least 11, and no higher than the JDK version this project is built with.
-java.targetCompatibility = "11"
+// This must be at least 17, and no higher than the JDK version this project is built with.
+java.targetCompatibility = "17"
 // This should probably be equal to targetCompatibility, above. This only affects the TeaVM module.
-java.sourceCompatibility = "11"
+java.sourceCompatibility = "17"
 
 dependencies {
   implementation "com.github.xpenatan.gdx-teavm:backend-web:$gdxTeaVMVersion"
   implementation project(':core')
 }
 
-tasks.register("runRelease", JavaExec) {
-  description = "Run the TeaVM application hosted via a local Jetty server at http://localhost:8080/"
-  group("application")
-  dependsOn(classes)
-  mainClass.set(project.mainClassName)
-  setClasspath(sourceSets.main.runtimeClasspath)
-  args += ["run"]
+gdxTeaVM {
+  assets.from(rootProject.files('assets'))
+  webDefaults {
+    mainClass.set("com.github.tommyettinger.teavm.TeaVMLauncher")
+    htmlTitle.set(appName)
+  }
+
+  // Keeps the original development task name.
+  js {
+    devServer {
+      enabled.set(true)
+      autoBuild.set(true)
+      autoReload.set(true)
+      optimization.set(OptimizationLevel.NONE)
+    }
+  }
+
+  // Independent release variants with isolated output.
+  js("release") {
+    obfuscated.set(true)
+    serverPort.set(8180)
+    optimization.set(OptimizationLevel.BALANCED)
+  }
+
+  wasm("release") {
+    obfuscated.set(true)
+    serverPort.set(8181)
+    optimization.set(OptimizationLevel.BALANCED)
+  }
 }
 
-tasks.register("runDebug", JavaExec) {
-  description = "Run the TeaVM application with debug enabled hosted via a local Jetty server at http://localhost:8080/"
-  group("application")
-  dependsOn(classes)
-  mainClass.set(project.mainClassName)
-  setClasspath(sourceSets.main.runtimeClasspath)
-  args += ["debug", "run"]
+// For backwards compatibility with the earlier run and build tasks.
+tasks.register("run"){
+  dependsOn("gdx_teavm_web_wasm_release_run")
 }
-
-tasks.register("buildRelease", JavaExec) {
-  description = "Build the TeaVM application; doesn't run directly"
-  group("build")
-  dependsOn(classes)
-  mainClass.set(project.mainClassName)
-  setClasspath(sourceSets.main.runtimeClasspath)
-}
-
-tasks.register("buildDebug", JavaExec) {
-  description = "Build the TeaVM application with debug enabled; doesn't run directly"
-  group("build")
-  dependsOn(classes)
-  mainClass.set(project.mainClassName)
-  setClasspath(sourceSets.main.runtimeClasspath)
-  args += ["debug"]
-}
-
-build.dependsOn buildRelease
+build.dependsOn("gdx_teavm_web_wasm_release_build")
