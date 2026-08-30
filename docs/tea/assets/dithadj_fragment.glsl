@@ -41,25 +41,21 @@ float swayRandomized(float seed, float value)
     return mix(start, end, smoothstep(0., 1., value - f));
 }
 
-// Range is -0.5 to 1.5, because it looks brighter.
 float cosmic(float seed, vec4 con)
 {
     float sum = swayRandomized(seed, con.w + con.x);
     sum = sum + swayRandomized(seed, con.z + con.y + sum);
     sum = sum + swayRandomized(seed, con.x + con.z + sum);
     sum = sum + swayRandomized(seed, con.y + con.w + sum);
-    return sum * 0.25 + 0.5;
+    return sum * 0.125 + 0.5;
 }
 
-// 1D noise, range is -1.0 to 1.0
-//float swayRandomized(float seed, float value)
-//{
-//    float f = floor(value);
-//    float start = sin((cos(f + seed) * 12.973 + seed) * 31.413);
-//    float end   = sin((cos(f + 1.0 + seed) * 12.973 + seed) * 31.413);
-//    return mix(start, end, smoothstep(0.0, 1.0, value - f));
-//}
-
+const float b_adj = 31.0 / 32.0;
+const float rb_adj = 32.0 / 1023.0;
+const vec3 bumps = vec3(0.0, 0.382, 0.618);
+vec3 triangleWave(vec3 theta){
+    return abs(theta - floor(theta + 0.5)) * 4. - 1.;
+}
 void main() {
     // Only needed so v_texCoords and u_texture don't get eliminated for lack of use.
     if (texture2D(u_texture, v_texCoords).a <= 0.) discard;
@@ -94,8 +90,17 @@ void main() {
     con.y = cosmic(u_seed, con);
     con.z = cosmic(u_seed, con);
 
-    // Gets con into a 0-1 range.
-    con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
-    // Hue-rotates by the r uniform, if non-0, and sets alpha to 1, then tints by u_color.
-    gl_FragColor = vec4(applyHue(con.xyz, u_adj.r), 1.0) * v_color;
+    // Averages the three components of con we changed, with the red channel of the adjustment, and does a ridged
+    // noise transformation on it (making low or high inputs produce low results, and mid-range inputs produce high).
+    float ridged = 1. - abs(1. - 0.5 * (con.x + con.y + con.z + u_adj.r));
+
+    // Marten dither
+    vec3 adj = triangleWave(fract(gl_FragCoord.x * 0.75488 + gl_FragCoord.y * 0.56984) + bumps) * 0.48;
+    vec3 tgt = vec3(ridged);
+    tgt.rgb = clamp(sqrt(tgt.rgb) + adj, 0.0, 1.0);
+    tgt.rgb *= tgt.rgb;
+    // sRGB lightness; weights red as medium, green as very bright, and blue as barely bright at all.
+    vec3 used = vec3(step(0.75, dot(tgt.rgb, vec3(0.2126, 0.7152, 0.0722))));
+    gl_FragColor.rgb = v_color.rgb * used.rgb;
+    gl_FragColor.a = v_color.a;
 }
