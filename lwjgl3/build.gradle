@@ -47,6 +47,14 @@ dependencies {
     exclude module: 'digital'
   }
 
+  constraints{
+    implementation("org.lwjgl:lwjgl:$lwjgl3Version")
+    implementation("org.lwjgl:lwjgl-glfw:$lwjgl3Version")
+    implementation("org.lwjgl:lwjgl-jemalloc:$lwjgl3Version")
+    implementation("org.lwjgl:lwjgl-openal:$lwjgl3Version")
+    implementation("org.lwjgl:lwjgl-opengl:$lwjgl3Version")
+    implementation("org.lwjgl:lwjgl-stb:$lwjgl3Version")
+  }
   implementation project(':core')
 }
 
