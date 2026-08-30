@@ -45,7 +45,7 @@ public class ShaderNoise extends ApplicationAdapter {
     private float twist = 0.6f;
     private float speed = 1f;
     //	public static final int WIDTH = 1920, HEIGHT = 1080;
-    public static final int WIDTH = 200, HEIGHT = 200;
+    public static final int WIDTH = 280, HEIGHT = 280;
     public static int width = WIDTH, height = HEIGHT;
     public static int FRAMES = 200;
     private final Array<Pixmap> frames = new Array<>(FRAMES);

@@ -93,8 +93,7 @@ void main() {
     con.y = cosmic(u_seed, con);
     con.z = cosmic(u_seed, con);
 
-    // Gets con into a 0-1 range.
-    con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
-    // Hue-rotates by the r uniform, if non-0, and sets alpha to 1, then tints by u_color.
-    gl_FragColor = vec4(vec3(step(3.0, (con.x + con.y + con.z + u_adj.r))), 1.0) * v_color;
+    // Gets con into a -1 to 1 range.
+    con.xyz = sin((con.xyz) * 3.14159265);
+    gl_FragColor = vec4(vec3(step(0., (con.x + con.y + con.z))), 1.0) * v_color;
 }
