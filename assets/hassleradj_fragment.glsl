@@ -16,6 +16,7 @@ uniform sampler2D u_texture;
 uniform float u_seed;
 uniform float u_time;
 uniform vec2 u_resolution;
+uniform vec4 u_adj;
 
 float swayRandomized(float seed, float value)
 {
@@ -56,7 +57,7 @@ vec4 hsl2rgb(vec4 c)
 void main() {
   if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
   float DIVISIONS = mod(floor(u_seed), 10.0) + 3.0;
-  float TWISTINESS = sin(PI2 * v_color.a) * 5.0 + 6.0;
+  float TWISTINESS = sin(PI2 * u_adj.a) * 5.0 + 6.0;
 
     // Normalized pixel coordinates (from 0 to 1)
     vec2 center = (gl_FragCoord.xy - 0.5 * u_resolution.xy)/u_resolution.y * SCALE;
@@ -84,7 +85,7 @@ void main() {
     con.z = cosmic(u_seed, con);
 
     con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
-    con.x = fract(con.x * v_color.g * 2.0 + v_color.b);
-    con.z += v_color.r * 1.5 - 0.75;
-    gl_FragColor = hsl2rgb(vec4(con.xyz, 1.0));
+    con.x = fract(con.x * u_adj.g * 2.0 + u_adj.b);
+    con.z += u_adj.r * 1.5 - 0.75;
+    gl_FragColor = hsl2rgb(vec4(con.xyz, 1.0)) * v_color;
 }

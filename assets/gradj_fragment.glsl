@@ -93,9 +93,11 @@ void main() {
     con.y = cosmic(u_seed, con);
     con.z = cosmic(u_seed, con);
 
-    // Averages the three components of con we changed, with the red channel of the adjustment, and does a ridged
-    // noise transformation on it (making low or high inputs produce low results, and mid-range inputs produce high).
-    float ridged = (1.0 - abs(1.0 - 0.333 * (con.x + con.y + con.z))) * (1.25 + 0.75 * sin(u_adj.r * PI2));
+    // Averages the three components of con we changed, and does a ridged noise transformation on it
+    // (making low or high inputs produce low results, and mid-range inputs produce high).
+    float ridged = (1.0 - abs(1.0 - 0.333 * (con.x + con.y + con.z)));
+    // Uses the red channel of the adjustment to smoothly/cyclically change lightness.
+    ridged *= (1.25 + 0.75 * sin(u_adj.r * PI2));
 
     // Hue-rotates by the r uniform, if non-0, and sets alpha to 1, then tints by u_color.
     gl_FragColor = vec4(vec3(ridged), 1.0) * v_color;
