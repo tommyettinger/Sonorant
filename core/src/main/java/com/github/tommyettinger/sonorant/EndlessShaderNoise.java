@@ -234,7 +234,7 @@ public class EndlessShaderNoise extends ApplicationAdapter {
         batch.getShader().setUniformf("u_time", fTime);
         batch.getShader().setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         batch.getShader().setUniformf("u_adj",
-            LineWobble.bicubicWobble(1234, fTime * 0.031f) * 0.5f + 0.5f,
+            LineWobble.wobbleAngleTurns(1234, fTime * 0.031f),
             LineWobble.bicubicWobble(6789, fTime * 0.033f) * 0.5f + 0.5f,
             LineWobble.bicubicWobble(-987, fTime * 0.035f) * 0.5f + 0.5f,
             twist);
