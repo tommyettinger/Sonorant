@@ -34,7 +34,7 @@ public class ShaderNoise extends ApplicationAdapter {
     private SpriteBatch batch;
     private Texture pixel;
     private int shaderIndex = 0;
-    private final ShaderProgram[] shaders = new ShaderProgram[12];
+    private final ShaderProgram[] shaders = new ShaderProgram[13];
     private AnimatedGif gif;
 
     private long startTime;
@@ -162,6 +162,14 @@ public class ShaderNoise extends ApplicationAdapter {
         shaders[11] = shaderHardAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("hardadj_fragment.glsl"));
         if (!shaderHardAdj.isCompiled()) {
             Gdx.app.error("Shader", "error compiling shaderHardAdj:\n" + shaderHardAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        ShaderProgram shaderHasslerAdj;
+        shaders[12] = shaderHasslerAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("hassleradj_fragment.glsl"));
+        if (!shaderHasslerAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderHasslerAdj:\n" + shaderHasslerAdj.getLog());
             Gdx.app.exit();
             return;
         }
