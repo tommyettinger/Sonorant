@@ -4,6 +4,10 @@ import com.badlogic.gdx.Application;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Application;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3ApplicationConfiguration;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Clipboard;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -22,6 +26,7 @@ import com.github.tommyettinger.digital.Base;
 import com.github.tommyettinger.digital.BitConversion;
 import com.github.tommyettinger.digital.MathTools;
 import com.github.tommyettinger.digital.TrigTools;
+import com.github.tommyettinger.lwjgl3.StartupHelper;
 import com.github.tommyettinger.random.GwtIncompatible;
 
 import static com.badlogic.gdx.Input.Keys.*;
@@ -80,19 +85,13 @@ public class ApngShaderNoise extends ApplicationAdapter {
 
 
         ShaderProgram.pedantic = true;
-//		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("northern_fragment.glsl"));
-//		shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment.glsl"));
-        shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanarant_fragment.glsl"));
-//		shader = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("foam_fragment.glsl"));
+        shaderStandard = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sanaradj_fragment.glsl"));
         if (!shaderStandard.isCompiled()) {
             Gdx.app.error("Shader", "error compiling shaderStandard:\n" + shaderStandard.getLog());
             Gdx.app.exit();
             return;
         }
-        shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sahahant_fragment.glsl"));
-//        shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("hassler_fragment.glsl"));
-//		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("ana_fragment.glsl"));
-//		shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sonorant_fragment_ridged.glsl"));
+        shaderRidged = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("sahahadj_fragment.glsl"));
         if (!shaderRidged.isCompiled()) {
             Gdx.app.error("Shader", "error compiling shaderRidged:\n" + shaderRidged.getLog());
             Gdx.app.exit();
@@ -179,7 +178,12 @@ public class ApngShaderNoise extends ApplicationAdapter {
                     shader.setUniformf("u_seed", seed);
                     shader.setUniformf("u_time", i * (TrigTools.PI2 / FRAMES));
                     shader.setUniformf("u_resolution", width << 1, height << 1);
-                    batch.setColor(rMod, gMod, bMod, twist);
+                    shader.setUniformf("u_adj",
+                        rMod,
+                        gMod,
+                        bMod,
+                        twist);
+                    batch.setPackedColor(Color.WHITE_FLOAT_BITS);
                     batch.draw(pixel, 0f, 0f, width << 1, height << 1);
                     batch.end();
                     Pixmap tp = Pixmap.createFromFrameBuffer(0, 0, width<<1, height<<1), np = new Pixmap(width, height, Pixmap.Format.RGBA8888);
@@ -203,7 +207,12 @@ public class ApngShaderNoise extends ApplicationAdapter {
         shader.setUniformf("u_seed", seed);
         shader.setUniformf("u_time", fTime);
         shader.setUniformf("u_resolution", Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        batch.setColor(rMod, gMod, bMod, twist);
+        shader.setUniformf("u_adj",
+            rMod,
+            gMod,
+            bMod,
+            twist);
+        batch.setPackedColor(Color.WHITE_FLOAT_BITS);
         batch.draw(pixel, 0, 0, width, height);
         batch.end();
     }
@@ -220,6 +229,24 @@ public class ApngShaderNoise extends ApplicationAdapter {
         int h = Base.BASE10.readInt(s, gap+1, s.length());
         if(Gdx.app.getType() != Application.ApplicationType.WebGL && (w != 0 && h != 0 && (w != width || h != height)))
             Gdx.graphics.setWindowedMode(w, h);
-
     }
+
+    public static void main(String[] args) {
+        // Needed for macOS support, but also Windows with non-ASCII usernames.
+        if (StartupHelper.startNewJvmIfRequired()) return;
+
+        new Lwjgl3Application(new ApngShaderNoise(new Lwjgl3Clipboard(), 1L), getDefaultConfiguration());
+    }
+
+    private static Lwjgl3ApplicationConfiguration getDefaultConfiguration() {
+        Lwjgl3ApplicationConfiguration configuration = new Lwjgl3ApplicationConfiguration();
+        configuration.setTitle("Noise");
+        configuration.useVsync(true);
+        configuration.disableAudio(true);
+        configuration.setForegroundFPS(Lwjgl3ApplicationConfiguration.getDisplayMode().refreshRate);
+        configuration.setWindowedMode(width, height);
+        configuration.setWindowIcon("libgdx128.png", "libgdx64.png", "libgdx32.png", "libgdx16.png");
+        return configuration;
+    }
+
 }
