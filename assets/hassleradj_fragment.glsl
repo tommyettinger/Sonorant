@@ -86,6 +86,7 @@ void main() {
 
     con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
     con.x = fract(con.x * u_adj.g * 2.0 + u_adj.b);
-    con.z += u_adj.r * 1.5 - 0.75;
+    con.z += (0.5 * sin(u_adj.r * PI2));
+
     gl_FragColor = hsl2rgb(vec4(con.xyz, 1.0)) * v_color;
 }
