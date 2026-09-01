@@ -5,6 +5,7 @@ precision highp float;
 #define LOWP
 #endif
 
+const float PI2 = 6.283185307179586;
 const float PHI = 0.61803398874989484820459; // phi, the Golden Ratio
 const vec4 H4 = vec4(0.8566748838545029, 0.7338918566271260, 0.6287067210378087, 0.5385972572236101); // harmonious numbers for 4D
 
@@ -67,7 +68,7 @@ void main() {
     if(texture2D(u_texture, v_texCoords).a <= 0.) discard;
     vec4 adj = u_adj * 11.0;
     adj.a = adj.a + u_seed;
-    vec4 i = vec4((gl_FragCoord.xy - u_resolution * 0.5) * 0.03125 + 3.0, sin(u_time) + adj.g, cos(u_time) + adj.b);
+    vec4 i = vec4((gl_FragCoord.xy - u_resolution * 0.5) * 0.01625 + 3.0, sin(u_time) + adj.g, cos(u_time) + adj.b);
     float lightness = (0.5 * sin(u_adj.r * PI2));
     gl_FragColor.r = foam(4.0   + adj.a, i) + lightness;
     gl_FragColor.g = foam(61.0  + adj.a, i) + lightness;

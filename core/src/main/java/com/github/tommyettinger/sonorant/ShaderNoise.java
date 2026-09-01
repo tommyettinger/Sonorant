@@ -34,7 +34,7 @@ public class ShaderNoise extends ApplicationAdapter {
     private SpriteBatch batch;
     private Texture pixel;
     private int shaderIndex = 0;
-    private final ShaderProgram[] shaders = new ShaderProgram[13];
+    private final ShaderProgram[] shaders = new ShaderProgram[14];
     private AnimatedGif gif;
 
     private long startTime;
@@ -67,7 +67,7 @@ public class ShaderNoise extends ApplicationAdapter {
 
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
-            gif.setDitherStrength(0.4f);
+            gif.setDitherStrength(1f);
             gif.palette = new QualityPalette();
         }
 
@@ -174,6 +174,14 @@ public class ShaderNoise extends ApplicationAdapter {
             return;
         }
 
+        ShaderProgram shaderFloopAdj;
+        shaders[13] = shaderFloopAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("floopadj_fragment.glsl"));
+        if (!shaderFloopAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderFloopAdj:\n" + shaderFloopAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
         batch.setShader(shaders[shaderIndex]);
 
         // System.nanoTime() is supported by GWT 2.10.0 .
@@ -272,7 +280,7 @@ public class ShaderNoise extends ApplicationAdapter {
                     shaderIndex == 7 || shaderIndex == 9 || shaderIndex == 10 || shaderIndex == 11
                         ? Dithered.DitherAlgorithm.NONE : Dithered.DitherAlgorithm.MARTEN);
 
-                gif.palette.analyze(frames, 80);
+                gif.palette.analyzeReductive(frames, 50);
                 gif.write(Gdx.files.local("out/gif/" +
                     (seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + 0 + "_" + shaderIndex)
                     + ".gif"), frames, 20);
