@@ -6,6 +6,7 @@ precision highp float;
 #endif
 
 const float PI2 = 6.283185307179586;
+const float PHI = 0.61803398874989484820459; // phi, the Golden Ratio
 const float SCALE = 1.5;
 const float POINTINESS = 11.0;
 
@@ -30,34 +31,30 @@ vec3 applyHue(vec3 rgb, float hue)
     return rgb * c + cross(k, rgb) * sin(h) + k * dot(k, rgb) * (1.0 - c);
 }
 
-// 1D noise, ranging from -1.0 to 1.0.
-// Changes to seed will change abruptly.
-// Changes to value will change smoothly, but unpredictably, if those changes are smooth.
-float swayRandomized(float seed, float value)
-{
-    float f = floor(value);
-    float start = sin((cos(f * seed) + sin(f * 1024.)) * 345. + seed);
-    float end   = sin((cos((f+1.) * seed) + sin((f+1.) * 1024.)) * 345. + seed);
-    return mix(start, end, smoothstep(0., 1., value - f));
+float hash(float seed, float p) {
+    return fract(fract((p - seed) * PHI + seed) * (PHI - p) - seed);
 }
 
-float cosmic(float seed, vec4 con)
-{
-    float sum = swayRandomized(seed, con.w + con.x);
-    sum = sum + swayRandomized(seed, con.z + con.y + sum);
-    sum = sum + swayRandomized(seed, con.x + con.z + sum);
-    sum = sum + swayRandomized(seed, con.y + con.w + sum);
-    return sum * 0.125 + 0.5;
-}
+float noise(float seed, vec4 x) {
+    const vec4 step = vec4(59.0, 43.0, 37.0, 53.0); //vec3(110.0, 241.0, 171.0);
 
-// 1D noise, range is -1.0 to 1.0
-//float swayRandomized(float seed, float value)
-//{
-//    float f = floor(value);
-//    float start = sin((cos(f + seed) * 12.973 + seed) * 31.413);
-//    float end   = sin((cos(f + 1.0 + seed) * 12.973 + seed) * 31.413);
-//    return mix(start, end, smoothstep(0.0, 1.0, value - f));
-//}
+    vec4 i = floor(x);
+    vec4 f = fract(x);
+
+    float n = dot(i, step);
+
+    vec4 u = f * f * (3.0 - 2.0 * f);
+    return mix(
+            mix(mix(mix( hash(seed, n                                  ), hash(seed, n + dot(step, vec4(1., 0., 0., 0.))), u.x),
+                    mix( hash(seed, n + dot(step, vec4(0., 1., 0., 0.))), hash(seed, n + dot(step, vec4(1., 1., 0., 0.))), u.x), u.y),
+                mix(mix( hash(seed, n + dot(step, vec4(0., 0., 1., 0.))), hash(seed, n + dot(step, vec4(1., 0., 1., 0.))), u.x),
+                    mix( hash(seed, n + dot(step, vec4(0., 1., 1., 0.))), hash(seed, n + dot(step, vec4(1., 1., 1., 0.))), u.x), u.y), u.z),
+            mix(mix(mix( hash(seed, n + dot(step, vec4(0., 0., 0., 1.))), hash(seed, n + dot(step, vec4(1., 0., 0., 1.))), u.x),
+                    mix( hash(seed, n + dot(step, vec4(0., 1., 0., 1.))), hash(seed, n + dot(step, vec4(1., 1., 0., 1.))), u.x), u.y),
+                mix(mix( hash(seed, n + dot(step, vec4(0., 0., 1., 1.))), hash(seed, n + dot(step, vec4(1., 0., 1., 1.))), u.x),
+                    mix( hash(seed, n + dot(step, vec4(0., 1., 1., 1.))), hash(seed, n + dot(step, vec4(1., 1., 1., 1.))), u.x), u.y), u.z),
+            u.w);
+}
 
 void main() {
     // Only needed so v_texCoords and u_texture don't get eliminated for lack of use.
@@ -89,16 +86,12 @@ void main() {
     vec2 angles = (u_adj.gb * PI2);
     // This incorporates everything so far except the seed at first, and then uses it too.
     vec4 con = vec4(0.4375, 0.5625, 0.8125, 0.625) + s + vec4(sin(angles), cos(angles)) * 4.0;
-    con.x = cosmic(u_seed, con);
-    con.y = cosmic(u_seed, con);
-    con.z = cosmic(u_seed, con);
+    con.x = noise(u_seed, con);
+    con.y = noise(u_seed, con);
+    con.z = noise(u_seed, con);
 
-    // Averages the three components of con we changed, and does a ridged noise transformation on it
-    // (making low or high inputs produce low results, and mid-range inputs produce high).
-    float ridged = (1.0 - abs(1.0 - 0.333 * (con.x + con.y + con.z)));
-    // Uses the red channel of the adjustment to smoothly/cyclically change lightness.
-    ridged *= (1.25 + 0.75 * sin(u_adj.r * PI2));
-
+    // Gets con into a 0-1 range.
+    con.xyz = sin((con.xyz) * PI2) * 0.5 + 0.5;
     // Hue-rotates by the r uniform, if non-0, and sets alpha to 1, then tints by u_color.
-    gl_FragColor = vec4(vec3(ridged), 1.0) * v_color;
+    gl_FragColor = vec4(applyHue(con.xyz, u_adj.r), 1.0) * v_color;
 }
