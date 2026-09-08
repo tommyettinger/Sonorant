@@ -25,7 +25,7 @@ public class InputShaderNoise extends ApplicationAdapter {
     private SpriteBatch batch;
     private Texture pixel;
     private int shaderIndex = 0;
-    private final ShaderProgram[] shaders = new ShaderProgram[13];
+    private final ShaderProgram[] shaders = new ShaderProgram[15];
 
     private long startTime;
     private float seed = 3.1337f;
@@ -155,6 +155,22 @@ public class InputShaderNoise extends ApplicationAdapter {
         shaders[12] = shaderHasslerAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("hassleradj_fragment.glsl"));
         if (!shaderHasslerAdj.isCompiled()) {
             Gdx.app.error("Shader", "error compiling shaderHasslerAdj:\n" + shaderHasslerAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        ShaderProgram shaderFloopAdj;
+        shaders[13] = shaderFloopAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("floopadj_fragment.glsl"));
+        if (!shaderFloopAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderFloopAdj:\n" + shaderFloopAdj.getLog());
+            Gdx.app.exit();
+            return;
+        }
+
+        ShaderProgram shaderValueAdj;
+        shaders[14] = shaderValueAdj = new ShaderProgram(Gdx.files.internal("foam_vertex.glsl"), Gdx.files.internal("valueadj_fragment.glsl"));
+        if (!shaderValueAdj.isCompiled()) {
+            Gdx.app.error("Shader", "error compiling shaderValueAdj:\n" + shaderValueAdj.getLog());
             Gdx.app.exit();
             return;
         }

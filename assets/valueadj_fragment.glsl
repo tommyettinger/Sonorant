@@ -91,7 +91,7 @@ void main() {
     con.z = noise(u_seed, con);
 
     // Gets con into a 0-1 range.
-//    con.xyz = sin((con.xyz) * 3.14159265) * 0.5 + 0.5;
+    con.xyz = sin((con.xyz) * PI2) * 0.5 + 0.5;
     // Hue-rotates by the r uniform, if non-0, and sets alpha to 1, then tints by u_color.
     gl_FragColor = vec4(applyHue(con.xyz, u_adj.r), 1.0) * v_color;
 }
