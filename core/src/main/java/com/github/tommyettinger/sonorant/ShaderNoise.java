@@ -67,7 +67,7 @@ public class ShaderNoise extends ApplicationAdapter {
 
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
-            gif.setDitherStrength(1f);
+            gif.setDitherStrength(0.4f);
             gif.palette = new QualityPalette();
         }
 

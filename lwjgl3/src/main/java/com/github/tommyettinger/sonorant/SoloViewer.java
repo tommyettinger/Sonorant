@@ -144,8 +144,8 @@ public class SoloViewer extends ApplicationAdapter {
 
         if(Gdx.app.getType() != Application.ApplicationType.WebGL) {
             gif = new AnimatedGif();
-            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.GOURD);
-            gif.setDitherStrength(1f);
+            gif.setDitherAlgorithm(Dithered.DitherAlgorithm.MARTEN);
+            gif.setDitherStrength(0.4f);
             gif.palette = new QualityPalette();
             gif.fastAnalysis = false;
 //            png = new FastPNG();
