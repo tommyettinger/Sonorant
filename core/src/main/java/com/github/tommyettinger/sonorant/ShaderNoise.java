@@ -309,6 +309,9 @@ public class ShaderNoise extends ApplicationAdapter {
                 gif.write(Gdx.files.local("out/gif/" +
                     (seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + 0 + "_" + shaderIndex)
                     + ".gif"), frames, 20);
+                for (int i = 0; i < frames.size; i++) {
+                    frames.get(i).dispose();
+                }
             }
         }
 
