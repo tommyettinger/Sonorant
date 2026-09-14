@@ -279,25 +279,26 @@ public class ShaderNoise extends ApplicationAdapter {
             clipboard.setContents(seed + "_" + rMod + "_" + gMod + "_" + bMod + "_" + twist + "_" + ((speed - 1) * 600) + "_" + shaderIndex);
             if (Gdx.app.getType() != Application.ApplicationType.WebGL && gif != null) {
                 frames.clear();
-                FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, width<<1, height<<1, false);
+                FrameBuffer fb = new FrameBuffer(Pixmap.Format.RGB888, width, height, false);
                 for (int i = 0; i < FRAMES; i++) {
                     fb.begin();
                     batch.begin();
                     batch.getShader().setUniformf("u_seed", seed);
                     batch.getShader().setUniformf("u_time", i * (TrigTools.PI2 / FRAMES) + 5.25f);
-                    batch.getShader().setUniformf("u_resolution", width << 1, height << 1);
+                    batch.getShader().setUniformf("u_resolution", width, height);
                     batch.getShader().setUniformf("u_adj",
                         rMod,
                         gMod,
                         bMod,
                         twist);
                     batch.setPackedColor(Color.WHITE_FLOAT_BITS);
-                    batch.draw(pixel, 0f, 0f, width << 1, height << 1);
+                    batch.draw(pixel, 0f, 0f, width, height);
                     batch.end();
-                    Pixmap tp = Pixmap.createFromFrameBuffer(0, 0, width<<1, height<<1), np = new Pixmap(width, height, Pixmap.Format.RGBA8888);
-                    np.drawPixmap(tp, 0, 0, width<<1, height<<1, 0, 0, width, height);
+                    Pixmap np = Pixmap.createFromFrameBuffer(0, 0, width, height);//, np = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+//                    Pixmap tp = Pixmap.createFromFrameBuffer(0, 0, width<<1, height<<1), np = new Pixmap(width, height, Pixmap.Format.RGBA8888);
+//                    np.drawPixmap(tp, 0, 0, width<<1, height<<1, 0, 0, width, height);
                     frames.add(np);
-                    tp.dispose();
+//                    tp.dispose();
                     fb.end();
                 }
                 gif.setDitherAlgorithm(
