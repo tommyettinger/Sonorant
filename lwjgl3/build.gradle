@@ -3,7 +3,7 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    classpath "io.github.fourlastor:construo:2.1.0"
+    classpath "io.github.fourlastor:construo:2.2.2"
     if(enableGraalNative == 'true') {
       classpath "org.graalvm.buildtools.native:org.graalvm.buildtools.native.gradle.plugin:0.9.28"
     }
@@ -61,7 +61,10 @@ dependencies {
 def os = System.properties['os.name'].toLowerCase(Locale.ROOT)
 
 run {
-  workingDir = rootProject.file('assets').path
+// The next two jvmArgs additions help LWJGL3 on JDK 24 and higher.
+  jvmArgs += "--enable-native-access=ALL-UNNAMED"
+  jvmArgs += "--add-exports=java.base/jdk.internal.misc=ALL-UNNAMED"
+// On macOS, we need to set this for the run task to allow debugging in IDEA or AS to work.
   if (os.contains('mac')) jvmArgs += "-XstartOnFirstThread"
 }
 
@@ -73,14 +76,17 @@ jar {
   dependsOn configurations.runtimeClasspath
   from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
 // these "exclude" lines remove some unnecessary duplicate files in the output JAR.
-  exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
+  exclude('META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA', 'META-INF/freebsd/**')
   dependencies {
-    exclude('META-INF/INDEX.LIST', 'META-INF/maven/**')
+    exclude('META-INF/INDEX.LIST', 'META-INF/maven/**', 'META-INF/freebsd/**')
   }
-// setting the manifest makes the JAR runnable.
-// enabling native access helps avoid a warning when Java 24 or later runs the JAR.
   manifest {
-    attributes 'Main-Class': application.mainClass, 'Enable-Native-Access': 'ALL-UNNAMED', 'Multi-Release': 'true'
+    attributes (
+      // Enabling native access is good for JARs run by Java 24 or later.
+      // Setting Multi-Release to true allows LWJGL3 to use different classes on recent Java versions.
+      // This setting for Add-Exports ensures a warning on recent JDKs is avoided by LWJGL3.
+      'Main-Class': application.mainClass, 'Enable-Native-Access': 'ALL-UNNAMED', 'Multi-Release': 'true', 'Add-Exports': 'java.base/jdk.internal.misc'
+    )
   }
 // this last step may help on some OSes that need extra instruction to make runnable JARs.
   doLast {
@@ -116,16 +122,16 @@ tasks.register("jarLinux") {
   }
 }
 
-// Builds a JAR that only includes the files needed to run on Windows, not Linux or macOS.
+// Builds a JAR that only includes the files needed to run on x64 Windows, not Linux or macOS.
 // The file size for a Windows-only JAR is about 6MB smaller than a cross-platform JAR.
 tasks.register("jarWin") {
   dependsOn("jar")
   group("build")
   jar.archiveFileName.set("${appName}-${projectVersion}-win.jar")
-  jar.exclude("macos/arm64/**", "macos/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**", "**/*.dylib", "**/*.so",
+  jar.exclude("windows/x86/**", "macos/arm64/**", "macos/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**", "**/*.dylib", "**/*.so",
     'META-INF/INDEX.LIST', 'META-INF/*.SF', 'META-INF/*.DSA', 'META-INF/*.RSA')
   dependencies {
-    jar.exclude("macos/arm64/**", "macos/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**",
+    jar.exclude("windows/x86/**", "macos/arm64/**", "macos/x64/**", "linux/arm32/**", "linux/arm64/**", "linux/x64/**",
       'META-INF/INDEX.LIST', 'META-INF/maven/**')
   }
 }
