@@ -271,6 +271,8 @@ public class InputShaderNoise extends ApplicationAdapter {
             startTime = TimeUtils.millis();
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.O)){ // start Over
             startTime = TimeUtils.millis();
+        } else if(Gdx.input.isKeyJustPressed(NUM_0) || Gdx.input.isKeyJustPressed(NUMPAD_0)){ // zero time
+            startTime = 0L;
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.F)){ // FPS log
             System.out.println("FPS = " + Gdx.graphics.getFramesPerSecond());
         } else if(Gdx.input.isKeyJustPressed(Input.Keys.Q) || Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)){ // quit
@@ -300,7 +302,7 @@ public class InputShaderNoise extends ApplicationAdapter {
             gMod = Interpolations.smooth.apply(gMod, lastX, alpha);
             bMod = Interpolations.smooth.apply(bMod, lastY, alpha);
         }
-        final float fTime = TimeUtils.timeSinceMillis(startTime) * 0x1p-11f * speed;
+        final float fTime = (TimeUtils.timeSinceMillis(startTime) & 0x7FFFFFL) * 0x1p-11f * speed;
         batch.begin();
         batch.getShader().setUniformf("u_seed", seed);
         batch.getShader().setUniformf("u_time", fTime);
