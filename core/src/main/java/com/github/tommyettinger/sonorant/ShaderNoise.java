@@ -313,7 +313,7 @@ public class ShaderNoise extends ApplicationAdapter {
                 }
                 gif.setDitherAlgorithm(
                     shaderIndex == 7 || shaderIndex == 9 || shaderIndex == 10 || shaderIndex == 11
-                        ? Dithered.DitherAlgorithm.NONE : Dithered.DitherAlgorithm.MARTEN);
+                        ? Dithered.DitherAlgorithm.NONE : Dithered.DitherAlgorithm.LOAF);
 
                 gif.palette.analyzeReductive(frames, 50);
                 gif.write(Gdx.files.local("out/gif/" +
