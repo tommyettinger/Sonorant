@@ -51,15 +51,6 @@ float cosmic(float seed, vec4 con)
     return sum * 0.25 + 0.5;
 }
 
-// 1D noise, range is -1.0 to 1.0
-//float swayRandomized(float seed, float value)
-//{
-//    float f = floor(value);
-//    float start = sin((cos(f + seed) * 12.973 + seed) * 31.413);
-//    float end   = sin((cos(f + 1.0 + seed) * 12.973 + seed) * 31.413);
-//    return mix(start, end, smoothstep(0.0, 1.0, value - f));
-//}
-
 void main() {
     // Only needed so v_texCoords and u_texture don't get eliminated for lack of use.
     if (texture2D(u_texture, v_texCoords).a <= 0.) discard;
